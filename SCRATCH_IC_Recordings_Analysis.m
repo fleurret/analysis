@@ -1,15 +1,17 @@
-%%
+%% Load files
+% expecting invidual SUBJ folders with Session mat files, one for each day
+pth = 'C:\Users\Rose\OneDrive\Documents\Caras\Data';
 
-pth = 'C:\Users\Daniel\Documents\MATLAB\TestEPhysData\';
-
-% subj = 'SUBJ-ID-202';
-subj = 'SUBJ-ID-222';
+% subj = '202';
+% subj = '222';
+subj = '223';
 
 pth = fullfile(pth,subj);
 
 d = dir(fullfile(pth,'*.mat'));
 
 %% ONLY NEED TO RUN ONCE TO CONVERT CLUSTERS TO SESSIONS
+% strips waveforms, rebuilds any clusters into sessions
 for i = 1:length(d)
     ffn = fullfile(d(i).folder,d(i).name);
     
@@ -69,10 +71,10 @@ par.modfreq = 5;
 
 parname = [];
 
-par.metric = @epa.metric.trial_firingrate; parname = 'FiringRate';
+% par.metric = @epa.metric.trial_firingrate; parname = 'FiringRate';
 % par.metric = @epa.metric.tmtf; parname = 'TMTF'; % use the temporal Modualation Transfer Function metric
 % par.metric = @epa.metric.vector_strength; parname = 'VS';
-% par.metric = @epa.metric.vector_strength_phase_projected; parname = 'VSpp';
+par.metric = @epa.metric.vector_strength_phase_projected; parname = 'VSpp';
 % par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
 % par.metric = @epa.metric.cl_calcpower; parname = 'Power';
 
@@ -101,8 +103,13 @@ for i = 1:length(d)
         tpar = par;
         
         CkS = Ck.Session;
-        dv = CkS.find_Event(tpar.event).DistinctValues;
-        tpar.eventvalue = dv;
+        if ~isempty(CkS.DistinctEventValues)
+            dv = CkS.find_Event(tpar.event).DistinctValues;
+            tpar.eventvalue = dv;
+        else
+            continue
+        end
+
         
         % remove reminder trials
         ev = CkS.find_Event("Reminder");
@@ -155,8 +162,8 @@ targDPrimeThreshold = 1;
 
 % parname = 'FiringRate';
 % parname = 'VScc';
-% parname = 'VSpp';
-parname = 'VS';
+parname = 'VSpp';
+% parname = 'VS';
 % parname = 'Power';
 
 for i = 1:length(d)
@@ -295,21 +302,9 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 %% Plot neurometric d'
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VS';
 % parname = 'Power';
 
@@ -328,16 +323,24 @@ C = [S.Clusters];
 f = figure('color','w');
 
 ncol = 3;
-nrow = length(unique([C.ID]));
+
+ucid = unique([C.ID]);
+nrow = length(ucid);
+
 
 t = tiledlayout(f,nrow,ncol);
 t.TileSpacing = 'none';
 t.Padding = 'none';
 
-for day = 1:numel(C)
-    Ck = C(day);
+
+
+for i = 1:numel(C)
+    Ck = C(i);
     
-    row = double(Ck.ID);
+%     row = double(Ck.ID);
+    ind = ucid == Ck.ID;
+    row = find(ind);
+
     
     if contains(Ck.Session.Name,"Pre")
         col = 1;
@@ -423,9 +426,14 @@ for day = 1:length(d)
             sC = S(j).find_Cluster(C(k).Name);
             if ~isa(sC,'epa.Cluster'), continue; end
             
+            if isempty(sC.UserData)
+                continue
+            end
+            
             if ~isfield(sC.UserData.(parname),'threshold')
                 continue
             end
+           
             
             x = sC.UserData.(parname).threshold;
             
@@ -529,7 +537,7 @@ box(ax,'on');
 %% compare thresholds from different metrics
 
 % parx = 'Power';
-parx = 'FiringRate';
+% parx = 'FiringRate';
 % parx = 'VS';
 pary = 'VScc';
 

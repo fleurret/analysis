@@ -1,6 +1,6 @@
 %% Group Analysis
 
-spth = 'C:\Users\Daniel\Documents\MATLAB\TestEPhysData\';
+spth = 'C:\Users\Rose\OneDrive\Documents\Caras\Data';
 
 
 subjects = dir(spth);
@@ -34,9 +34,8 @@ end
 
 %% Plot 
 
-
-parname = 'FiringRate';
-% parname = 'VScc';
+% parname = 'FiringRate';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
@@ -48,7 +47,7 @@ maxNumDays = 7;
 sessionName = ["Pre","Active","Post"];
 
 
-cm = [163,212,164; 57,147,205;0,148,63]./255;% session colormap
+cm = [77,127,208; 52,228,234; 2,37,81]./255;% session colormap
 
 mk = '^sv';
 xoffset = [.99, 1, 1.01];
@@ -65,6 +64,7 @@ thr = cell(size(days));
 sidx = thr;
 didx = thr;
 
+% neural data
 for i = 1:length(days)
     Ci = Cday{i};
     
@@ -88,16 +88,11 @@ for i = 1:length(days)
     didx{i} = ones(size(y))*i;
     
     sidx{i} = nan(size(y));
-    for j = 1:length(y)
-        sn = Ci(j).Session.Name;
-        if contains(sn,"Pre")
-            sidx{i}(j) = 1;
-        elseif contains(sn,"Post")
-            sidx{i}(j) = 3;
-        else
-            sidx{i}(j) = 2;
-        end
-    end
+    
+    sn = [Ci.SessionName];
+    sidx{i}(contains(sn,"Pre")) = 1;
+    sidx{i}(contains(sn,"Post")) = 2;
+    sidx{i}(contains(sn,"Aversive")) = 3;
      
     x = 1+ones(size(thr{i}))*log10(days(i));
 
@@ -132,20 +127,21 @@ for i = 1:3
 end
 uistack(hfit,'bottom');
 
+
+
 ax.XAxis.TickValues = log10(days)+1;
 ax.XAxis.TickLabels = arrayfun(@(a) num2str(a,'%d'),days,'uni',0);
 ax.YAxis.Label.Rotation = 90;
+yticks([-26,-24,-22,-20,-18, -16, -14, -12, -10, -8, -6, -4, -2, 0])
 
-set(findobj(ax,'-property','FontName'),'FontName','Consolas')
+set(findobj(ax,'-property','FontName'),'FontName','Arial')
 
-xlabel(ax,'day');
-ylabel(ax,'Threshold (dB)');
+xlabel(ax,'Psychometric testing day');
+ylabel(ax,'Threshold (dB re: 100%)');
 title(ax,sprintf('%s (n = %d)',parname,length(subjects)));
-grid(ax,'on');
 box(ax,'on');
 
 legend(hfit,'Location','southwest');
-
 
 
 
