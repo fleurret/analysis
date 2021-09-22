@@ -108,35 +108,73 @@ for i = 1:length(days)
             'Color',max(cm(j,:)-.1,0), ...
             'MarkerFaceColor',cm(j,:), ...
             'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),parname});
+
+       
+        xi = mean(xi);
+        yi = mean(thr{i}(ind),'omitnan');
+        h = line(ax(2),xi,yi, ...
+            'LineStyle','none',...
+            'Marker',mk(j),...
+            'Color',max(cm(j,:)-.1,0), ...
+            'MarkerFaceColor',cm(j,:), ...
+            'MarkerSize',10);
+
     end
 end
+
+        grid(ax,'on');
+
 
 q = [sidx{:}];
 r = [thr{:}];
 d = [didx{:}];
 clear p s m
+hfit = [];
 for i = 1:3
     ind = q == i & ~isnan(r);
     
-    [p(i,:),s(i),m(:,i)] = polyfit(log10(d(ind)),r(ind),1);
+    dd = d(ind);
+    dr = r(ind);
+    
+    [p(i,:),s(i),m(:,i)] = polyfit(log10(dd),dr,1);
     
     xi = log10(days([1 end]));
     yi = polyval(p(i,:),xi,s(i),m(:,i));
     
-    hfit(i) = line(ax,1+xi,yi,'Color',max(cm(i,:),0), ...
+%     fitoptions('poly1');
+%     [fo,gof] = fit(log10(dd),dr,'Weight',
+    
+    hfit(i) = line(ax(1),1+xi,yi, ...
+        'Color',max(cm(i,:),0), ...
         'DisplayName',sprintf('%s (%.2f)',sessionName(i),p(i,1)),...
+        'LineWidth',2);
+    
+    udd = unique(dd);
+    mdr = nan(size(udd));
+    for j = 1:length(udd)
+        dind = dd == udd(j);
+        mdr(j) = mean(dr(dind),'omitnan');
+    end
+    [pm(i,:),sm(i),mm(:,i)] = polyfit(log10(udd),mdr,1);
+    yi = polyval(pm(i,:),xi,sm(i),mm(:,i));
+    hfitm(i) = line(ax(2),1+xi,yi, ...
+        'Color',max(cm(i,:),0), ...
+        'DisplayName',sprintf('%s (%.2f)',sessionName(i),pm(i,1)),...
         'LineWidth',2);
 end
 uistack(hfit,'bottom');
 
 
 
-ax.XAxis.TickValues = log10(days)+1;
-ax.XAxis.TickLabels = arrayfun(@(a) num2str(a,'%d'),days,'uni',0);
-ax.YAxis.Label.Rotation = 90;
-yticks([-26,-24,-22,-20,-18, -16, -14, -12, -10, -8, -6, -4, -2, 0])
+set([ax.XAxis], ...
+    'TickValues',log10(days)+1, ...
+    'TickLabels',arrayfun(@(a) num2str(a,'%d'),days,'uni',0));
+ax(1).YAxis.Label.Rotation = 90;
+ax(2).YAxis.Label.Rotation = 90;
 
 set(findobj(ax,'-property','FontName'),'FontName','Arial')
+
+ylim(ax(2),ylim(ax(1)));
 
 xlabel(ax,'Psychometric testing day');
 ylabel(ax,'Threshold (dB re: 100%)');
@@ -144,6 +182,7 @@ title(ax,sprintf('%s (n = %d)',parname,length(subjects)));
 box(ax,'on');
 
 legend(hfit,'Location','southwest');
+legend(hfitm,'Location','southwest');
 
 
 
