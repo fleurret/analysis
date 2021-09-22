@@ -34,8 +34,8 @@ end
 
 %% Plot 
 
-% parname = 'FiringRate';
-parname = 'VScc';
+parname = 'FiringRate';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
@@ -54,9 +54,11 @@ xoffset = [.99, 1, 1.01];
 
 
 f = figure(sum(uint8(parname)));
+    f.Position = [0, 0, 1000, 600];
 set(f,'color','w');
 clf(f);
 ax = axes(f);
+    ax.FontSize = 15;
 
 days = 1:min(maxNumDays,length(Cday));
 
