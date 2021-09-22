@@ -74,9 +74,9 @@ parname = [];
 % par.metric = @epa.metric.trial_firingrate; parname = 'FiringRate';
 % par.metric = @epa.metric.tmtf; parname = 'TMTF'; % use the temporal Modualation Transfer Function metric
 % par.metric = @epa.metric.vector_strength; parname = 'VS';
-par.metric = @epa.metric.vector_strength_phase_projected; parname = 'VSpp';
+% par.metric = @epa.metric.vector_strength_phase_projected; parname = 'VSpp';
 % par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
-% par.metric = @epa.metric.cl_calcpower; parname = 'Power';
+par.metric = @epa.metric.cl_calcpower; parname = 'Power';
 
 
 if isequal(parname,'Power') && isempty(which('chronux.m'))
@@ -95,6 +95,7 @@ for i = 1:length(d)
     
     C = [S.Clusters];
     
+
     for k = 1:numel(C) % DO NOT USE PARFOR!
         Ck = C(k);
         fprintf('Computing %s and neurometric d'' for %s %s - %s\n', ...
@@ -103,14 +104,7 @@ for i = 1:length(d)
         tpar = par;
         
         CkS = Ck.Session;
-        if ~isempty(CkS.DistinctEventValues)
-            dv = CkS.find_Event(tpar.event).DistinctValues;
-            tpar.eventvalue = dv;
-        else
-            continue
-        end
-
-        
+    
         % remove reminder trials
         ev = CkS.find_Event("Reminder");
         ind = ev.Values == 1;
@@ -162,7 +156,7 @@ targDPrimeThreshold = 1;
 
 % parname = 'FiringRate';
 % parname = 'VScc';
-parname = 'VSpp';
+% parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
 
@@ -389,11 +383,6 @@ title(t,parname);
 
 
 
-
-
-
-
-
 %% compare neurometric threshold to log10(day)
 
 
@@ -529,9 +518,6 @@ title(ax,parname);
 
 grid(ax,'on');
 box(ax,'on');
-
-
-
 
 
 %% compare thresholds from different metrics
