@@ -57,8 +57,8 @@ f = figure(sum(uint8(parname)));
     f.Position = [0, 0, 1000, 600];
 set(f,'color','w');
 clf(f);
-ax = axes(f);
-    ax.FontSize = 15;
+ax = subplot(121,'parent',f);
+ax(2) = subplot(122,'parent',f);
 
 days = 1:min(maxNumDays,length(Cday));
 
@@ -102,7 +102,7 @@ for i = 1:length(days)
         ind = sidx{i} == j;
         xi = x*xoffset(j);
 
-        h = line(ax,xi(ind),thr{i}(ind), ...
+        h = line(ax(1),xi(ind),thr{i}(ind), ...
             'LineStyle','none',...
             'Marker',mk(j),...
             'Color',max(cm(j,:)-.1,0), ...
@@ -122,7 +122,8 @@ for i = 1:length(days)
     end
 end
 
-        grid(ax,'on');
+grid(ax(1),'on');
+grid(ax(2),'on');
 
 
 q = [sidx{:}];
