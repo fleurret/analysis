@@ -1,5 +1,10 @@
 %% Group Analysis
+% behavior
+parentDir = 'C:\Users\Rose\OneDrive\Documents\Caras\MATLAB\';
+behav_file = fullfile(parentDir,'behavior_combined.mat');
+load(behav_file)
 
+% neural
 spth = 'C:\Users\Rose\OneDrive\Documents\Caras\Data';
 
 
@@ -34,11 +39,11 @@ end
 
 %% Plot 
 
-parname = 'FiringRate';
+% parname = 'FiringRate';
 % parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-% parname = 'Power';
+parname = 'Power';
 
 alpha = 0.05;
 minNumSpikes = 0;
@@ -46,12 +51,10 @@ maxNumDays = 7;
 
 sessionName = ["Pre","Active","Post"];
 
+cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
-cm = [77,127,208; 52,228,234; 2,37,81]./255;% session colormap
-
-mk = '^sv';
+mk = '^>v';
 xoffset = [.99, 1, 1.01];
-
 
 f = figure(sum(uint8(parname)));
     f.Position = [0, 0, 1000, 600];
@@ -72,8 +75,6 @@ for i = 1:length(days)
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
-    
-    
    
     ind = ind | [Ci.N] < minNumSpikes;
     
@@ -93,12 +94,12 @@ for i = 1:length(days)
     
     sn = [Ci.SessionName];
     sidx{i}(contains(sn,"Pre")) = 1;
-    sidx{i}(contains(sn,"Post")) = 2;
-    sidx{i}(contains(sn,"Aversive")) = 3;
+    sidx{i}(contains(sn,"Aversive")) = 2;
+    sidx{i}(contains(sn,"Post")) = 3;
      
     x = 1+ones(size(thr{i}))*log10(days(i));
 
-    for j = 1:3
+    for j = 1:3 % plot each session seperately
         ind = sidx{i} == j;
         xi = x*xoffset(j);
 
@@ -117,13 +118,13 @@ for i = 1:length(days)
             'Marker',mk(j),...
             'Color',max(cm(j,:)-.1,0), ...
             'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',10);
+            'MarkerSize',8);
 
     end
 end
 
-grid(ax(1),'on');
-grid(ax(2),'on');
+grid(ax(1),'off');
+grid(ax(2),'off');
 
 
 q = [sidx{:}];
@@ -131,24 +132,22 @@ r = [thr{:}];
 d = [didx{:}];
 clear p s m
 hfit = [];
+fo = cell(1,3);
 for i = 1:3
     ind = q == i & ~isnan(r);
     
     dd = d(ind);
     dr = r(ind);
     
-    [p(i,:),s(i),m(:,i)] = polyfit(log10(dd),dr,1);
+    xi = log10(dd)';
+    [fo{i,1},gof(i,1)] = fit(xi,dr','poly1');
     
-    xi = log10(days([1 end]));
-    yi = polyval(p(i,:),xi,s(i),m(:,i));
-    
-%     fitoptions('poly1');
-%     [fo,gof] = fit(log10(dd),dr,'Weight',
+    yi = fo{i,1}.p1.*xi + fo{i,1}.p2;
     
     hfit(i) = line(ax(1),1+xi,yi, ...
         'Color',max(cm(i,:),0), ...
-        'DisplayName',sprintf('%s (%.2f)',sessionName(i),p(i,1)),...
-        'LineWidth',2);
+        'DisplayName',sprintf('%s (%.2f)',sessionName(i),fo{i,1}.p1),...
+        'LineWidth',3);
     
     udd = unique(dd);
     mdr = nan(size(udd));
@@ -156,16 +155,41 @@ for i = 1:3
         dind = dd == udd(j);
         mdr(j) = mean(dr(dind),'omitnan');
     end
-    [pm(i,:),sm(i),mm(:,i)] = polyfit(log10(udd),mdr,1);
-    yi = polyval(pm(i,:),xi,sm(i),mm(:,i));
+    
+    xi = log10(udd);
+    [fo{i,2},gof(i,2)] = fit(xi',mdr','poly1');
+    
+    yi = fo{i,2}.p1.*xi + fo{i,2}.p2;
+    
     hfitm(i) = line(ax(2),1+xi,yi, ...
         'Color',max(cm(i,:),0), ...
-        'DisplayName',sprintf('%s (%.2f)',sessionName(i),pm(i,1)),...
-        'LineWidth',2);
+        'DisplayName',sprintf('%s (%.2f)',sessionName(i),fo{i,2}.p1),...
+        'LineWidth',3);
 end
 uistack(hfit,'bottom');
 
 
+    
+% behavior data
+behav_mean = behav_mean(1:7);
+behav_std = behav_std(1:7);
+bplot = line(ax(2),log10(days)+1,behav_mean);
+    bplot.Marker = 'o';
+    bplot.MarkerSize = 8;
+    bplot.LineStyle = 'none';
+    bplot.Color = '#FAB4CF';
+    bplot.MarkerFaceColor = '#FAB4CF';
+    
+
+    xi = log10(1:7);
+    [b_fo,b_gof] = fit(xi',behav_mean','poly1');
+    
+    yi = b_fo.p1.*xi + b_fo.p2;
+    
+    bfit = line(ax(2), xi+1, yi,...
+        'DisplayName', sprintf('Behavior (%.2f)', b_fo.p1),...
+        'LineWidth',3,...
+        'Color','#FAB4CF');
 
 set([ax.XAxis], ...
     'TickValues',log10(days)+1, ...
@@ -183,7 +207,8 @@ title(ax,sprintf('%s (n = %d)',parname,length(subjects)));
 box(ax,'on');
 
 legend(hfit,'Location','southwest');
-legend(hfitm,'Location','southwest');
+legend([hfitm,bfit],'Location','southwest');
+
 
 
 
