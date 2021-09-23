@@ -3,8 +3,9 @@
 pth = 'C:\Users\Rose\OneDrive\Documents\Caras\Data';
 
 % subj = '202';
-% subj = '222';
-subj = '223';
+subj = '222';
+% subj = '223';
+% subj = '224';
 
 pth = fullfile(pth,subj);
 
@@ -80,7 +81,8 @@ par.metric = @epa.metric.cl_calcpower; parname = 'Power';
 
 
 if isequal(parname,'Power') && isempty(which('chronux.m'))
-    addpath(genpath('C:\Users\Daniel\src\chronux_2_12\'));
+    addpath(genpath('C:\Users\Rose\OneDrive\Documents\GitHub\chronux'));
+%     addpath(genpath('C:\Users\Daniel\src\chronux_2_12\'));
 end
 
 
@@ -158,7 +160,7 @@ targDPrimeThreshold = 1;
 % parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-% parname = 'Power';
+parname = 'Power';
 
 for i = 1:length(d)
     
@@ -208,9 +210,9 @@ for i = 1:length(d)
         dp(ind) = [];
         w(ind) = [];
         
-        if isempty(v)
+        if isempty(v) || all(isnan(dp))
             Ck.UserData.(parname).ERROR = dp;
-            fprintf(2,'No trials remaining for "%s"\n',Ck.TitleStr)
+            fprintf(2,'No trials remaining or all NaN for "%s"\n',Ck.TitleStr)
             continue
         end
         
@@ -298,12 +300,13 @@ end
 
 %% Plot neurometric d'
 % parname = 'FiringRate';
-parname = 'VScc';
+% parname = 'VScc';
+parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
 
 
-day = 1;
+day = 2;
 ffn = fullfile(d(day).folder,d(day).name);
 
 fprintf('Loading %s ...',d(day).name)
@@ -574,4 +577,42 @@ for i = 1:numel(C)
     end
 end
 
+%% Plot metric values
+% parname = 'VSpp';
 
+ffn = fullfile(d(2).folder,d(2).name);    
+fprintf('Loading %s ...',ffn)
+load(ffn)
+fprintf(' done\n')
+    
+Z = S(3).find_Cluster(sprintf('cluster%d',2273));
+x = Z.UserData.VSpp.V;
+y = Z.UserData.VSpp.M;
+
+xu = unique(x);
+
+for i = 1:length(xu)
+   ind = xu(i) == x;
+   yi = y(ind);
+   yi_m(i) = mean(yi);
+end
+
+% remove unmod data
+xu(1) = [];
+yi_m(1) = [];
+
+% plot
+f = figure;
+    f.Position = [0, 0, 800, 350];
+plot(xu, yi_m,...
+    'LineWidth', 1,...
+    'Marker','o',...
+    'MarkerSize', 5,...
+    'Color','#000000', ...
+    'MarkerFaceColor','#ffffff')
+xlabel('Threshold (dB re: 100%)');
+ylabel(sprintf('%s',parname));
+
+ 
+ 
+ 
