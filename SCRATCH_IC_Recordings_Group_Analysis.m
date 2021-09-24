@@ -41,9 +41,9 @@ end
 
 % parname = 'FiringRate';
 % parname = 'VScc';
-% parname = 'VSpp';
+parname = 'VSpp';
 % parname = 'VS';
-parname = 'Power';
+% parname = 'Power';
 
 alpha = 0.05;
 minNumSpikes = 0;
@@ -112,19 +112,24 @@ for i = 1:length(days)
             'MarkerSize',8,...
             'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),parname});
   
-        % means
+        % means and error bars
         xi = mean(xi);
         yi = mean(thr{i}(ind),'omitnan');
         yi_std = std(thr{i}(ind),'omitnan');
+        hold on
+        e = errorbar(ax(2),xi,yi,yi_std);
+            e.Color = max(cm(j,:)-.1,0);
+            e.CapSize = 0;
+            e.LineWidth = 3;
+            % set transparency
+            alpha = 0.3;
+            set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
         h = line(ax(2),xi,yi, ...
             'LineStyle','none',...
             'Marker',mk(j),...
             'Color',cm(j,:), ...
             'MarkerFaceColor',cm(j,:), ...
             'MarkerSize',8);
-        hold on
-        errorbar(ax(2),xi,yi,yi_std,...
-            'Color',max(cm(j,:)-.1,0))
     end
 end
 
@@ -178,33 +183,42 @@ uistack(hfit,'bottom');
 % behavior data
 behav_mean = behav_mean(1:7);
 behav_std = behav_std(1:7);
-bplot = line(ax(2),log10(days)+1,behav_mean);
+x = log10(days)+1;
+xoffset = 0.98;
+x = x*xoffset;
+bplot = line(ax(2),x,behav_mean);
     bplot.Marker = 'o';
     bplot.MarkerSize = 8;
     bplot.LineStyle = 'none';
     bplot.Color = '#FAB4CF';
     bplot.MarkerFaceColor = '#FAB4CF';
-    
 
     xi = log10(1:7);
     [b_fo,b_gof] = fit(xi',behav_mean','poly1');
-    
     yi = b_fo.p1.*xi + b_fo.p2;
     
-
+    % fit
     bfit = line(ax(2), xi+1, yi,...
         'DisplayName', sprintf('Behavior (%.2f)', b_fo.p1),...
         'LineWidth',3,...
         'Color','#FAB4CF');
     % error bars
-    e = errorbar(ax(2), xi+1,behav_mean, behav_std);
+    e = errorbar(ax(2), (xi+1)*xoffset,behav_mean, behav_std);
         e.LineStyle = 'none';
+        e.LineWidth= 2;
         e.Color = '#FAB4CF';
-        e.CapSize = 10;
-
+        e.CapSize = 0;
+        % set transparency
+        alpha = 0.3;
+        set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
+        
+   
 set([ax.XAxis], ...
     'TickValues',log10(days)+1, ...
-    'TickLabels',arrayfun(@(a) num2str(a,'%d'),days,'uni',0));
+    'TickLabels',arrayfun(@(a) num2str(a,'%d'),days,'uni',0),...
+    'FontSize',12);
+set([ax.YAxis],...
+    'FontSize',12);
 ax(1).YAxis.Label.Rotation = 90;
 ax(2).YAxis.Label.Rotation = 90;
 
@@ -219,12 +233,13 @@ xlabel(ax,'Psychometric testing day',...
 ylabel(ax,'Threshold (dB re: 100%)',...
     'FontWeight','bold',...
     'FontSize', 15);
-title(ax,sprintf('%s (n = %d)',parname,length(subjects)));
-% 	ax.FontSize = 15;
+title(ax,sprintf('%s (n = %d)',parname,length(subjects)),...
+    'FontSize',15);
+
 box(ax,'on');
 
-legend(hfit,'Location','southwest');
-legend([hfitm,bfit],'Location','southwest');
+legend(hfit,'Location','southwest','FontSize',12);
+legend([hfitm,bfit],'Location','southwest','FontSize',12);
         
 
 
