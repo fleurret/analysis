@@ -2,8 +2,8 @@
 % expecting invidual SUBJ folders with Session mat files, one for each day
 pth = 'C:\Users\Rose\OneDrive\Documents\Caras\Data';
 
-% subj = '202';
-subj = '222';
+subj = '202';
+% subj = '222';
 % subj = '223';
 % subj = '224';
 
@@ -301,7 +301,7 @@ end
 %% Plot neurometric d'
 % parname = 'FiringRate';
 % parname = 'VScc';
-parname = 'VSpp';
+% parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
 
@@ -390,7 +390,7 @@ title(t,parname);
 
 
 % parname = 'FiringRate';
-parname = 'VScc';
+% parname = 'VScc';
 % parname = 'VS';
 % parname = 'Power';
 
@@ -578,14 +578,17 @@ for i = 1:numel(C)
 end
 
 %% Plot metric values
-% parname = 'VSpp';
+% parname = 'FiringRate';
+% parname = 'VScc';
+% parname = 'VS';
+parname = 'Power';
 
 ffn = fullfile(d(2).folder,d(2).name);    
 fprintf('Loading %s ...',ffn)
 load(ffn)
 fprintf(' done\n')
     
-Z = S(3).find_Cluster(sprintf('cluster%d',2273));
+Z = S(2).find_Cluster(sprintf('cluster%d',952));
 x = Z.UserData.VSpp.V;
 y = Z.UserData.VSpp.M;
 

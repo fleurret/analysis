@@ -40,10 +40,10 @@ end
 %% Plot
 
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-parname = 'Power';
+% parname = 'Power';
 
 alpha = 0.05;
 minNumSpikes = 0;
@@ -107,7 +107,7 @@ for i = 1:length(days)
         h = line(ax(1),xi(ind),thr{i}(ind), ...
             'LineStyle','none',...
             'Marker',mk(j),...
-            'Color',(cm(j,:)), ...
+            'Color',max(cm(j,:)-.1,0) ...
             'MarkerFaceColor',cm(j,:), ...
             'MarkerSize',8,...
             'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),parname});
@@ -118,7 +118,7 @@ for i = 1:length(days)
         yi_std = std(thr{i}(ind),'omitnan');
         hold on
         e = errorbar(ax(2),xi,yi,yi_std);
-        e.Color = cm(j,:);
+        e.Color = max(cm(j,:)-.1,0);
         e.CapSize = 0;
         e.LineWidth = 2;
         % set transparency
@@ -129,7 +129,7 @@ for i = 1:length(days)
         h = line(ax(2),xi,yi, ...
             'LineStyle','none',...
             'Marker',mk(j),...
-            'Color',max(cm(j,:)-.2,0), ...
+            'Color',cm(j,:), ...
             'MarkerFaceColor',cm(j,:), ...
             'MarkerSize',8);
     end
@@ -192,7 +192,7 @@ bplot = line(ax(2),x,behav_mean);
 bplot.Marker = 'o';
 bplot.MarkerSize = 8;
 bplot.LineStyle = 'none';
-bplot.Color = '#f77fad';
+bplot.Color = '#FAB4CF';
 bplot.MarkerFaceColor = '#FAB4CF';
 
 xi = log10(1:7);
