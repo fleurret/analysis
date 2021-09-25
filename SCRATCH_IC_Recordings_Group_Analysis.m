@@ -243,6 +243,7 @@ box(ax,'on');
 
 legend(hfit,'Location','southwest','FontSize',12);
 legend([hfitm,bfit],'Location','southwest','FontSize',12);
+legend boxoff
 
 
 
