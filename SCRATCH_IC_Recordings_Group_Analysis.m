@@ -102,6 +102,7 @@ for i = 1:length(days)
     for j = 1:3 % plot each session seperately
         ind = sidx{i} == j;
         xi = x*xoffset(j);
+        n_mean(j,i) = mean(thr{i}(ind),'omitnan');
         
         % individual points
         h = line(ax(1),xi(ind),thr{i}(ind), ...
@@ -121,17 +122,19 @@ for i = 1:length(days)
         e.Color = cm(j,:);
         e.CapSize = 0;
         e.LineWidth = 2;
-        % set transparency
+       
+        % set transparency and order
         alpha = 0.3;
-        set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
-        
+        set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])  
         uistack(e,'bottom');
+        
         h = line(ax(2),xi,yi, ...
             'LineStyle','none',...
             'Marker',mk(j),...
             'Color',max(cm(j,:)-.2,0), ...
             'MarkerFaceColor',cm(j,:), ...
             'MarkerSize',8);
+
     end
 end
 
@@ -145,6 +148,8 @@ d = [didx{:}];
 clear p s m
 hfit = [];
 fo = cell(1,3);
+
+% fit lines
 for i = 1:3
     ind = q == i & ~isnan(r);
     
@@ -177,9 +182,18 @@ for i = 1:3
         'Color',max(cm(i,:),0), ...
         'DisplayName',sprintf('%s (%.2f)',sessionName(i),fo{i,2}.p1),...
         'LineWidth',3);
+   
 end
 uistack(hfit,'bottom');
 
+% Pearson's R
+for i = 1:3
+    smean = n_mean(i,:);
+    z = ~(isnan(smean) | isnan(days));
+    [n_PR,n_P]= corrcoef(smean(z), days(z));
+    PR{i} = n_PR;
+    PRP{i} = n_P;
+end
 
 
 % behavior data
@@ -204,18 +218,23 @@ bfit = line(ax(2), xi+1, yi,...
     'DisplayName', sprintf('Behavior (%.2f)', b_fo.p1),...
     'LineWidth',3,...
     'Color','#FAB4CF');
+
 % error bars
 e = errorbar(ax(2), (xi+1)*xoffset,behav_mean, behav_std);
 e.LineStyle = 'none';
 e.LineWidth= 2;
 e.Color = '#FAB4CF';
 e.CapSize = 0;
+
 % set transparency
 alpha = 0.3;
 set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
 uistack(e, 'bottom');
 
+% Pearson's R
+[b_PR,b_P] = corrcoef(behav_mean, xi);
 
+% axes etc
 set([ax.XAxis], ...
     'TickValues',log10(days)+1, ...
     'TickLabels',arrayfun(@(a) num2str(a,'%d'),days,'uni',0),...
@@ -245,6 +264,10 @@ legend(hfit,'Location','southwest','FontSize',12);
 legend([hfitm,bfit],'Location','southwest','FontSize',12);
 legend boxoff
 
+fprintf('Behavior R = %s, p = %s \n', num2str(b_PR(2)), num2str(b_P(2)))
+fprintf('Pre R = %s, p = %s \n', num2str(PR{1}(2)), num2str(PRP{1}(2)))
+fprintf('Active R = %s, p = %s \n', num2str(PR{2}(2)), num2str(PRP{2}(2)))
+fprintf('Post R = %s, p = %s \n', num2str(PR{3}(2)), num2str(PRP{3}(2)))
 
 
 %% compare thresholds by coding
