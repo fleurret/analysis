@@ -1,11 +1,11 @@
 %% Group Analysis
 % behavior
-parentDir = 'C:\Users\Rose\OneDrive\Documents\Caras\MATLAB\';
+parentDir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
 behav_file = fullfile(parentDir,'behavior_combined.mat');
 load(behav_file)
 
 % neural
-spth = 'C:\Users\Rose\OneDrive\Documents\Caras\Data';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 
 
 subjects = dir(spth);
@@ -40,10 +40,10 @@ end
 %% Plot
 
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-parname = 'Power';
+% parname = 'Power';
 
 alpha = 0.05;
 minNumSpikes = 0;
@@ -92,7 +92,8 @@ for i = 1:length(days)
     
     sidx{i} = nan(size(y));
     
-    sn = [Ci.SessionName];
+    sn = [Ci.Session];
+    sn = [sn.Name];
     sidx{i}(contains(sn,"Pre")) = 1;
     sidx{i}(contains(sn,"Aversive")) = 2;
     sidx{i}(contains(sn,"Post")) = 3;
@@ -332,4 +333,10 @@ set(ax,'xlim',m,'ylim',m);
 
 sgtitle(f,'Threshold Coding Comparisons Across Days');
 
+
+%% 
+
+% for i = 1:length(S)
+    S(3).find_Cluster("1436").Type = "motor";
+% end
 
