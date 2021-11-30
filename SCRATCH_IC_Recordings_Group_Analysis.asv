@@ -1,11 +1,11 @@
 %% Group Analysis
 % behavior
-parentDir = 'C:\Users\Rose\OneDrive\Documents\Caras\MATLAB\';
+parentDir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
 behav_file = fullfile(parentDir,'behavior_combined.mat');
 load(behav_file)
 
 % neural
-spth = 'C:\Users\Rose\OneDrive\Documents\Caras\Data';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 
 
 subjects = dir(spth);
@@ -39,11 +39,25 @@ end
 
 %% Plot
 
+% load behavior
+parentDir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+behav_file = fullfile(parentDir,'behavior_combined.mat');
+load(behav_file)
+
+% load neural
+Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
+load(Cdayfile)
+
+spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
+subjects = dir(spth);
+subjects(~[subjects.isdir]) = [];
+subjects(ismember({subjects.name},{'.','..'})) = [];
+
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-parname = 'Power';
+% parname = 'Power';
 
 alpha = 0.05;
 minNumSpikes = 0;
@@ -53,7 +67,7 @@ sessionName = ["Pre","Active","Post"];
 
 cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
-mk = '^>v';
+mk = '^>V';
 xoffset = [.99, 1, 1.01];
 
 f = figure(sum(uint8(parname)));
@@ -69,7 +83,6 @@ thr = cell(size(days));
 sidx = thr;
 didx = thr;
 
-n_mean = [];
 % neural data
 for i = 1:length(days)
     Ci = Cday{i};
@@ -93,54 +106,53 @@ for i = 1:length(days)
     
     sidx{i} = nan(size(y));
     
-    sn = [Ci.SessionName];
+    sn = [Ci.Session];
+    sn = [sn.Name];
     sidx{i}(contains(sn,"Pre")) = 1;
     sidx{i}(contains(sn,"Aversive")) = 2;
     sidx{i}(contains(sn,"Post")) = 3;
-    
-    x = 1+ones(size(thr{i}))*log10(days(i));
-    
-    for j = 1:3 % plot each session seperately
-        ind = sidx{i} == j;
-        xi = x*xoffset(j);
-        n_mean(xi) = yi = mean(thr{i}(ind),'omitnan');;
-        
-        % individual points
-        h = line(ax(1),xi(ind),thr{i}(ind), ...
-            'LineStyle','none',...
-            'Marker',mk(j),...
-            'Color',(cm(j,:)), ...
-            'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',8,...
-            'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),parname});
-        
-        % means and error bars
-        xi = mean(xi);
-        yi = mean(thr{i}(ind),'omitnan');
-        yi_std = std(thr{i}(ind),'omitnan');
-        hold on
-        e = errorbar(ax(2),xi,yi,yi_std);
-        e.Color = cm(j,:);
-        e.CapSize = 0;
-        e.LineWidth = 2;
-       
-        % set transparency and order
-        alpha = 0.3;
-        set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])  
-        uistack(e,'bottom');
-        
-        h = line(ax(2),xi,yi, ...
-            'LineStyle','none',...
-            'Marker',mk(j),...
-            'Color',max(cm(j,:)-.2,0), ...
-            'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',8);
 
+
+        x = 1+ones(size(thr{i}))*log10(days(i));
+        
+        for j = 1:3 % plot each session seperately
+            ind = sidx{i} == j;
+            xi = x*xoffset(j);
+            n_mean(j,i) = mean(thr{i}(ind),'omitnan');
+            
+            % individual points
+            h = line(ax(1),xi(ind),thr{i}(ind), ...
+                'LineStyle','none',...
+                'Marker',mk(j),...
+                'Color',(cm(j,:)), ...
+                'MarkerFaceColor',cm(j,:), ...
+                'MarkerSize',8,...
+                'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),parname});
+            
+            % means and error bars
+            xi = mean(xi);
+            yi = mean(thr{i}(ind),'omitnan');
+            yi_std = std(thr{i}(ind),'omitnan');
+            hold on
+            e = errorbar(ax(2),xi,yi,yi_std);
+            e.Color = cm(j,:);
+            e.CapSize = 0;
+            e.LineWidth = 2;
+            
+            % set transparency and order
+            alpha = 0.3;
+            set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
+            uistack(e,'bottom');
+            
+            h = line(ax(2),xi,yi, ...
+                'LineStyle','none',...
+                'Marker',mk(j),...
+                'Color',max(cm(j,:)-.2,0), ...
+                'MarkerFaceColor',cm(j,:), ...
+                'MarkerSize',8);
+        end
     end
-end
 
-% Pearson's R
-[n_PR,n_P] = corrcoef(xi, yi);
 
 grid(ax(1),'off');
 grid(ax(2),'off');
@@ -152,6 +164,8 @@ d = [didx{:}];
 clear p s m
 hfit = [];
 fo = cell(1,3);
+
+% fit lines
 for i = 1:3
     ind = q == i & ~isnan(r);
     
@@ -184,10 +198,18 @@ for i = 1:3
         'Color',max(cm(i,:),0), ...
         'DisplayName',sprintf('%s (%.2f)',sessionName(i),fo{i,2}.p1),...
         'LineWidth',3);
-   
+    
 end
 uistack(hfit,'bottom');
 
+% Pearson's R
+for i = 1:3
+    smean = n_mean(i,:);
+    z = ~(isnan(smean) | isnan(days));
+    [n_PR,n_P]= corrcoef(smean(z), days(z));
+    PR{i} = n_PR;
+    PRP{i} = n_P;
+end
 
 
 % behavior data
@@ -258,6 +280,10 @@ legend(hfit,'Location','southwest','FontSize',12);
 legend([hfitm,bfit],'Location','southwest','FontSize',12);
 legend boxoff
 
+fprintf('Behavior R = %s, p = %s \n', num2str(b_PR(2)), num2str(b_P(2)))
+fprintf('Pre R = %s, p = %s \n', num2str(PR{1}(2)), num2str(PRP{1}(2)))
+fprintf('Active R = %s, p = %s \n', num2str(PR{2}(2)), num2str(PRP{2}(2)))
+fprintf('Post R = %s, p = %s \n', num2str(PR{3}(2)), num2str(PRP{3}(2)))
 
 
 %% compare thresholds by coding
@@ -321,5 +347,16 @@ m = [min(m(:)) max(m(:))];
 set(ax,'xlim',m,'ylim',m);
 
 sgtitle(f,'Threshold Coding Comparisons Across Days');
+
+
+%% Flag cluster
+flag_day = 6;
+ind = [Cday{flag_day}.Name] == "cluster1163";
+
+% Notes: motor = "motor", reverse neurometric curve = "reverse"
+set(Cday{flag_day}(ind),'Note',"reverse")
+
+save(Cdayfile, 'Cday')
+
 
 

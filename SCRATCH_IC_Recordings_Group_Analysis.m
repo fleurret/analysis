@@ -39,6 +39,20 @@ end
 
 %% Plot
 
+% load behavior
+parentDir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+behav_file = fullfile(parentDir,'behavior_combined.mat');
+load(behav_file)
+
+% load neural
+Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
+load(Cdayfile)
+
+spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
+subjects = dir(spth);
+subjects(~[subjects.isdir]) = [];
+subjects(ismember({subjects.name},{'.','..'})) = [];
+
 % parname = 'FiringRate';
 parname = 'VScc';
 % parname = 'VSpp';
@@ -53,7 +67,7 @@ sessionName = ["Pre","Active","Post"];
 
 cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
-mk = '^>v';
+mk = '^>V';
 xoffset = [.99, 1, 1.01];
 
 f = figure(sum(uint8(parname)));
@@ -72,6 +86,11 @@ didx = thr;
 % neural data
 for i = 1:length(days)
     Ci = Cday{i};
+    
+    % remove flagged units
+    note = {Ci.Note};    
+    removeind = cellfun(@isempty, note);
+    Ci = Ci(removeind);
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
@@ -97,47 +116,46 @@ for i = 1:length(days)
     sidx{i}(contains(sn,"Pre")) = 1;
     sidx{i}(contains(sn,"Aversive")) = 2;
     sidx{i}(contains(sn,"Post")) = 3;
-    
-    x = 1+ones(size(thr{i}))*log10(days(i));
-    
-    for j = 1:3 % plot each session seperately
-        ind = sidx{i} == j;
-        xi = x*xoffset(j);
-        n_mean(j,i) = mean(thr{i}(ind),'omitnan');
+        x = 1+ones(size(thr{i}))*log10(days(i));
         
-        % individual points
-        h = line(ax(1),xi(ind),thr{i}(ind), ...
-            'LineStyle','none',...
-            'Marker',mk(j),...
-            'Color',(cm(j,:)), ...
-            'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',8,...
-            'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),parname});
-        
-        % means and error bars
-        xi = mean(xi);
-        yi = mean(thr{i}(ind),'omitnan');
-        yi_std = std(thr{i}(ind),'omitnan');
-        hold on
-        e = errorbar(ax(2),xi,yi,yi_std);
-        e.Color = cm(j,:);
-        e.CapSize = 0;
-        e.LineWidth = 2;
-       
-        % set transparency and order
-        alpha = 0.3;
-        set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])  
-        uistack(e,'bottom');
-        
-        h = line(ax(2),xi,yi, ...
-            'LineStyle','none',...
-            'Marker',mk(j),...
-            'Color',max(cm(j,:)-.2,0), ...
-            'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',8);
-
-    end
+        for j = 1:3 % plot each session seperately
+            ind = sidx{i} == j;
+            xi = x*xoffset(j);
+            n_mean(j,i) = mean(thr{i}(ind),'omitnan');
+            
+            % individual points
+            h = line(ax(1),xi(ind),thr{i}(ind), ...
+                'LineStyle','none',...
+                'Marker',mk(j),...
+                'Color',(cm(j,:)), ...
+                'MarkerFaceColor',cm(j,:), ...
+                'MarkerSize',8,...
+                'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),parname});
+            
+            % means and error bars
+            xi = mean(xi);
+            yi = mean(thr{i}(ind),'omitnan');
+            yi_std = std(thr{i}(ind),'omitnan');
+            hold on
+            e = errorbar(ax(2),xi,yi,yi_std);
+            e.Color = cm(j,:);
+            e.CapSize = 0;
+            e.LineWidth = 2;
+            
+            % set transparency and order
+            alpha = 0.3;
+            set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
+            uistack(e,'bottom');
+            
+            h = line(ax(2),xi,yi, ...
+                'LineStyle','none',...
+                'Marker',mk(j),...
+                'Color',max(cm(j,:)-.2,0), ...
+                'MarkerFaceColor',cm(j,:), ...
+                'MarkerSize',8);
+        end
 end
+
 
 grid(ax(1),'off');
 grid(ax(2),'off');
@@ -183,7 +201,7 @@ for i = 1:3
         'Color',max(cm(i,:),0), ...
         'DisplayName',sprintf('%s (%.2f)',sessionName(i),fo{i,2}.p1),...
         'LineWidth',3);
-   
+    
 end
 uistack(hfit,'bottom');
 
@@ -334,9 +352,14 @@ set(ax,'xlim',m,'ylim',m);
 sgtitle(f,'Threshold Coding Comparisons Across Days');
 
 
-%% 
+%% Flag cluster
+flag_day = 4;
+ind = [Cday{flag_day}.Name] == "cluster729";
 
-% for i = 1:length(S)
-    S(3).find_Cluster("1436").Type = "motor";
-% end
+% Notes: motor = "motor", reverse neurometric curve = "reverse"
+set(Cday{flag_day}(ind),'Note',"motor")
+
+save(Cdayfile, 'Cday')
+
+
 
