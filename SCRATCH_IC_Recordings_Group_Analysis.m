@@ -1,18 +1,9 @@
-%% Group Analysis
-% behavior
-parentDir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
-behav_file = fullfile(parentDir,'behavior_combined.mat');
-load(behav_file)
+%% Load .mat and convert neural data
 
-% neural
 spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
-
-
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
-
-% subjects(1)= [];
 
 Cday = {};
 for subj = 1:length(subjects)
@@ -35,7 +26,6 @@ for subj = 1:length(subjects)
         end
     end
 end
-
 
 %% Plot
 
@@ -67,7 +57,7 @@ sessionName = ["Pre","Active","Post"];
 
 cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
-mk = '^>V';
+mk = '^^^';
 xoffset = [.99, 1, 1.01];
 
 f = figure(sum(uint8(parname)));
@@ -91,6 +81,10 @@ for i = 1:length(days)
     note = {Ci.Note};    
     removeind = cellfun(@isempty, note);
     Ci = Ci(removeind);
+    
+    % remove multiunits
+%     removeind = [Ci.Type] == "SU";
+%     Ci = Ci(removeind);
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
@@ -156,10 +150,8 @@ for i = 1:length(days)
         end
 end
 
-
 grid(ax(1),'off');
 grid(ax(2),'off');
-
 
 q = [sidx{:}];
 r = [thr{:}];
@@ -213,7 +205,6 @@ for i = 1:3
     PR{i} = n_PR;
     PRP{i} = n_P;
 end
-
 
 % behavior data
 behav_mean = behav_mean(1:7);
@@ -288,7 +279,6 @@ fprintf('Pre R = %s, p = %s \n', num2str(PR{1}(2)), num2str(PRP{1}(2)))
 fprintf('Active R = %s, p = %s \n', num2str(PR{2}(2)), num2str(PRP{2}(2)))
 fprintf('Post R = %s, p = %s \n', num2str(PR{3}(2)), num2str(PRP{3}(2)))
 
-
 %% compare thresholds by coding
 
 parx = 'FiringRate';
@@ -354,12 +344,132 @@ sgtitle(f,'Threshold Coding Comparisons Across Days');
 
 %% Flag cluster
 flag_day = 4;
-ind = [Cday{flag_day}.Name] == "cluster729";
+ind = [Cday{flag_day}.Name] == "cluster933";
 
 % Notes: motor = "motor", reverse neurometric curve = "reverse"
-set(Cday{flag_day}(ind),'Note',"motor")
+set(Cday{flag_day}(ind),'Note',"reverse")
 
 save(Cdayfile, 'Cday')
 
+%% Organize thresholds by cluster ID
+
+% parname = 'FiringRate';
+parname = 'VScc';
+% parname = 'VSpp';
+% parname = 'VS';
+% parname = 'Power';
+
+% load clusters
+Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
+load(Cdayfile)
+days = 7;
+
+% only AM responsive
+for i = 1:days
+    Ci = Cday{i};
+    
+    % remove flagged units
+    note = {Ci.Note};    
+    removeind = cellfun(@isempty, note);
+    Ci = Ci(removeind);
+    
+    % remove multiunits
+%     removeind = [Ci.Type] == "SU";
+%     Ci = Ci(removeind);
+    
+    y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
+    ind = cellfun(@(a) isfield(a,'ERROR'),y);
+    
+    ind = ind | [Ci.N] < 0;
+    
+    y(ind) = [];
+    
+    Ci(ind) = [];
+    Cday{i} = Ci;
+end
+
+% get total clusters
+sumc = 0;
+for i = 1:days
+    numc = length(Cday{1,i});
+    for j = 1:numc
+        sumc = sumc + 1;
+    end
+end
+
+% create matrix
+temp = nan(sumc,3);
+
+sumc = 0;
+for i = 1:days
+    numc = length(Cday{1,i});
+    for j = 1:numc
+        % add cluster ID
+        sumc = sumc + 1;
+        id = str2num(erase(Cday{1,i}(j).Name,"cluster"));
+        temp(sumc,1) = id;
+        
+        % add thresholds
+        measure = Cday{1,i}(j).UserData.(parname);
+        checkempty = isfield(measure,'threshold');
+        if checkempty == 0
+            temp(sumc,2) = NaN;
+        else
+            threshold = measure.threshold;
+            temp(sumc,2) = threshold;
+        end
+        
+        % add session names
+        session = Cday{1,i}(j).Session.Name;
+        if contains(session,"Pre")
+             temp(sumc,3) = 1;
+        end
+        if contains(session,"Aversive")
+             temp(sumc,3) = 2;
+        end
+        if contains(session,"Post")
+            temp(sumc,3) = 3;
+        end
+    end
+end
+
+% populate output
+idx = 0;
+output = nan(1,1);
 
 
+for i = 1:length(temp)
+    
+    % pre
+    if temp(i,3) == 1
+        id = temp(i,1);
+        idx = idx + 1;
+        output(idx,1) = id;
+        output(idx,2) = temp(i,2);
+    end
+    
+    sumc = length(output);
+    
+    % aversive
+    if temp(i,3) == 2
+        id = temp(i,1);
+        for j = 1:sumc
+            if output(j,1) == id
+                output(j,3) = temp(i,2);
+            end
+        end
+    end
+    
+    % post
+    if temp(i,3) == 3
+        id = temp(i,1);
+        for j = 1:sumc
+            if output(j,1) == id
+                output(j,4) = temp(i,2);
+            end
+        end
+    end
+end
+
+outputfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\thresholds.mat';
+save(outputfile, 'output')
