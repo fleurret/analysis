@@ -26,15 +26,14 @@ for subj = 1:length(subjects)
             Cday{day} = [S.Clusters];
         end
         
-        for i = 1:length(Cday{day})
-            if isprop(Cday{day}(i),'Subject')
-                continue
-            else
-                addprop(Cday{day}(i), 'Subject');
-                Cday{day}(i).Subject = subjects(subj).name;
-            end
+        c = length(Cday{day});
+        for i = x+1:c
+            addprop(Cday{day}(i), 'Subject')
+            Cday{day}(i).Subject = subjects(subj).name;
         end
     end
+    
+    x = c;
 end
 
 %% Plot
@@ -45,8 +44,8 @@ behav_file = fullfile(parentDir,'behavior_combined.mat');
 load(behav_file)
 
 % load neural
-% Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
-% load(Cdayfile)
+Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
+load(Cdayfile)
 
 spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 subjects = dir(spth);

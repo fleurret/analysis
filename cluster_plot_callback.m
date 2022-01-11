@@ -32,7 +32,7 @@ h = plot(ax, ...
 h(3).LineWidth = 2;
 h(3).MarkerSize = 6;
 title(ax, ...
-    {sprintf('%s ',C.Name);
+    {sprintf('%s ',C.Subject);
      sprintf('%s - Threshold = %.1f dB',C.TitleStr,ndp.threshold)});
 ylabel(ax,'d''');
 xlabel(ax,'SNR (dB)');
