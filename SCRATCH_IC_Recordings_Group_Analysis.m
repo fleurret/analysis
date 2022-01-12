@@ -6,7 +6,6 @@ subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
 Cday = {};
-x = 0;
 
 for subj = 1:length(subjects)
     spth = fullfile(subjects(subj).folder,subjects(subj).name);
@@ -45,8 +44,8 @@ behav_file = fullfile(parentDir,'behavior_combined.mat');
 load(behav_file)
 
 % load neural
-% Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
-% load(Cdayfile)
+Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
+load(Cdayfile)
 
 spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 subjects = dir(spth);
@@ -85,7 +84,7 @@ didx = thr;
 % neural data
 for i = 1:length(days)
     Ci = Cday{i};
-    
+  
     % remove flagged units
     note = {Ci.Note};
     removeind = cellfun(@isempty, note);
@@ -112,6 +111,23 @@ for i = 1:length(days)
     pidx = logical(pidx);
     Ci = Ci(pidx);
     
+%     % only plot one subject
+% %         subj = "202";
+% %         subj = "222";
+% %         subj = "223";
+% %         subj = "224";
+%     subj_idx = zeros(1,length(Ci));
+%     for j = 1:length(Ci)
+%         cs = convertCharsToStrings(Ci(j).Subject);
+%         if cs == subj
+%             subj_idx(j) = 1;
+%         else
+%             subj_idx(j) = 0;
+%         end
+%     end
+%     subj_idx = logical(subj_idx);
+%     Ci = Ci(subj_idx);
+
     % remove multiunits
     %     removeind = [Ci.Type] == "SU";
     %     Ci = Ci(removeind);
@@ -374,7 +390,7 @@ sgtitle(f,'Threshold Coding Comparisons Across Days');
 
 %% Flag cluster
 flag_day = 4;
-ind = [Cday{flag_day}.Name] == "cluster933";
+ind = [Cday{flag_day}.Name] == "cluster1456";
 
 % Notes: motor = "motor", reverse neurometric curve = "reverse"
 set(Cday{flag_day}(ind),'Note',"reverse")

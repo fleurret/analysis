@@ -26,14 +26,15 @@ for subj = 1:length(subjects)
             Cday{day} = [S.Clusters];
         end
         
-        c = length(Cday{day});
-        for i = x+1:c
-            addprop(Cday{day}(i), 'Subject')
-            Cday{day}(i).Subject = subjects(subj).name;
+        for i = 1:length(Cday{day})
+            if isprop(Cday{day}(i),'Subject')
+                continue
+            else
+                addprop(Cday{day}(i), 'Subject');
+                Cday{day}(i).Subject = subjects(subj).name;
+            end
         end
     end
-    
-    x = c;
 end
 
 %% Plot
@@ -84,7 +85,7 @@ didx = thr;
 % neural data
 for i = 1:length(days)
     Ci = Cday{i};
-    
+  
     % remove flagged units
     note = {Ci.Note};
     removeind = cellfun(@isempty, note);
@@ -94,6 +95,13 @@ for i = 1:length(days)
     alpha = 0.05;
     pidx = zeros(1,length(Ci));
     for j = 1:length(Ci)
+        
+            % only plot one subject
+    subj = '202';
+%     subj = '222';
+%     subj = '223';
+%     subj = '224';
+
         pvs = Ci(j).UserData.(parname);
         if ~isfield(pvs,'p_val')
             pidx(j) = 0;
@@ -373,7 +381,7 @@ sgtitle(f,'Threshold Coding Comparisons Across Days');
 
 %% Flag cluster
 flag_day = 4;
-ind = [Cday{flag_day}.Name] == "cluster933";
+ind = [Cday{flag_day}.Name] == "cluster1456";
 
 % Notes: motor = "motor", reverse neurometric curve = "reverse"
 set(Cday{flag_day}(ind),'Note',"reverse")
