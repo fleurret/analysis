@@ -85,48 +85,74 @@ didx = thr;
 for i = 1:length(days)
     Ci = Cday{i};
   
-    % remove flagged units
+    % first make sure that there is a threshold/p_val field for the "parname"
+    % threshold = NaN means curve did not cross d' = 1
+    % threshold = 0 means there were no spikes/failed to compute threshold
+    for j = 1:length(Ci)
+        c = Ci(j);
+        if ~isfield(c.UserData.(parname),'threshold')
+            c.UserData.(parname).threshold = 0;
+        end
+        
+        if ~isfield(c.UserData.(parname),'p_val')
+            c.UserData.(parname).p_val = nan;
+        end
+    end
+    
+    alpha = 0.05;
+
+    % create lookup table for each cluster 
+    id = nan(size(Ci));
+    for j = 1:length(Ci)
+        id(j) = str2num(erase(Ci(j).Name,"cluster"));           
+    end
+    uid = unique(id);
+    flaggedForRemoval = [];
+    for j = 1:length(uid)
+        ind = uid(j) == id;
+        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
+        pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
+        if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
+            flaggedForRemoval(end+1) = uid(j);
+            fprintf(2,'ID %d, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+        else
+            fprintf('ID %d, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+        end
+    end
+    
+    % remove invalid units
+    idx = false(1,length(Ci));
+    for j = 1:length(Ci)
+        if ismember(id(j),flaggedForRemoval)
+            idx(j) = 0;
+        else
+            idx(j) = 1;
+        end
+    end
+    Ci = Ci(idx);
+    
+    % remove any additional manually flagged units
     note = {Ci.Note};
     removeind = cellfun(@isempty, note);
     Ci = Ci(removeind);
     
-    % remove units with bad fit
-    alpha = 0.05;
-    pidx = zeros(1,length(Ci));
+%     % only plot one subject
+        subj = "202";
+%         subj = "222";
+%         subj = "223";
+%         subj = "224";
+    subj_idx = zeros(1,length(Ci));
     for j = 1:length(Ci)
-        pvs = Ci(j).UserData.(parname);
-        if ~isfield(pvs,'p_val')
-            pidx(j) = 0;
+        cs = convertCharsToStrings(Ci(j).Subject);
+        if cs == subj
+            subj_idx(j) = 1;
         else
-            p_val = pvs.p_val;
-            if p_val >= alpha || isnan(p_val)
-                pidx(j) = 0;
-            end
-            
-            if p_val < alpha
-                pidx(j) = 1;
-            end
+            subj_idx(j) = 0;
         end
     end
-    pidx = logical(pidx);
-    Ci = Ci(pidx);
-    
-%     % only plot one subject
-% %         subj = "202";
-% %         subj = "222";
-% %         subj = "223";
-% %         subj = "224";
-%     subj_idx = zeros(1,length(Ci));
-%     for j = 1:length(Ci)
-%         cs = convertCharsToStrings(Ci(j).Subject);
-%         if cs == subj
-%             subj_idx(j) = 1;
-%         else
-%             subj_idx(j) = 0;
-%         end
-%     end
-%     subj_idx = logical(subj_idx);
-%     Ci = Ci(subj_idx);
+    subj_idx = logical(subj_idx);
+    Ci = Ci(subj_idx);
 
     % remove multiunits
     %     removeind = [Ci.Type] == "SU";
@@ -143,13 +169,13 @@ for i = 1:length(days)
     
     y = [y{:}];
     
-    thr{i} = [y.threshold];
-    
-    %     thr{i} = 20*log10(thr{i});
-    
-    didx{i} = ones(size(y))*i;
-    
-    sidx{i} = nan(size(y));
+    if ~isempty(y)
+        thr{i} = [y.threshold];
+        
+        didx{i} = ones(size(y))*i;
+        
+        sidx{i} = nan(size(y));
+    end
     
     sn = [Ci.Session];
     sn = [sn.Name];
@@ -410,50 +436,75 @@ Cdayfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Cday.mat';
 load(Cdayfile)
 days = 7;
 
+temp = [];
+output = [];
+
 % only AM responsive
-for i = 1:days
+for i = 1:length(days)
     Ci = Cday{i};
+  
+    % first make sure that there is a threshold/p_val field for the "parname"
+    % threshold = NaN means curve did not cross d' = 1
+    % threshold = 0 means there were no spikes/failed to compute threshold
+    for j = 1:length(Ci)
+        c = Ci(j);
+        if ~isfield(c.UserData.(parname),'threshold')
+            c.UserData.(parname).threshold = 0;
+        end
+        
+        if ~isfield(c.UserData.(parname),'p_val')
+            c.UserData.(parname).p_val = nan;
+        end
+    end
     
-    % remove flagged units
+    alpha = 0.05;
+
+    % create lookup table for each cluster 
+    id = nan(size(Ci));
+    for j = 1:length(Ci)
+        id(j) = str2num(erase(Ci(j).Name,"cluster"));           
+    end
+    uid = unique(id);
+    flaggedForRemoval = [];
+    for j = 1:length(uid)
+        ind = uid(j) == id;
+        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
+        pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
+        if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
+            flaggedForRemoval(end+1) = uid(j);
+%             fprintf(2,'ID %d, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+        else
+%             fprintf('ID %d, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+        end
+    end
+    
+    % remove invalid units
+    idx = false(1,length(Ci));
+    for j = 1:length(Ci)
+        if ismember(id(j),flaggedForRemoval)
+            idx(j) = 0;
+        else
+            idx(j) = 1;
+        end
+    end
+    Ci = Ci(idx);
+    
+    % remove any additional manually flagged units
     note = {Ci.Note};
     removeind = cellfun(@isempty, note);
     Ci = Ci(removeind);
     
-    % remove units with bad fit
-    alpha = 0.05;
-    pidx = zeros(1,length(Ci));
-    for j = 1:length(Ci)
-        pvs = Ci(j).UserData.(parname);
-        if ~isfield(pvs,'p_val')
-            pidx(j) = 0;
-        else
-            p_val = pvs.p_val;
-            if p_val >= alpha || isnan(p_val)
-                pidx(j) = 0;
-            end
-            
-            if p_val < alpha
-                pidx(j) = 1;
-            end
+    % check for multiple units with the same id
+    for j = 1:length(uid)
+        count(j) = sum(id==uid(j));
+        if count(j) ~= 3
+            fprintf(2, 'Warning: more than one unit with ID %d on day %d\n', uid(j), i)
         end
     end
-    pidx = logical(pidx);
-    Ci = Ci(pidx);
-    
-    % remove multiunits
-    %     removeind = [Ci.Type] == "SU";
-    %     Ci = Ci(removeind);
-    
-    y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
-    ind = cellfun(@(a) isfield(a,'ERROR'),y);
-    
-    ind = ind | [Ci.N] < 0;
-    
-    y(ind) = [];
-    
-    Ci(ind) = [];
-    Cday{i} = Ci;
 end
+
+%%
 
 % get total clusters
 sumc = 0;
@@ -525,6 +576,7 @@ for i = 1:days
     output = [output;temp];
 end
 
+%%
 % outputfile = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\thresholds.mat';
 % save(outputfile, 'output')
 
