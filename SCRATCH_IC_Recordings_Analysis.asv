@@ -158,10 +158,10 @@ targDPrimeThreshold = 1;
 
 
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-parname = 'Power';
+% parname = 'Power';
 
 for i = 1:length(d)
     
