@@ -9,7 +9,7 @@ t = nan(1,maxdays);
 thresholds = nan(length(subjects),maxdays);
 
 % extract output
-for subj = 4
+for subj = 1:length(subjects)
     spth = fullfile(subjects(subj).folder,subjects(subj).name);
     d = dir(fullfile(spth,'*.mat'));
     ffn = fullfile(d.folder,d.name);
@@ -34,6 +34,7 @@ for i = 1:maxdays
     x = thresholds(1:subj,i);
     m = mean(x, 'omitnan');
     s = std(x, 'omitnan');
+    s = s /(sqrt(maxdays-1));
 
     thresholds(subj+1,i) = m;
     thresholds(subj+2,i) = s;

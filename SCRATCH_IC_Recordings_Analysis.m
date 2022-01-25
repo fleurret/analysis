@@ -4,9 +4,9 @@ pth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 
 % subj = '202';
 % subj = '222';
-% subj = '223';
+subj = '223';
 % subj = '224';
-subj = '267';
+% subj = '267';
 
 pth = fullfile(pth,subj);
 
@@ -77,8 +77,8 @@ parname = [];
 % par.metric = @epa.metric.tmtf; parname = 'TMTF'; % use the temporal Modualation Transfer Function metric
 % par.metric = @epa.metric.vector_strength; parname = 'VS';
 % par.metric = @epa.metric.vector_strength_phase_projected; parname = 'VSpp';
-% par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
-par.metric = @epa.metric.cl_calcpower; parname = 'Power';
+par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
+% par.metric = @epa.metric.cl_calcpower; parname = 'Power';
 
 
 if isequal(parname,'Power') && isempty(which('chronux.m'))
@@ -158,10 +158,10 @@ targDPrimeThreshold = 1;
 
 
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-parname = 'Power';
+% parname = 'Power';
 
 for i = 1:length(d)
     
