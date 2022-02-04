@@ -1,4 +1,4 @@
-function plot_units(spth, behavdir, savedir, parname, subj)
+function plot_units(spth, behavdir, savedir, parname, subj, condition)
 
 % Plot individual unit thresholds and means across days
 
@@ -8,7 +8,9 @@ function plot_units(spth, behavdir, savedir, parname, subj)
 load(fullfile(behavdir,'behavior_combined.mat'));
 
 % load neural
-load(fullfile(savedir,'Cday.mat'));
+fn = 'Cday_';
+fn = strcat(fn,(parname),'.mat');
+load(fullfile(savedir,fn));
 
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
@@ -105,6 +107,51 @@ for i = 1:length(days)
         subj_idx = logical(subj_idx);
         Ci = Ci(subj_idx);
     end
+    
+    % only plot one condition
+    if condition ~= "all"
+        if condition == "w"
+            ffn = fullfile(savedir,'NeuralThresholds',(parname),'thresholds_worsened.mat');
+            load(ffn)
+            
+            subset = worsened;
+        end
+        
+        if condition == "i"
+            ffn = fullfile(savedir,'NeuralThresholds',(parname),'thresholds_improved.mat');
+            load(ffn)
+            
+            subset = improved;
+        end
+        
+        id = [Ci.Name];
+        uid = unique(id);
+        
+        j = 1:length(subset);
+        subj_idx = cell2mat(subset(j,2)) == i;
+        wid = subset(subj_idx);
+        wid = [wid{:}];
+        
+        flaggedForRemoval = "";
+        
+        for k = 1:length(uid)
+            ind = uid(k) == wid;
+            if sum(ind) == 0
+                flaggedForRemoval(end+1) = uid(k);
+            end
+        end
+        
+        idx = false(1,length(Ci));
+        
+        for j = 1:length(Ci)
+            if ismember(id(j),flaggedForRemoval)
+                idx(j) = 0;
+            else
+                idx(j) = 1;
+            end
+        end
+        Ci = Ci(idx);
+    end
 
     % remove multiunits
     %     removeind = [Ci.Type] == "SU";
@@ -112,11 +159,8 @@ for i = 1:length(days)
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
-    
-    %     ind = ind | [Ci.N] < minNumSpikes;
-    
+   
     y(ind) = [];
-    
     Ci(ind) = [];
     
     y = [y{:}];
@@ -240,8 +284,8 @@ bplot = line(ax(2),x,behav_mean);
 bplot.Marker = 'o';
 bplot.MarkerSize = 8;
 bplot.LineStyle = 'none';
-bplot.Color = '#FAB4CF';
-bplot.MarkerFaceColor = '#FAB4CF';
+bplot.Color = '#ff7bb1';
+bplot.MarkerFaceColor = '#ff7bb1';
 
 xi = log10(1:7);
 [b_fo,b_gof] = fit(xi',behav_mean','poly1'); %#ok<ASGLU>
@@ -251,13 +295,13 @@ yi = b_fo.p1.*xi + b_fo.p2;
 bfit = line(ax(2), xi+1, yi,...
     'DisplayName', sprintf('Behavior (%.2f)', b_fo.p1),...
     'LineWidth',3,...
-    'Color','#FAB4CF');
+    'Color','#ff7bb1');
 
 % error bars
 e = errorbar(ax(2), (xi+1)*xoffset,behav_mean, behav_std);
 e.LineStyle = 'none';
 e.LineWidth= 2;
-e.Color = '#FAB4CF';
+e.Color = '#ff7bb1';
 e.CapSize = 0;
 
 % set transparency

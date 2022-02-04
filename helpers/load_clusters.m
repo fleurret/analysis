@@ -49,5 +49,5 @@ end
 
 % save as file
 fprintf('Saving file ...')
-save(fullfile(savedir,'Cday.mat'), 'Cday')
+save(fullfile(savedir,'Cday_original.mat'), 'Cday')
 fprintf(' done\n')
