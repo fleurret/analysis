@@ -1,4 +1,4 @@
-function plot_units(spth, behavdir, savedir, parname, subj, condition)
+function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type)
 
 % Plot individual unit thresholds and means across days
 
@@ -8,16 +8,20 @@ function plot_units(spth, behavdir, savedir, parname, subj, condition)
 load(fullfile(behavdir,'behavior_combined.mat'));
 
 % load neural
-fn = 'Cday_';
-fn = strcat(fn,(parname),'.mat');
-load(fullfile(savedir,fn));
+if unit_type == "SU"
+    load(fullfile(savedir,'Cday_VScc_restrictiveSU.mat'));
+else
+    fn = 'Cday_';
+    fn = strcat(fn,(parname),'.mat');
+    load(fullfile(savedir,fn));
+end
 
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
 minNumSpikes = 0;
-maxNumDays = 7;
+maxNumDays = 10;
 
 sessionName = ["Pre","Active","Post"];
 
@@ -154,8 +158,10 @@ for i = 1:length(days)
     end
 
     % remove multiunits
-    %     removeind = [Ci.Type] == "SU";
-    %     Ci = Ci(removeind);
+    if unit_type == "SU"
+        removeind = [Ci.Type] == "SU";
+        Ci = Ci(removeind);
+    end
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);

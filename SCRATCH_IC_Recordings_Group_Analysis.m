@@ -30,7 +30,7 @@ parname = 'VScc';
 flag_cluster(savedir, parname, "session", 3, "224_cluster1451", "Post")
 
 %% Plot thresholds across days
-% syntax: plot_units(spth, behavdir, savedir, parname, subj, condition)
+% syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type)
 
 % parname = 'FiringRate';
 parname = 'VScc';
@@ -42,11 +42,20 @@ parname = 'VScc';
 
 % condition: "all", "i" (improved), "w" (worsened)
 
-plot_units(spth, behavdir, savedir, parname, "all", "all")
+% unit_type: "all", "SU"
+
+plot_units(spth, behavdir, savedir, parname, "all", "all", "all")
 
 %% Plot behavior vs neural
+% syntax: bvsn(behavdir, savedir, parname, maxdays)
 
+% parname = 'FiringRate';
+parname = 'VScc';
+% parname = 'VSpp';
+% parname = 'VS';
+% parname = 'Power';
 
+bvsn(behavdir, savedir, parname, 7)
 
 %% Sort units into improved/worsened
 % syntax: split_condition(savedir, maxNumDays, parname, replace)
