@@ -46,8 +46,8 @@ parname = 'VScc';
 
 plot_units(spth, behavdir, savedir, parname, "all", "all", "all")
 
-%% Plot behavior vs neural
-% syntax: bvsn(behavdir, savedir, parname, maxdays)
+%% Plot behavior vs neural for an individual subject
+% syntax: bvsn(behavdir, savedir, parname, maxdays, subj)
 
 % parname = 'FiringRate';
 parname = 'VScc';
@@ -55,7 +55,7 @@ parname = 'VScc';
 % parname = 'VS';
 % parname = 'Power';
 
-bvsn(behavdir, savedir, parname, 7)
+bvsn(behavdir, savedir, parname, 10, "224")
 
 %% Sort units into improved/worsened
 % syntax: split_condition(savedir, maxNumDays, parname, replace)
