@@ -44,7 +44,7 @@ parname = 'VScc';
 
 % unit_type: "all", "SU"
 
-plot_units(spth, behavdir, savedir, parname, "all", "all", "all")
+plot_units(spth, behavdir, savedir, parname, "224", "all", "all")
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, maxdays, subj)
@@ -55,8 +55,18 @@ parname = 'VScc';
 % parname = 'VS';
 % parname = 'Power';
 
-bvsn(behavdir, savedir, parname, 10, "224")
+bvsn(behavdir, savedir, parname, 7, "222")
 
+%% Plot behavior vs neural for population
+% syntax: bvsn(behavdir, savedir, parname, maxdays)
+
+% parname = 'FiringRate';
+parname = 'VScc';
+% parname = 'VSpp';
+% parname = 'VS';
+% parname = 'Power';
+
+bvsn_pop(behavdir, savedir, parname, 7)
 %% Sort units into improved/worsened
 % syntax: split_condition(savedir, maxNumDays, parname, replace)
 

@@ -1,17 +1,11 @@
-function bvsn(behavdir, savedir, parname, maxdays, subj)
+function bvsn_pop(behavdir, savedir, parname, maxdays)
 
 % load behavior
-pth = fullfile(behavdir,subj);
-d = dir(fullfile(pth,'*.mat'));
-ffn = fullfile(d.folder,d.name);
+subjects = dir(behavdir);
+subjects(~[subjects.isdir]) = [];
+subjects(ismember({subjects.name},{'.','..'})) = [];
 
-load(ffn, 'output')
-
-for i = 1:length(output)
-    a(i) = output(i).fitdata;
-end
-
-behav = [a.threshold];
+load(fullfile(behavdir,'behavior_combined.mat'));
 
 % load neural
 fn = 'Cday_';
@@ -34,8 +28,8 @@ ax(2) = subplot(132,'parent',f);
 ax(3) = subplot(133,'parent',f);
 
 set(ax,...
-    'xlim', [-16, 0],...
-    'ylim', [-15, -8]);
+    'xlim', [-16,-5],...
+    'ylim', [-16,-8]);
 
 % neural data
 days = 1:min(maxdays,length(Cday));
@@ -93,19 +87,6 @@ for k = 1:3 % plot each session seperately
         end
         Ci = Ci(idx);
         
-        % restrict to subject
-        subj_idx = zeros(1,length(Ci));
-        for j = 1:length(Ci)
-            cs = convertCharsToStrings(Ci(j).Subject);
-            if contains(cs,subj)
-                subj_idx(j) = 1;
-            else
-                subj_idx(j) = 0;
-            end
-        end
-        subj_idx = logical(subj_idx);
-        Ci = Ci(subj_idx);
-        
         % remove any additional manually flagged units
         note = {Ci.Note};
         removeind = cellfun(@isempty, note);
@@ -134,15 +115,20 @@ for k = 1:3 % plot each session seperately
         
         ind = sidx{i} == k;
         
-        % neural means
+        % neural means and error bars
         xi = mean(thr{i}(ind),'omitnan');
+        xi_std = std(thr{i}(ind),'omitnan');
+        xi_std = xi_std / (sqrt(length(thr{i}(ind))-1));
+        
         xall(k,i) = xi;
-        if isnan(xi)
-            continue
-        end
+        %         e = errorbar(ax(2),xi,yi,yi_std);
+        %         e.Color = cm(j,:);
+        %         e.CapSize = 0;
+        %         e.LineWidth = 2;
         
         % behavior
-        yi = behav(i);
+        yi = behav_mean(i);
+        yi_std = behav_std(i);
         
         line(ax(k),xi,yi,...
             'Marker', 'o',...
@@ -155,6 +141,8 @@ for k = 1:3 % plot each session seperately
         title(ax(k),sprintf('%s (%s)',sessionName(k),parname),...
             'FontSize',15);
     end
+    
+    
     % axes etc
     set([ax.XAxis], ...
         'FontSize',12);
@@ -185,13 +173,7 @@ hfit = [];
 % fit lines
 for i = 1:3
     xi = xall(i,:);
-    yi = behav(1:maxdays);
-    
-    ind = isnan(xi);
-    
-    xi(ind) = [];
-    yi(ind) = [];
-    
+    yi = behav_mean(1:maxdays);
     
     coefficients = polyfit(xi, yi, 1);
     xFit = linspace(min(xi), max(xi), 1000);

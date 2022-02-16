@@ -21,7 +21,7 @@ subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
 minNumSpikes = 0;
-maxNumDays = 10;
+maxNumDays = 7;
 
 sessionName = ["Pre","Active","Post"];
 
