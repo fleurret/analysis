@@ -1,14 +1,16 @@
 %% Load files
 % expecting invidual SUBJ folders with Session mat files, one for each day
-pth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
+% pth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 
 % subj = '202';
 % subj = '222';
-subj = '223';
+% subj = '223';
 % subj = '224';
 % subj = '267';
 
-pth = fullfile(pth,subj);
+% pth = fullfile(pth,subj);
+
+pth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted\BBBFluffy_221955';
 
 d = dir(fullfile(pth,'*.mat'));
 
@@ -46,7 +48,7 @@ for i = 1:length(d)
     
     for j = 1:length(S)
         arrayfun(@remove_waveforms,S(j).Clusters);
-        S(j).Subject = subj;
+%         S(j).Subject = subj;
     end
     
     arrayfun(@disp,[S.Name])
@@ -110,10 +112,15 @@ for i = 1:length(d)
     
         % remove reminder trials
         ev = CkS.find_Event("Reminder");
-        ind = ev.Values == 1;
-        ev.remove_trials(ind);
         
-        CkS.find_Event(par.event).remove_trials(ind);
+        if isempty(ev)
+            continue
+        else
+            ind = ev.Values == 1;
+            ev.remove_trials(ind);
+            
+            CkS.find_Event(par.event).remove_trials(ind);
+        end
         
         [dp,v,M,V] = Ck.neurometric_dprime(tpar);
         
