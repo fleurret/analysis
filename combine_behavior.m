@@ -1,9 +1,9 @@
-spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Behavior';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
-maxdays = 12;
+maxdays = 7;
 
 t = nan(1,maxdays);
 thresholds = nan(length(subjects),maxdays);
@@ -43,6 +43,7 @@ end
 behav_mean = thresholds(subj+1,:);
 behav_std = thresholds(subj+2,:);
 
+%%
 % save as file
-file = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior\behavior_combined.mat';
+file = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Behavior\behavior_combined.mat';
 save(file, 'behav_mean','behav_std')

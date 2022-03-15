@@ -1,20 +1,24 @@
 %% Load files
 % expecting invidual SUBJ folders with Session mat files, one for each day
-% pth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
+pth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
+% pth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
 
 % subj = '202';
 % subj = '222';
 % subj = '223';
+% subj = '225';
+subj = '228';
 % subj = '224';
 % subj = '267';
+% subj = 'BBBFluffy_221955';
+% subj = 'HHHBack_222724';
+% subj = 'HHHRight_222725';
+% subj = 'XXFluffy_217821';
 
-% pth = fullfile(pth,subj);
-
-pth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted\BBBFluffy_221955';
-
+pth = fullfile(pth,subj);
 d = dir(fullfile(pth,'*.mat'));
 
-%% ONLY NEED TO RUN ONCE TO CONVERT CLUSTERS TO SESSIONS
+% ONLY NEED TO RUN ONCE TO CONVERT CLUSTERS TO SESSIONS
 % strips waveforms, rebuilds any clusters into sessions
 for i = 1:length(d)
     ffn = fullfile(d(i).folder,d(i).name);
@@ -58,9 +62,8 @@ for i = 1:length(d)
     save(ffn,'S')
     fprintf(' done\n')
     
-    clear S
+%     clear S
 end
-
 
 %% Analyses specified metric
 
@@ -79,8 +82,8 @@ parname = [];
 % par.metric = @epa.metric.tmtf; parname = 'TMTF'; % use the temporal Modualation Transfer Function metric
 % par.metric = @epa.metric.vector_strength; parname = 'VS';
 % par.metric = @epa.metric.vector_strength_phase_projected; parname = 'VSpp';
-par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
-% par.metric = @epa.metric.cl_calcpower; parname = 'Power';
+% par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
+par.metric = @epa.metric.cl_calcpower; parname = 'Power';
 
 
 if isequal(parname,'Power') && isempty(which('chronux.m'))
@@ -113,9 +116,7 @@ for i = 1:length(d)
         % remove reminder trials
         ev = CkS.find_Event("Reminder");
         
-        if isempty(ev)
-            continue
-        else
+        if ~isempty(ev)
             ind = ev.Values == 1;
             ev.remove_trials(ind);
             
@@ -149,23 +150,13 @@ for i = 1:length(d)
     fprintf(' done\n')
 end
 
-
-
-
-
-%% Compute neurometric fits
-
-
+% Compute neurometric fits
 minNTrials = 5;
-
 minNValues = 3;
-
 targDPrimeThreshold = 1;
 
-
-
 % parname = 'FiringRate';
-parname = 'VScc';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
@@ -303,12 +294,9 @@ for i = 1:length(d)
 end
 
 
-
-
-
 %% Plot neurometric d'
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';

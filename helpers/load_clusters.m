@@ -11,7 +11,7 @@ subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
-Cday = {};
+Cday = cell(1,14);
 
 for subj = 1:length(subjects)
     spth = fullfile(subjects(subj).folder,subjects(subj).name);
@@ -24,12 +24,8 @@ for subj = 1:length(subjects)
         fprintf('Loading subject %s - %s ...',subjects(subj).name,d(day).name)
         load(ffn)
         fprintf(' done\n')
-        
-        if subj > 1
-            Cday{day} = [Cday{day}, [S.Clusters]];
-        else
-            Cday{day} = [S.Clusters];
-        end
+
+        Cday{day} = [Cday{day}, [S.Clusters]];
         
         % add subject property and change to unique id
         for i = 1:length(Cday{day})

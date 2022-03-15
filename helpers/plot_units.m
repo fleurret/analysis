@@ -242,6 +242,9 @@ for i = 1:3
     dr = r(ind);
     
     xi = log10(dd)';
+    if length(xi) < 2
+        continue
+    end
     [fo{i,1},gof(i,1)] = fit(xi,dr','poly1');
     
     yi = fo{i,1}.p1.*xi + fo{i,1}.p2;

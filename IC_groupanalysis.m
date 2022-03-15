@@ -1,12 +1,15 @@
 %% Set directories - run first!
 % data directory
-spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
+% spth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
 
 % save directory
-savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\';
+savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\';
+% savedir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings';
 
 % behavior directory
-behavdir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+behavdir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Behavior';
+% behavdir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Behavior';
 
 %% Load .mat and convert neural data
 % only needs to be run whenever new data is added
@@ -44,7 +47,7 @@ parname = 'VScc';
 
 % unit_type: "all", "SU"
 
-plot_units(spth, behavdir, savedir, parname, "224", "all", "all")
+plot_units(spth, behavdir, savedir, parname, "all", "all", "all")
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, maxdays, subj)
