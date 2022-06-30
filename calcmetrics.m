@@ -1,15 +1,25 @@
 %% Load files
 % expecting invidual SUBJ folders with Session mat files, one for each day
-pth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
+% pth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
 % pth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
+pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 
+% icc
 % subj = '202';
 % subj = '222';
 % subj = '223';
-% subj = '225';
-subj = '228';
 % subj = '224';
 % subj = '267';
+
+% ic shell
+% subj = '225';
+% subj = '228';
+
+% dmgb
+% subj = '322';
+subj = '323';
+
+% acx
 % subj = 'BBBFluffy_221955';
 % subj = 'HHHBack_222724';
 % subj = 'HHHRight_222725';
@@ -18,7 +28,7 @@ subj = '228';
 pth = fullfile(pth,subj);
 d = dir(fullfile(pth,'*.mat'));
 
-% ONLY NEED TO RUN ONCE TO CONVERT CLUSTERS TO SESSIONS
+%% ONLY NEED TO RUN ONCE TO CONVERT CLUSTERS TO SESSIONS
 % strips waveforms, rebuilds any clusters into sessions
 for i = 1:length(d)
     ffn = fullfile(d(i).folder,d(i).name);
@@ -65,7 +75,7 @@ for i = 1:length(d)
 %     clear S
 end
 
-%% Analyses specified metric
+%% Analyzes specified metric
 
 logTransformEventValues = true;
 
@@ -102,7 +112,7 @@ for i = 1:length(d)
         
     
     C = [S.Clusters];
-    
+ 
 
     for k = 1:numel(C) % DO NOT USE PARFOR!
         Ck = C(k);
@@ -124,7 +134,6 @@ for i = 1:length(d)
         end
         
         [dp,v,M,V] = Ck.neurometric_dprime(tpar);
-        
         
         if logTransformEventValues
             ind = v == 0;
@@ -296,10 +305,10 @@ end
 
 %% Plot neurometric d'
 % parname = 'FiringRate';
-parname = 'VScc';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-% parname = 'Power';
+parname = 'Power';
 
 
 day = 2;
@@ -522,7 +531,7 @@ box(ax,'on');
 %% compare thresholds from different metrics
 
 % parx = 'Power';
-% parx = 'FiringRate';
+parx = 'FiringRate';
 % parx = 'VS';
 pary = 'VScc';
 

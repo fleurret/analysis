@@ -1,4 +1,4 @@
-function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
+function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type)
 
 % Plot individual unit thresholds and means across days
 
@@ -6,7 +6,6 @@ function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type
 
 % load behavior
 load(fullfile(behavdir,'behavior_combined.mat'));
-% load(fullfile(behavdir,'224 behavior.mat'))
 
 % load neural
 if unit_type == "SU"
@@ -25,7 +24,6 @@ subjects(ismember({subjects.name},{'.','..'})) = [];
 minNumSpikes = 0;
 maxNumDays = 7;
 
-% set properties
 sessionName = ["Pre","Active","Post"];
 
 cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
@@ -34,12 +32,11 @@ mk = '^^^';
 xoffset = [.99, 1, 1.01];
 
 f = figure(sum(uint8(parname)));
-f.Position = [0, 0, 1000, 350];
+f.Position = [0, 0, 1000, 400];
 set(f,'color','w');
 clf(f);
 ax = subplot(121,'parent',f);
 ax(2) = subplot(122,'parent',f);
-ylim([-20,2]);
 
 days = 1:min(maxNumDays,length(Cday));
 
@@ -48,7 +45,6 @@ sidx = thr;
 didx = thr;
 
 % neural data
-count = zeros(1,3);
 
 for i = 1:length(days)
     Ci = Cday{i};
@@ -179,7 +175,7 @@ for i = 1:length(days)
                 highest_depth = Ci(k).UserData.FiringRate.vals(5);
                 Ci(k).UserData.(parname).threshold = highest_depth;
             end
-        end
+    end
     end
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
@@ -208,10 +204,6 @@ for i = 1:length(days)
         ind = sidx{i} == j;
         xi = x*xoffset(j);
         n_mean(j,i) = mean(thr{i}(ind),'omitnan');
-        
-        % calculate number of valid units
-        
-        count(j) = count(j) + sum(~isnan(thr{i}(ind)));
         
         % individual points
         h = line(ax(1),xi(ind),thr{i}(ind), ...
@@ -307,13 +299,8 @@ for i = 1:3
 end
 
 % behavior data
-if subj == "all"
-    behav_mean = behav_mean(1:7);
-    behav_std = behav_std(1:7);
-else
-    behav_mean = behav(1:7);   
-end
-
+behav_mean = behav_mean(1:7);
+behav_std = behav_std(1:7);
 x = log10(days)+1;
 xoffset = 0.98;
 x = x*xoffset;
@@ -325,9 +312,9 @@ bplot.Color = '#ff7bb1';
 bplot.MarkerFaceColor = '#ff7bb1';
 
 xi = log10(1:7);
-[b_fo,b_gof] = fit(xi',behav_mean','poly1');
+[b_fo,b_gof] = fit(xi',behav_mean','poly1'); %#ok<ASGLU>
 yi = b_fo.p1.*xi + b_fo.p2;
-    
+
 % fit
 bfit = line(ax(2), xi+1, yi,...
     'DisplayName', sprintf('Behavior (%.2f)', b_fo.p1),...
@@ -335,18 +322,16 @@ bfit = line(ax(2), xi+1, yi,...
     'Color','#ff7bb1');
 
 % error bars
-if subj == "all"
-    e = errorbar(ax(2), (xi+1)*xoffset,behav_mean, behav_std);
-    e.LineStyle = 'none';
-    e.LineWidth= 2;
-    e.Color = '#ff7bb1';
-    e.CapSize = 0;
+e = errorbar(ax(2), (xi+1)*xoffset,behav_mean, behav_std);
+e.LineStyle = 'none';
+e.LineWidth= 2;
+e.Color = '#ff7bb1';
+e.CapSize = 0;
 
-    % set transparency
-    alpha = 0.3;
-    set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
-    uistack(e, 'bottom');
-end
+% set transparency
+alpha = 0.3;
+set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
+uistack(e, 'bottom');
 
 % Pearson's R
 [b_PR,b_P] = corrcoef(behav_mean, xi);
@@ -363,6 +348,8 @@ ax(2).YAxis.Label.Rotation = 90;
 
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
+
+ylim([-18,-2]);
 
 xlabel(ax,'Psychometric testing day',...
     'FontWeight','bold',...
@@ -383,4 +370,3 @@ fprintf('Behavior R = %s, p = %s \n', num2str(b_PR(2)), num2str(b_P(2)))
 fprintf('Pre R = %s, p = %s \n', num2str(PR{1}), num2str(PRP{1}))
 fprintf('Active R = %s, p = %s \n', num2str(PR{2}), num2str(PRP{2}))
 fprintf('Post R = %s, p = %s \n', num2str(PR{3}), num2str(PRP{3}))
-fprintf('%s Pre, %s Active, %s Post', num2str(count(1)), num2str(count(2)), num2str(count(3)))

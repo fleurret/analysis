@@ -1,14 +1,20 @@
 %% Set directories - run first!
 % data directory
-spth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
+% spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
+% spth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 % spth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
 
 % save directory
-savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\';
+% savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\';
+% savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\';
+savedir = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings';
 % savedir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings';
 
 % behavior directory
-behavdir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Behavior';
+% behavdir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+% behavdir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Behavior';
+behavdir = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Behavior';
 % behavdir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Behavior';
 
 %% Load .mat and convert neural data
@@ -20,7 +26,7 @@ load_clusters(spth, savedir);
 % syntax: flag_cluster(savedir, parname, remove, flag_day, cid, session)
 
 % parname = 'FiringRate';
-parname = 'VScc';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
@@ -33,10 +39,10 @@ parname = 'VScc';
 flag_cluster(savedir, parname, "session", 3, "224_cluster1451", "Post")
 
 %% Plot thresholds across days
-% syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type)
+% syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
 
-% parname = 'FiringRate';
-parname = 'VScc';
+parname = 'FiringRate';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
@@ -47,7 +53,9 @@ parname = 'VScc';
 
 % unit_type: "all", "SU"
 
-plot_units(spth, behavdir, savedir, parname, "all", "all", "all")
+% replace (NaN thresholds with highest depth presented): "yes"
+
+plot_units(spth, behavdir, savedir, parname, "all", "all", "all", "no")
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, maxdays, subj)
@@ -58,7 +66,7 @@ parname = 'VScc';
 % parname = 'VS';
 % parname = 'Power';
 
-bvsn(behavdir, savedir, parname, 7, "222")
+bvsn(behavdir, savedir, parname, 7, "322")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, maxdays)
@@ -74,7 +82,7 @@ bvsn_pop(behavdir, savedir, parname, 7)
 % syntax: split_condition(savedir, maxNumDays, parname, replace)
 
 % parname = 'FiringRate';
-parname = 'VScc';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
@@ -92,4 +100,6 @@ split_condition(savedir, 7, parname, "no")
 
 % shownans: "yes", "no"
 
-compare_thresholds(savedir, 'FiringRate', 'VScc', "no")
+% session: "pre", "active", "post", "all"
+
+compare_thresholds(savedir, 'FiringRate', 'VScc', "yes", "post")
