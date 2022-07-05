@@ -16,8 +16,8 @@ pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 % subj = '228';
 
 % dmgb
-% subj = '322';
-subj = '323';
+subj = '322';
+% subj = '323';
 
 % acx
 % subj = 'BBBFluffy_221955';
@@ -305,13 +305,13 @@ end
 
 %% Plot neurometric d'
 % parname = 'FiringRate';
-% parname = 'VScc';
+parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
-parname = 'Power';
+% parname = 'Power';
 
 
-day = 2;
+day = 1;
 ffn = fullfile(d(day).folder,d(day).name);
 
 fprintf('Loading %s ...',d(day).name)
@@ -321,7 +321,22 @@ fprintf(' done\n')
 
 C = [S.Clusters];
 
+% to plot a specific cluster
+ind = ones(1,length(C));
 
+for i = 1:length(C)
+    if C(i).Name == "cluster987"
+        ind(i) = 1;
+    else
+        ind(i) = 0;
+    end
+end
+
+ind = logical(ind);
+
+C = C(ind);
+
+% plot figures
 f = figure('color','w');
 
 ncol = 3;

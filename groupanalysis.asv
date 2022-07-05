@@ -23,10 +23,15 @@ if region == "MGB"
 end
 
 if region == "ACx"
-    spth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
-    savedir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings';
-    behavdir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Behavior';
-end
+
+% spth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
+% savedir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings';
+
+% behavior directory
+
+
+
+% behavdir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Behavior';
 
 %% Load .mat and convert neural data
 % only needs to be run whenever new data is added
