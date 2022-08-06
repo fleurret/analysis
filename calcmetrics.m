@@ -1,5 +1,6 @@
 %% Load files
 % expecting invidual SUBJ folders with Session mat files, one for each day
+% pth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 % pth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
 % pth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
 pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
@@ -15,7 +16,7 @@ pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 % subj = '225';
 % subj = '228';
 
-% dmgb
+% vmgb
 subj = '322';
 % subj = '323';
 
@@ -303,108 +304,17 @@ for i = 1:length(d)
 end
 
 
-%% Plot neurometric d'
-% parname = 'FiringRate';
-parname = 'VScc';
+%% Plot neurometric d' and PSTH for specific cluster
+parname = 'FiringRate';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
 
+day = 3;
+clustername = "cluster546";
 
-day = 1;
-ffn = fullfile(d(day).folder,d(day).name);
-
-fprintf('Loading %s ...',d(day).name)
-load(ffn)
-fprintf(' done\n')
-
-
-C = [S.Clusters];
-
-% to plot a specific cluster
-ind = ones(1,length(C));
-
-for i = 1:length(C)
-    if C(i).Name == "cluster987"
-        ind(i) = 1;
-    else
-        ind(i) = 0;
-    end
-end
-
-ind = logical(ind);
-
-C = C(ind);
-
-% plot figures
-f = figure('color','w');
-
-ncol = 3;
-
-ucid = unique([C.ID]);
-nrow = length(ucid);
-
-
-t = tiledlayout(f,nrow,ncol);
-t.TileSpacing = 'none';
-t.Padding = 'none';
-
-
-
-for i = 1:numel(C)
-    Ck = C(i);
-    
-%     row = double(Ck.ID);
-    ind = ucid == Ck.ID;
-    row = find(ind);
-
-    
-    if contains(Ck.Session.Name,"Pre")
-        col = 1;
-    elseif contains(Ck.Session.Name,"Post")
-        col = 3;
-    else
-        col = 2;
-    end
-    
-    ax = nexttile(t,sub2ind([ncol nrow],col,row));
-    
-    ndp = Ck.UserData.(parname);
-    
-    if isfield(ndp,'ERROR'), continue; end
-    
-    h = plot(ax, ...
-        ndp.vals,ndp.dprime,'--o', ...
-        ndp.xfit,ndp.yfit,'-k', ...
-        ndp.threshold,ndp.dprimeThreshold,'+r');
-    
-    h(3).MarkerSize = 10;
-    h(3).LineWidth = 2;
-    
-    
-    grid(ax,'on');
-    ax.YAxis.TickLabelFormat = '%.1f';
-    
-    if col == 1
-        ax.YAxis.Label.String = sprintf('%d %s',Ck.ID,Ck.Type);
-    elseif col == 3
-        ax.YAxis.Label.String = Ck.Name;
-        ax.YAxisLocation = 'right';
-    end
-    
-    if row == 1
-        ax.Title.String = Ck.Session.Name;
-    end
-    
-end
-title(t,parname);
-
-
-
-
-
-
-
+d_psth(d, parname, day, clustername)
 
 %% compare neurometric threshold to log10(day)
 

@@ -164,7 +164,7 @@ for i = 1:length(days)
         end
         Ci = Ci(idx);
     end
-
+    
     % remove multiunits
     if unit_type == "SU"
         removeind = [Ci.Type] == "SU";
@@ -184,7 +184,7 @@ for i = 1:length(days)
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
-   
+    
     y(ind) = [];
     Ci(ind) = [];
     
@@ -193,9 +193,9 @@ for i = 1:length(days)
     if ~isempty(y)
         thr{i} = [y.threshold];
         
-        didx{i} = ones(size(y))*i;        
+        didx{i} = ones(size(y))*i;
         sidx{i} = nan(size(y));
-
+        
         sn = [Ci.Session];
         sn = [sn.Name];
         sidx{i}(contains(sn,"Pre")) = 1;
