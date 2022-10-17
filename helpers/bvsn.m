@@ -14,8 +14,8 @@ end
 behav = [a.threshold];
 
 % load neural
-fn = 'Cday_';
-fn = strcat(fn,(parname),'.mat');
+fn = 'Cday_original';
+% fn = strcat(fn,(parname),'.mat');
 load(fullfile(savedir,fn));
 
 sessionName = ["Pre","Active","Post"];
@@ -34,8 +34,8 @@ ax(2) = subplot(132,'parent',f);
 ax(3) = subplot(133,'parent',f);
 
 set(ax,...
-    'xlim', [-16, 0],...
-    'ylim', [-15, -8]);
+    'xlim', [-30, 5],...
+    'ylim', [-30, 5]);
 
 % neural data
 days = 1:min(maxdays,length(Cday));
@@ -95,14 +95,24 @@ for k = 1:3 % plot each session seperately
         
         % restrict to subject
         subj_idx = zeros(1,length(Ci));
-        for j = 1:length(Ci)
-            cs = convertCharsToStrings(Ci(j).Subject);
-            if contains(cs,subj)
-                subj_idx(j) = 1;
-            else
-                subj_idx(j) = 0;
+            for j = 1:length(Ci)
+                if Ci(j).Subject == ""
+                    nsubj = append(subj,"_");
+                    cs = convertCharsToStrings(Ci(j).Name);
+                    if contains(cs,nsubj)
+                        subj_idx(j) = 1;
+                    else
+                        subj_idx(j) = 0;
+                    end
+                else
+                    cs = convertCharsToStrings(Ci(j).Subject);
+                    if contains(cs,subj)
+                        subj_idx(j) = 1;
+                    else
+                        subj_idx(j) = 0;
+                    end
+                end
             end
-        end
         subj_idx = logical(subj_idx);
         Ci = Ci(subj_idx);
         
@@ -183,6 +193,9 @@ axis(ax,'square');
 hfit = [];
 
 % fit lines
+PR = {nan(2,2), nan(2,2), nan(2,2)};
+PRP = {nan(2,2), nan(2,2), nan(2,2)};
+
 for i = 1:3
     xi = xall(i,:);
     yi = behav(1:maxdays);
@@ -194,16 +207,18 @@ for i = 1:3
     
     
     coefficients = polyfit(xi, yi, 1);
-    xFit = linspace(min(xi), max(xi), 1000);
-    yFit = polyval(coefficients , xFit);
     
-    hfit(i) = line(ax(i),xFit,yFit, ...
-        'Color',max(cm(i,:),0), ...
-        'LineWidth',3);
-    
-    [R,P] = corrcoef(xi,yi);
-    PR{i} = R;
-    PRP{i} = P;
+    if length(xi) > 1
+        xFit = linspace(min(xi), max(xi), 1000);
+        yFit = polyval(coefficients , xFit);
+        hfit(i) = line(ax(i),xFit,yFit, ...
+            'Color',max(cm(i,:),0), ...
+            'LineWidth',3);
+        
+        [R,P] = corrcoef(xi,yi);
+        PR{i} = R;
+        PRP{i} = P;
+    end
 end
 
 fprintf('Pre R = %s, p = %s \n', num2str(PR{1}(2)), num2str(PRP{1}(2)))

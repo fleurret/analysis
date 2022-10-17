@@ -1,4 +1,4 @@
-spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Behavior';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];

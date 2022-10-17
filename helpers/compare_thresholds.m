@@ -16,6 +16,9 @@ f.Color = 'w';
 clf(f);
 ax = gca;
 cm = [77,127,208; 52,228,234; 2,37,81;]./255; % session colormap
+precm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
+activecm = [212,249,251; 176,245,247; 141,240,243; 105,235,240; 34,226,232; 21,200,206; 18,165,170;]./255; % session colormap
+postcm = [11,116,249; 6,107,234; 5,89,196; 4,72,158; 3,54,119; 2,37,81; 1,11,24;]./255; % session colormap
 
 for i = 1:length(days)
     Ci = Cday{i};
@@ -129,32 +132,66 @@ for i = 1:length(days)
     
     % plot according to session input
     if session ~= "all"
+        
+        % pre only
         if session == "pre"
             k = 1;
+            ud = {Ci(sidx{i}==k).UserData};
+            
+            x = nan(size(ud));
+            y = x;
+            
+            for j = 1:length(ud)
+                x(j) = ud{j}.(parx).threshold;
+                y(j) = ud{j}.(pary).threshold;
+            end
+            
+            line(ax,x,y,'LineStyle','none', ...
+                'Marker','o',...
+                'MarkerSize', 12,...
+                'MarkerFaceColor',precm(i,:),...
+                'MarkerEdgeColor', 'none');
         end
+        
+        % active only
         if session == "active"
             k = 2;
+            ud = {Ci(sidx{i}==k).UserData};
+            
+            x = nan(size(ud));
+            y = x;
+            
+            for j = 1:length(ud)
+                x(j) = ud{j}.(parx).threshold;
+                y(j) = ud{j}.(pary).threshold;
+            end
+            
+            line(ax,x,y,'LineStyle','none', ...
+                'Marker','o',...
+                'MarkerSize', 12,...
+                'MarkerFaceColor',activecm(i,:),...
+                'MarkerEdgeColor', 'none');
         end
         
         if session == "post"
             k = 3;
+            ud = {Ci(sidx{i}==k).UserData};
+            
+            x = nan(size(ud));
+            y = x;
+            
+            for j = 1:length(ud)
+                x(j) = ud{j}.(parx).threshold;
+                y(j) = ud{j}.(pary).threshold;
+            end
+            
+            line(ax,x,y,'LineStyle','none', ...
+                'Marker','o',...
+                'MarkerSize', 12,...
+                'MarkerFaceColor',postcm(i,:),...
+                'MarkerEdgeColor', 'none');
         end
         
-        ud = {Ci(sidx{i}==k).UserData};
-        
-        x = nan(size(ud));
-        y = x;
-        
-        for j = 1:length(ud)
-            x(j) = ud{j}.(parx).threshold;
-            y(j) = ud{j}.(pary).threshold;
-        end
-        
-        line(ax,x,y,'LineStyle','none', ...
-            'Marker','o',...
-            'MarkerSize', 12,...
-            'MarkerFaceColor',cm(k,:),...
-            'MarkerEdgeColor', 'none');
     else
         for k = 1:3
             

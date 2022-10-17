@@ -20,6 +20,7 @@ cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 % set figure
 f = figure(sum(uint8(parname)));
+f.Position = [0, 0, 1500, 600];
 
 clf(f);
 
@@ -28,8 +29,8 @@ ax(2) = subplot(132,'parent',f);
 ax(3) = subplot(133,'parent',f);
 
 set(ax,...
-    'xlim', [-16,-5],...
-    'ylim', [-16,-8]);
+    'xlim', [-20,-5],...
+    'ylim', [-20,-10]);
 
 % neural data
 days = 1:min(maxdays,length(Cday));

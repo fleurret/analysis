@@ -1,8 +1,8 @@
 function split_condition(savedir, maxNumDays, parname, replace)
 
 % load clusters
-fn = 'Cday_';
-fn = strcat(fn,(parname),'.mat');
+fn = 'Cday_original.mat';
+% fn = strcat(fn,(parname),'.mat');
 load(fullfile(savedir,fn));
 
 days = 1:min(maxNumDays,length(Cday));

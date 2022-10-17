@@ -17,8 +17,10 @@ pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 % subj = '228';
 
 % vmgb
-subj = '322';
+% subj = '322';
 % subj = '323';
+subj = '378';
+% subj = '380';
 
 % acx
 % subj = 'BBBFluffy_221955';
@@ -90,11 +92,14 @@ par.modfreq = 5;
 parname = [];
 
 % par.metric = @epa.metric.trial_firingrate; parname = 'FiringRate';
+par.metric = @epa.metric.cl_calcpower; parname = 'Power';
+% par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
+
+% currently unused metrics
 % par.metric = @epa.metric.tmtf; parname = 'TMTF'; % use the temporal Modualation Transfer Function metric
 % par.metric = @epa.metric.vector_strength; parname = 'VS';
 % par.metric = @epa.metric.vector_strength_phase_projected; parname = 'VSpp';
-% par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
-par.metric = @epa.metric.cl_calcpower; parname = 'Power';
+
 
 
 if isequal(parname,'Power') && isempty(which('chronux.m'))
@@ -164,12 +169,6 @@ end
 minNTrials = 5;
 minNValues = 3;
 targDPrimeThreshold = 1;
-
-% parname = 'FiringRate';
-% parname = 'VScc';
-% parname = 'VSpp';
-% parname = 'VS';
-% parname = 'Power';
 
 for i = 1:length(d)
     

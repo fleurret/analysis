@@ -5,8 +5,22 @@ function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type
 % correlation coefficient is set to Spearman's
 
 % load behavior
-load(fullfile(behavdir,'behavior_combined.mat'));
-% load(fullfile(behavdir,'224 behavior.mat'))
+if subj == "all"
+    load(fullfile(behavdir,'behavior_combined.mat'));
+else
+    pth = fullfile(behavdir,subj);
+    d = dir(fullfile(pth,'*.mat'));
+    ffn = fullfile(d.folder,d.name);
+    
+    load(ffn, 'output')
+    for i = 1:length(output)
+        a(i) = output(i).fitdata;
+    end
+    
+    behav_os = [a.threshold];
+    
+    clear a
+end
 
 % load neural
 if unit_type == "SU"
@@ -14,7 +28,11 @@ if unit_type == "SU"
 else
     fn = 'Cday_';
     fn = strcat(fn,(parname),'.mat');
-%     fn = 'Cday_original.mat';
+    
+    if ~exist(fullfile(savedir,fn))
+        fn = 'Cday_original.mat';
+    end
+    
     load(fullfile(savedir,fn));
 end
 
@@ -76,8 +94,7 @@ for i = 1:length(days)
     flaggedForRemoval = "";
     for j = 1:length(uid)
         ind = uid(j) == id;
-        
-        % flag if no 
+       
         % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
         t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
         pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
@@ -108,14 +125,26 @@ for i = 1:length(days)
     % only plot one subject    
     if subj ~= "all"
         subj_idx = zeros(1,length(Ci));
+
         for j = 1:length(Ci)
-            cs = convertCharsToStrings(Ci(j).Subject);
-            if contains(cs,subj) || contains(Ci(j).SessionName, subj)
-                subj_idx(j) = 1;
+            if Ci(j).Subject == ""
+                nsubj = append(subj,"_");
+                cs = convertCharsToStrings(Ci(j).Name);
+                if contains(cs,nsubj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
             else
-                subj_idx(j) = 0;
+                cs = convertCharsToStrings(Ci(j).Subject);
+                if contains(cs,subj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
             end
         end
+            
         subj_idx = logical(subj_idx);
         Ci = Ci(subj_idx);
     end
@@ -202,6 +231,8 @@ for i = 1:length(days)
         sidx{i}(contains(sn,"Aversive")) = 2;
         sidx{i}(contains(sn,"Post")) = 3;
         x = 1+ones(size(thr{i}))*log10(days(i));
+    else
+        continue
     end
     
     for j = 1:3 % plot each session seperately
@@ -300,7 +331,7 @@ uistack(hfit,'bottom');
 % Pearson's R
 for i = 1:3
     smean = n_mean(i,:);
-    z = ~(isnan(smean) | isnan(days));
+    z = ~(isnan(smean));
     [n_PR,n_P]= corr(smean(z)', days(z)', 'type','Spearman');
     PR{i} = n_PR;
     PRP{i} = n_P;
@@ -311,12 +342,13 @@ if subj == "all"
     behav_mean = behav_mean(1:7);
     behav_std = behav_std(1:7);
 else
-    behav_mean = behav(1:7);   
+    behav_mean = behav_os;   
 end
 
 x = log10(days)+1;
 xoffset = 0.98;
 x = x*xoffset;
+
 bplot = line(ax(2),x,behav_mean);
 bplot.Marker = 'o';
 bplot.MarkerSize = 8;
