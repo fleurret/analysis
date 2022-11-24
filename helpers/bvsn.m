@@ -165,6 +165,7 @@ for k = 1:3 % plot each session seperately
         title(ax(k),sprintf('%s (%s)',sessionName(k),parname),...
             'FontSize',15);
     end
+    
     % axes etc
     set([ax.XAxis], ...
         'FontSize',12);

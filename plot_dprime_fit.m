@@ -3,7 +3,7 @@ behav_file = fullfile(parentDir,'SUBJ-ID-202_allSessions.mat');
 load(behav_file)
 %%
 f = figure;
-    f.Position = [0, 0, 500 475];
+    f.Position = [0, 0, 500 400];
     f.Resize = 'off';
 hold on
 
@@ -137,7 +137,7 @@ legend boxoff
 
 %% thresholds over days
 f = figure;
-    f.Position = [0, 0, 500 475];
+    f.Position = [0, 0, 500 200];
     f.Resize = 'off';
 hold on
 
@@ -207,11 +207,11 @@ s = scatter(x,y,100);
 
     
 set(gca, 'XLimMode', 'manual', 'XLim', [0.9 8])
-set(gca, 'YLimMode', 'manual', 'YLim', [-18 -9])
+set(gca, 'YLimMode', 'manual', 'YLim', [-20 -10])
 set(gca, 'XScale', 'log')
 
-xticks([1, 2, 5, 7])
-yticks([-18, -16, -14, -12, -10])
+xticks([1, 2, 3, 4, 5, 6, 7])
+yticks([-20, -15, -10])
 xlabel('Psychometric Testing Day',...
     'FontSize', 20,...
     'FontWeight','bold')

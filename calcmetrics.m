@@ -18,8 +18,8 @@ pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 
 % vmgb
 % subj = '322';
-% subj = '323';
-subj = '378';
+subj = '323';
+% subj = '378';
 % subj = '380';
 
 % acx
@@ -310,8 +310,8 @@ parname = 'FiringRate';
 % parname = 'VS';
 % parname = 'Power';
 
-day = 3;
-clustername = "cluster546";
+day = 2;
+clustername = "cluster581";
 
 d_psth(d, parname, day, clustername)
 

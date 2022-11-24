@@ -91,7 +91,7 @@ for i = 1:numel(C)
     h.showtitle = false;
     h.normalization = 'firingrate';
     h.ax = ax2;
-    h.plot;
+%     h.plot;
     
     
 end

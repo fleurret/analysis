@@ -71,13 +71,13 @@ plot_units(spth, behavdir, savedir, parname, "all", "all", "all", "no")
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, maxdays, subj)
 
-% parname = 'FiringRate';
-parname = 'VScc';
+parname = 'FiringRate';
+% parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';
 % parname = 'Power';
 
-bvsn(behavdir, savedir, parname, 7, "380")
+bvsn(behavdir, savedir, parname, 7, "267")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, maxdays)
@@ -114,15 +114,58 @@ split_condition(savedir, 7, parname, "no")
 
 % session: "pre", "active", "post", "all"
 
-compare_thresholds(savedir, 'FiringRate', 'VScc', "yes", "active")
+compare_thresholds(savedir, 'FiringRate', 'VScc', "yes", "post")
 
 %% Extract mean/median/max firing rate info
 
-% parname = 'FiringRate';
-parname = 'VScc';
+parname = 'FiringRate';
+% parname = 'VScc';
 
 val = 'Mean';
 % val = 'Median';
 % val = 'Max';
 
-extract_fr(savedir,parname, val)
+% depth: in dB; 0 -3 -6 -9 -12 -15 -18
+depth = -3;
+
+makeplot = 'n';
+
+extract_fr(savedir, parname, val, depth, makeplot)
+
+%% Plot thresholds across regions - not finished
+
+% parname = 'FiringRate';
+parname = 'VScc';
+
+% region = "all";
+
+% session = 'Pre';
+session = 'Active';
+% session = 'Post';
+
+sd1 = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\';
+fn = 'Cday_';
+fn = strcat(fn,(parname),'.mat');
+
+if ~exist(fullfile(sd1,fn))
+    fn = 'Cday_original.mat';
+end
+
+load(fullfile(sd1,fn));
+
+sd2 = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\';
+sd3 = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\';
+
+%% Plot histograms for each unit
+
+parname = 'FiringRate';
+% parname = 'VScc';
+
+plot_histo(savedir, parname)
+
+%% Count units
+
+count_units(savedir)
+
+
+

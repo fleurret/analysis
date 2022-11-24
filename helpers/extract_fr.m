@@ -1,4 +1,4 @@
-function extract_fr(savedir,parname, val)
+function extract_fr(savedir,parname, val, depth, makeplot)
 
 fn = 'Cday_';
 fn = strcat(fn,(parname),'.mat');
@@ -82,40 +82,58 @@ for i = 1:days
         
         for k = 1:length(Cj)
             Ck = Cj(k);
+            
+            % firing rate
             ev = Ck.Session.find_Event("AMDepth").DistinctValues;
             ev(ev==0) = [];
             h = epa.plot.PSTH(Ck,'event',"AMDepth",'eventvalue',ev);
-            [fr,b,uv] = Ck.psth(h);
+            [fr,~,~] = Ck.psth(h);
             
             sn = Ck.SessionName;
             
-            % session
-            if contains(sn,"Pre")
-                M(1,1) = mean(fr,'all');
-                M(2,1) = median(fr,'all');
-                M(3,1) = max(fr,[],'all');
+            % determine if depth was presented that day
+            
+            presented = round(Ck.UserData.(parname).vals);
+            
+            if sum(ismember(presented,depth) == 1)
+                didx = find(presented==depth);
+                
+                % session
+                if contains(sn,"Pre")
+                    M(1,1) = mean(fr(didx,:));
+                    M(2,1) = median(fr(didx,:));
+                    M(3,1) = max(fr(didx,:));
+                end
+                
+                if contains(sn,"Aversive")
+                    M(1,2) = mean(fr(didx,:));
+                    M(2,2) = median(fr(didx,:));
+                    M(3,2) = max(fr(didx,:));
+                end
+                
+                if contains(sn,"Post")
+                    M(1,3) = mean(fr(didx,:));
+                    M(2,3) = median(fr(didx,:));
+                    M(3,3) = max(fr(didx,:));
+                end
+                
+            else
+                continue
             end
+        
+            % VScc
+%             p = Ck.UserData.VScc.V;
+%             v = Ck.UserData.VScc.M;
             
-            if contains(sn,"Aversive")
-                M(1,2) = mean(fr,'all');
-                M(2,2) = median(fr,'all');
-                M(3,2) = max(fr,[],'all');
-            end
-            
-            if contains(sn,"Post")
-                M(1,3) = mean(fr,'all');
-                M(2,3) = median(fr,'all');
-                M(3,3) = max(fr,[],'all');
-            end
-            
-            % id
-            cluster = Ck.TitleStr;
-            
-            s = split(cluster, '_');
-            subject = s(1);
-            
-            day = i;
         end
+        
+        % id
+        cluster = Ck.TitleStr;
+        
+        s = split(cluster, '_');
+        subject = s(1);
+        
+        day = i;
         
         % combine
         if contains(val,'Mean')
@@ -135,7 +153,39 @@ for i = 1:days
     end
 end
 
-ff = append(savedir,val,parname,'FiringRate.csv');
+ff = append(savedir,val,parname,num2str(abs(depth)),'FiringRate.csv');
 writetable(FiringRate,ff)
 fprintf('File saved \n')
+
+if makeplot == 'y'
+    FR = table2array(FiringRate);
+    cm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
+    
+    f = figure;
+    f.Position = [0, 0, 2000, 350];
+    
+    for d = 1:days
+        ax = subplot(1,days,d);
+        hold on
+        
+        for i = 1:length(FR)
+            unit = FR(i,:);
+            pap = [str2num(unit(4)) str2num(unit(5)) str2num(unit(6))];
+            ud = str2num(unit(3));
+            ucm = cm(d,:);
+            
+            if d == ud
+                plot(pap,...
+                    'Color',ucm,...
+                    'Marker','o',...
+                    'LineWidth',2)
+                xticklabels({'Pre','','Active','','Post'})
+                ylabel('Firing rate (Hz)')
+                T = append(num2str(depth),' dB');
+                title(T);
+                ylim([0 100])
+            end
+        end
+    end
+end
 
