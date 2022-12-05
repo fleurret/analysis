@@ -4,7 +4,7 @@ caraslab_behav_pipeline(savedir, behaviordir, 'intan');
 %% Determine behavioral asymptote
 
 % load file
-spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Behavior';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
@@ -12,7 +12,7 @@ subjects(ismember({subjects.name},{'.','..'})) = [];
 maxdays = 7;
 
 % extract output
-for subj = 1%:length(subjects)
+for subj = 3%:length(subjects)
     spth = fullfile(subjects(subj).folder,subjects(subj).name);
     d = dir(fullfile(spth,'*.mat'));
     ffn = fullfile(d.folder,d.name);

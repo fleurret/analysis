@@ -1,4 +1,4 @@
-spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior';
+spth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Acquisition\Experimental';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
@@ -19,10 +19,10 @@ for subj = 1:length(subjects)
     fprintf(' done\n')
     
     for i = 1:length(output)
-        a(i) = output(i).fitdata;
+        t(i) = output(i).fitdata.threshold;
     end
     
-    t = [a.threshold];
+%     t = [a.threshold];
     
     clear a
     
@@ -45,5 +45,5 @@ behav_std = thresholds(subj+2,:);
 
 %%
 % save as file
-file = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Behavior\behavior_combined.mat';
+file = 'C:\Users\rose\Documents\Caras\Analysis/IC recordings\Behavior\behavior_combined.mat';
 save(file, 'behav_mean','behav_std')
