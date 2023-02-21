@@ -1,14 +1,22 @@
-spth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Maintenance\No caspase';
-subjects = dir(spth);
+%% SET VARIABLES
+% folder where your data is located - should have subfolders for each
+% subject with behavior file
+pth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Maintenance\No caspase';
+
+% number of days you want to analyze
+maxdays = 7;
+
+%% PROCESS
+% extract subjects
+subjects = dir(pth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
-maxdays = 17;
-
+% create empty array to store data
 t = nan(1,maxdays);
 thresholds = nan(length(subjects),maxdays);
 
-% extract output
+% extract thresholds
 for subj = 1:length(subjects)
     spth = fullfile(subjects(subj).folder,subjects(subj).name);
     d = dir(fullfile(spth,'*.mat'));
@@ -25,7 +33,7 @@ for subj = 1:length(subjects)
     thresholds(subj,1:length(t)) = t;
 end
 
-% calculate mean and std across days
+% calculate mean and standard error across days
 for i = 1:maxdays
     x = thresholds(1:subj,i);
     m = mean(x, 'omitnan');
@@ -36,8 +44,8 @@ for i = 1:maxdays
     thresholds(subj+2,i) = s;
 end
 
-behav_mean = thresholds(subj+1,:);
-behav_std = thresholds(subj+2,:);
+M = thresholds(subj+1,:);
+S = thresholds(subj+2,:);
 
 %%
 % save as file
