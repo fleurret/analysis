@@ -1,53 +1,20 @@
 %% SET VARIABLES
 % folder where your data is located - should have subfolders for each
-% subject with behavior file
-pth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Maintenance\No caspase';
+% condition, and then sub-subfolder subject with behavior file
+% e.g. Caspase > Control > SUBJ200 > behaviorfile.mat; your path will be
+% C:\Users\rose\Caspase
+pth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Maintenance';
 
 % number of days you want to analyze
 maxdays = 7;
 
-%% PROCESS
-% extract subjects
-subjects = dir(pth);
-subjects(~[subjects.isdir]) = [];
-subjects(ismember({subjects.name},{'.','..'})) = [];
+% y limit - adjust as needed to make sure all data points are visible
+yl = [-20,-2];
 
-% create empty array to store data
-t = nan(1,maxdays);
-thresholds = nan(length(subjects),maxdays);
+% colors to use in your graphs. rgb values (https://www.color-hex.com/)
+c = [69,207,217 ; 120,57,118]./255;
 
-% extract thresholds
-for subj = 1:length(subjects)
-    spth = fullfile(subjects(subj).folder,subjects(subj).name);
-    d = dir(fullfile(spth,'*.mat'));
-    ffn = fullfile(d.folder,d.name);
-    
-    fprintf('Loading subject %s ...',subjects(subj).name)
-    load(ffn)
-    fprintf(' done\n')
-    
-    for i = 1:length(output)
-        t(i) = output(i).fitdata.threshold;
-    end
+%% GRAPH AVERAGE THRESHOLDS ACROSS DAYS
+% bars represent standard error
 
-    thresholds(subj,1:length(t)) = t;
-end
-
-% calculate mean and standard error across days
-for i = 1:maxdays
-    x = thresholds(1:subj,i);
-    m = mean(x, 'omitnan');
-    s = std(x, 'omitnan');
-    s = s /(sqrt(maxdays-1));
-
-    thresholds(subj+1,i) = m;
-    thresholds(subj+2,i) = s;
-end
-
-M = thresholds(subj+1,:);
-S = thresholds(subj+2,:);
-
-%%
-% save as file
-file = 'C:\Users\rose\Documents\Caras\Analysis/IC recordings\Behavior\behavior_combined.mat';
-save(file, 'behav_mean','behav_std')
+avg_threshold(pth, maxdays, yl, c)
