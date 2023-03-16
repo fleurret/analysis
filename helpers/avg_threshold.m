@@ -43,7 +43,7 @@ for i = 1:length(groups)
         x = thresholds(1:subj,j);
         m = mean(x, 'omitnan');
         s = std(x, 'omitnan');
-        s = s /(sqrt(maxdays-1));
+        s = s /(sqrt(maxdays));
         
         M(i,j) = m;
         S(i,j) = s;

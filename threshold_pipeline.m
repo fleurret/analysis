@@ -9,7 +9,7 @@ pth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Maintenance';
 maxdays = 7;
 
 % y limit - adjust as needed to make sure all data points are visible
-yl = [-20,-2];
+yl = [-20,-8];
 
 % colors to use in your graphs. rgb values (https://www.color-hex.com/)
 c = [69,207,217 ; 120,57,118]./255;
