@@ -63,9 +63,8 @@ f.Position = [0, 0, 800, 350];
 
 % change x values to log scale and offset
 days = 1:maxdays;
-xi = log10(days)+1;
-xoffset = 0.98;
-xi = xi*xoffset;
+xx = log10(days)+1;
+xoffset = [0.99,1.01];
 
 % set axes
 ax = gca;
@@ -76,6 +75,7 @@ hold on
 for i = 1:length(groups)
     y = M(i,:);
     s = S(i,:);
+    xi = xx*xoffset(i);
     
     % errorbar properties
     e = errorbar(xi,y,s,...
@@ -121,6 +121,6 @@ ylabel(ax,'Threshold (dB re: 100%)',...
     'FontSize', 12);
 
 % legend
-legend(C,'Location','southwest','FontSize',12);
+legend(flip(C),'Location','southwest','FontSize',12);
 legend boxoff
 
