@@ -1,4 +1,4 @@
-parentDir = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Acquisition\Control\399';
+parentDir = 'D:\Caras\Analysis\Caspase\Acquisition\Control\399';
 behav_file = fullfile(parentDir,'SUBJ-ID-399_allSessions.mat');
 load(behav_file)
 %%
@@ -37,43 +37,43 @@ set(gca, 'YLimMode', 'manual', 'YLim', [-0.5 3])
     
 %% all fits
 % day 1
-% x = output(1).fitdata.fit_plot.x([413:870]);
-% y = output(1).fitdata.fit_plot.dprime([413:870]);
-% p = plot(x,y);
-%     p.LineWidth = 5;
-%     p.Color = '#FAB4CF';
-% xpoint = output(1).dprimemat(:,1);
-% ypoint = output(1).dprimemat(:,2);
-% points = scatter(xpoint,ypoint,100);
-%     points.MarkerFaceColor = '#FAB4CF';
-%     points.MarkerFaceAlpha = 0.5;
-%     points.MarkerEdgeAlpha = 0;
+x = output(1).fitdata.fit_plot.x([413:870]);
+y = output(1).fitdata.fit_plot.dprime([413:870]);
+p = plot(x,y);
+    p.LineWidth = 5;
+    p.Color = '#FAB4CF';
+xpoint = output(1).dprimemat(:,1);
+ypoint = output(1).dprimemat(:,2);
+points = scatter(xpoint,ypoint,100);
+    points.MarkerFaceColor = '#FAB4CF';
+    points.MarkerFaceAlpha = 0.5;
+    points.MarkerEdgeAlpha = 0;
 
 % day 2
-% x = output(2).fitdata.fit_plot.x([435:928]);
-% y = output(2).fitdata.fit_plot.dprime([435:928]);
-% p = plot(x,y);
-%     p.LineWidth = 5;
-%     p.Color = '#cb83e6';
-% xpoint = output(2).dprimemat(:,1);
-% ypoint = output(2).dprimemat(:,2);
-% points = scatter(xpoint,ypoint,100);
-%     points.MarkerFaceColor = '#cb83e6';
-%     points.MarkerFaceAlpha = 0.5;
-%     points.MarkerEdgeAlpha = 0;
+x = output(2).fitdata.fit_plot.x([435:928]);
+y = output(2).fitdata.fit_plot.dprime([435:928]);
+p = plot(x,y);
+    p.LineWidth = 5;
+    p.Color = '#cb83e6';
+xpoint = output(2).dprimemat(:,1);
+ypoint = output(2).dprimemat(:,2);
+points = scatter(xpoint,ypoint,100);
+    points.MarkerFaceColor = '#cb83e6';
+    points.MarkerFaceAlpha = 0.5;
+    points.MarkerEdgeAlpha = 0;
 
 % day 3
-% x = output(3).fitdata.fit_plot.x([470:1000]);
-% y = output(3).fitdata.fit_plot.dprime([470:1000]);
-% p = plot(x,y);
-%     p.LineWidth = 5;
-%     p.Color = '#836bd1';
-% xpoint = output(3).dprimemat(:,1);
-% ypoint = output(3).dprimemat(:,2);
-% points = scatter(xpoint,ypoint,100);
-%     points.MarkerFaceColor = '#836bd1';
-%     points.MarkerFaceAlpha = 0.5;
-%     points.MarkerEdgeAlpha = 0;
+x = output(3).fitdata.fit_plot.x([470:1000]);
+y = output(3).fitdata.fit_plot.dprime([470:1000]);
+p = plot(x,y);
+    p.LineWidth = 5;
+    p.Color = '#836bd1';
+xpoint = output(3).dprimemat(:,1);
+ypoint = output(3).dprimemat(:,2);
+points = scatter(xpoint,ypoint,100);
+    points.MarkerFaceColor = '#836bd1';
+    points.MarkerFaceAlpha = 0.5;
+    points.MarkerEdgeAlpha = 0;
 
 % day 4
 x = output(4).fitdata.fit_plot.x([435:930]);
@@ -90,43 +90,43 @@ points = scatter(xpoint,ypoint,100);
     points.MarkerEdgeAlpha = 0;
 
 % day 5
-% x = output(5).fitdata.fit_plot.x([460:900]);
-% y = output(5).fitdata.fit_plot.dprime([460:900]);
-% p = plot(x,y);
-%     p.LineWidth = 5;
-%     p.Color = '#74e3f0';
-% xpoint = output(5).dprimemat(:,1);
-% ypoint = output(5).dprimemat(:,2);
-% points = scatter(xpoint,ypoint,100);
-%     points.MarkerFaceColor = '#74e3f0';
-%     points.MarkerFaceAlpha = 0.5;
-%     points.MarkerEdgeAlpha = 0;
+x = output(5).fitdata.fit_plot.x([460:900]);
+y = output(5).fitdata.fit_plot.dprime([460:900]);
+p = plot(x,y);
+    p.LineWidth = 5;
+    p.Color = '#74e3f0';
+xpoint = output(5).dprimemat(:,1);
+ypoint = output(5).dprimemat(:,2);
+points = scatter(xpoint,ypoint,100);
+    points.MarkerFaceColor = '#74e3f0';
+    points.MarkerFaceAlpha = 0.5;
+    points.MarkerEdgeAlpha = 0;
 
 % day 6
-% x = output(6).fitdata.fit_plot.x([470:1000]);
-% y = output(6).fitdata.fit_plot.dprime([470:1000]);
-% p = plot(x,y);
-%     p.LineWidth = 5;
-%     p.Color = '#8adea6';
-% xpoint = output(6).dprimemat(:,1);
-% ypoint = output(6).dprimemat(:,2);
-% points = scatter(xpoint,ypoint,100);
-%     points.MarkerFaceColor = '#8adea6';
-%     points.MarkerFaceAlpha = 0.5;
-%     points.MarkerEdgeAlpha = 0;
+x = output(6).fitdata.fit_plot.x([470:1000]);
+y = output(6).fitdata.fit_plot.dprime([470:1000]);
+p = plot(x,y);
+    p.LineWidth = 5;
+    p.Color = '#8adea6';
+xpoint = output(6).dprimemat(:,1);
+ypoint = output(6).dprimemat(:,2);
+points = scatter(xpoint,ypoint,100);
+    points.MarkerFaceColor = '#8adea6';
+    points.MarkerFaceAlpha = 0.5;
+    points.MarkerEdgeAlpha = 0;
 
 % day 7
-% x = output(7).fitdata.fit_plot.x([470:1000]);
-% y = output(7).fitdata.fit_plot.dprime([470:1000]);
-% p = plot(x,y);
-%     p.LineWidth = 5;
-%     p.Color = '#d4e261';
-% xpoint = output(6).dprimemat(:,1);
-% ypoint = output(6).dprimemat(:,2);
-% points = scatter(xpoint,ypoint,100);
-%     points.MarkerFaceColor = '#d4e261';
-%     points.MarkerFaceAlpha = 0.5;
-%     points.MarkerEdgeAlpha = 0;
+x = output(7).fitdata.fit_plot.x([470:1000]);
+y = output(7).fitdata.fit_plot.dprime([470:1000]);
+p = plot(x,y);
+    p.LineWidth = 5;
+    p.Color = '#d4e261';
+xpoint = output(6).dprimemat(:,1);
+ypoint = output(6).dprimemat(:,2);
+points = scatter(xpoint,ypoint,100);
+    points.MarkerFaceColor = '#d4e261';
+    points.MarkerFaceAlpha = 0.5;
+    points.MarkerEdgeAlpha = 0;
  
 set(gca, 'XLimMode', 'manual', 'XLim', [-27 2])
 set(gca, 'YLimMode', 'manual', 'YLim', [0 3.2])

@@ -3,7 +3,7 @@
 % condition, and then sub-subfolder subject with behavior file
 % e.g. Caspase > Control > SUBJ200 > behaviorfile.mat; your path will be
 % C:\Users\rose\Caspase
-pth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Acquisition';
+pth = 'C:\Users\rose\Documents\Caras\Analysis\Caspase\Maintenance';
 
 % number of days you want to analyze
 maxdays = 7;

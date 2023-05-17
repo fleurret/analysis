@@ -1,5 +1,5 @@
-load('C:\Users\rose\Documents\Caras\Analysis\Caspase\Acquisition\Experimental\400\thresholds_400.mat')
-load('C:\Users\rose\Documents\Caras\Analysis\Caspase\Acquisition\Control\399\thresholds_399.mat')
+
+load('D:\Caras\Analysis\Caspase\Acquisition\Control\399\SUBJ-ID-399_allSessions.mat')
 f = figure;
 f.Position = [0, 0, 850, 400];
 hold on

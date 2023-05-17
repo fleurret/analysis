@@ -1,13 +1,13 @@
 %% Set directories - run first!
-% region = "IC";
+region = "IC";
 % region = "IC shell";
-region = "MGN";
+% region = "MGN";
 % region = "ACx";
 
 if region == "IC"
-    spth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data\';
-    savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\';
-    behavdir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Behavior\';
+    spth = 'D:\Caras\Analysis\IC recordings\Data\';
+    savedir = 'D:\Caras\Analysis\IC recordings';
+    behavdir = 'D:\Caras\Analysis\IC recordings\Behavior\';
 end
 
 if region == "IC shell"
@@ -52,7 +52,7 @@ flag_cluster(savedir, parname, "session", 3, "224_cluster1451", "Post")
 %% Plot thresholds across days
 % syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
 
-parname = 'FiringRate';
+% parname = 'FiringRate';
 % parname = 'VScc';
 % parname = 'VSpp';
 % parname = 'VS';

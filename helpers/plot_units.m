@@ -1,4 +1,4 @@
-function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
+ function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
 
 % Plot individual unit thresholds and means across days
 
