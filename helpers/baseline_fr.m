@@ -1,4 +1,4 @@
-function b = baseline_firingrate(u)
+function b = baseline_fr(u)
 
 par = [];
 par.event = "";
