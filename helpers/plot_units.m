@@ -4,6 +4,17 @@
 
 % correlation coefficient is set to Spearman's
 
+% convert parname to correct label
+if contains(parname,'FiringRate')
+    parname = 'trial_firingrate';
+    
+elseif contains(parname,'Power')
+    parname = 'cl_calcpower';
+    
+else contains(parname,'VScc')
+    parname = 'vector_strength_cycle_by_cycle';
+end
+
 % load behavior
 if subj == "all"
     load(fullfile(behavdir,'behavior_combined.mat'));
@@ -23,18 +34,14 @@ else
 end
 
 % load neural
-if unit_type == "SU"
-    load(fullfile(savedir,'Cday_VScc_restrictiveSU.mat'));
-else
-    fn = 'Cday_';
-    fn = strcat(fn,(parname),'.mat');
-    
-    if ~exist(fullfile(savedir,fn))
-        fn = 'Cday_original.mat';
-    end
-    
-    load(fullfile(savedir,fn));
+fn = 'Cday_';
+fn = strcat(fn,(parname),'.mat');
+
+if ~exist(fullfile(savedir,fn))
+    fn = 'Cday_original.mat';
 end
+
+load(fullfile(savedir,fn));
 
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
@@ -77,6 +84,10 @@ for i = 1:length(days)
     for j = 1:length(Ci)
         c = Ci(j);
         
+        if contains(c.SessionName, 'FreqTuning')
+            continue
+        end
+        
         if ~isfield(c.UserData.(parname),'threshold')
             c.UserData.(parname).threshold = 0;
         end
@@ -94,7 +105,7 @@ for i = 1:length(days)
     flaggedForRemoval = "";
     for j = 1:length(uid)
         ind = uid(j) == id;
-       
+        
         % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
         t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
         pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));

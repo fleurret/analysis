@@ -1,7 +1,7 @@
 %% Set directories - run first!
-region = "IC";
+% region = "IC";
 % region = "IC shell";
-% region = "MGN";
+region = "MGN";
 % region = "ACx";
 
 if region == "IC"
@@ -17,9 +17,9 @@ if region == "IC shell"
 end
 
 if region == "MGN"
-    spth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data\';
-    savedir = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\';
-    behavdir = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Behavior\';
+    spth = 'D:\Caras\Analysis\MGB recordings\Data\';
+    savedir = 'D:\Caras\Analysis\MGB recordings\';
+    behavdir = 'D:\Caras\Analysis\MGB recordings\Behavior\';
 end
 
 if region == "ACx"
@@ -28,6 +28,8 @@ if region == "ACx"
     behavdir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Behavior\';
 end
 
+
+parname = 'FiringRate';
 %% Load .mat and convert neural data
 % only needs to be run whenever new data is added
 
@@ -52,11 +54,9 @@ flag_cluster(savedir, parname, "session", 3, "224_cluster1451", "Post")
 %% Plot thresholds across days
 % syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
 
-% parname = 'FiringRate';
-% parname = 'VScc';
-% parname = 'VSpp';
-% parname = 'VS';
+parname = 'FiringRate';
 % parname = 'Power';
+% parname = 'VScc';
 
 % subj: "all", "202", "222", "223", "224", "267"
 
@@ -128,7 +128,7 @@ val = 'Mean';
 % depth: in dB; 0 -3 -6 -9 -12 -15 -18
 depth = -3;
 
-makeplot = 'n';
+makeplot = 'y';
 
 extract_fr(savedir, parname, val, depth, makeplot)
 

@@ -11,6 +11,17 @@ load(fullfile(savedir,fn));
 
 days = 7;
 
+% convert parname to correct label
+if contains(parname,'FiringRate')
+    parname = 'trial_firingrate';
+    
+elseif contains(parname,'Power')
+    parname = 'cl_calcpower';
+    
+else contains(parname,'VScc')
+    parname = 'vector_strength_cycle_by_cycle';
+end
+
 % make table
 headers = {'Cluster','Subject','Day','Pre', 'Aversive','Post'};
 FiringRate = cell2table(cell(0,6),'VariableNames', headers);
