@@ -109,7 +109,7 @@ for i = 1:maxNumDays
         % get events and calculate baseline
         for k = 1:length(U)
             u = U(k);
-            b = baseline(u,parname);
+            b = baseline_fr(u);
             B = [B; b];
         end
         % add to list
@@ -126,7 +126,7 @@ end
 
 % save as file
 sf = fullfile(savedir,append(parname,'_baseline.xlsx'));
-fprintf('Saving file %s \n', sf)
+fprintf('Saving file %s/n', sf)
 writecell(output,sf);
 fprintf(' done\n')
 
@@ -153,22 +153,12 @@ for d = 1:maxNumDays
                 'Marker','o',...
                 'LineWidth',2)
             xticklabels({'Pre','','Active','','Post'})
-            title('Day ', d)
             
             if strcmp(parname, 'trial_firingrate')
                 ylabel('Firing rate (Hz)')
                 ylim([0 100])
             end
             
-            if strcmp(parname, 'cl_calcpower')
-                ylabel('spikes/sec^{2}/Hz')
-                ylim([0 100])
-            end
-            
-            if strcmp(parname, 'vector_strength_cycle_by_cycle')
-                ylabel('Vector strength')
-                ylim([0 0.3])
-            end
         end
     end
 end
