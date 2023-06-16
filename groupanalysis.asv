@@ -88,7 +88,7 @@ split_condition(savedir, 7, parname, "no")
 %% Compare thresholds by coding
 % syntax: compare_thresholds(savedir, parx, pary, shownans)
 
-% parx/pary: 'FiringRate', 'VScc', 'Power'
+% parx/pary: 'FiringRate', 'VScc', 'VS', 'Power'
 
 % shownans: "yes", "no"
 
@@ -144,7 +144,7 @@ count_units(savedir)
 %% AM/Non-AM metrics across sessions
 % syntax: metrics_across_sessions(parname, spth, savedir, meas, type)
 
-% meas: 'Mean', 'CoV' (Coefficient of variation)
+% meas: 'Mean', 'CoV'
 % type: 'AM', 'NonAM'
 
 metrics_across_sessions(parname, spth, savedir, 'CoV', 'AM')

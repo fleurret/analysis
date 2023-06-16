@@ -1,4 +1,4 @@
-function b = baseline(u,parname)
+function [AM, NAM] = calc_cv(u,parname)
 
 E = u.Session.Events;
 V = u.UserData.(parname).V;
@@ -14,4 +14,4 @@ b = nan(1);
 ind = dV(1) == V;
 data = [M(refInd); M(ind)]';
 tind = [false(1,sum(refInd)) true(1,sum(ind))];
-b = epa.metric.baseline_activity(data,tind);
+[AM, NAM] = cv(data,tind);

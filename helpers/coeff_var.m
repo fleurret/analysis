@@ -1,11 +1,4 @@
-% parname = 'FiringRate';
-% parname = 'Power';
-parname = 'VScc';
-
-spth = 'D:\Caras\Analysis\MGB recordings\Data\';
-savedir = 'D:\Caras\Analysis\MGB recordings\';
-
-%% create file
+function coeff_var(parname, spth, savedir, type)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -106,10 +99,17 @@ for i = 1:maxNumDays
         temp = {};
         B = [];
         
-        % get events and calculate baseline
+        % get events and calculate coefficient of variation
         for k = 1:length(U)
             u = U(k);
-            b = baseline_fr(u);
+            [AM,NAM] = calc_cv(u,parname);
+            
+            if type == 'AM'
+                b = AM;
+            else
+                b = NAM;
+            end
+            
             B = [B; b];
         end
         % add to list
@@ -125,13 +125,12 @@ for i = 1:maxNumDays
 end
 
 % save as file
-sf = fullfile(savedir,append(parname,'_baseline.xlsx'));
-fprintf('Saving file %s/n', sf)
+sf = fullfile(savedir,append(parname,'_',type,'_cv.xlsx'));
+fprintf('Saving file %s \n', sf)
 writecell(output,sf);
 fprintf(' done\n')
 
-%% plot
-
+% plot
 cm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
 
 f = figure;
@@ -153,20 +152,22 @@ for d = 1:maxNumDays
                 'Marker','o',...
                 'LineWidth',2)
             xticklabels({'Pre','','Active','','Post'})
+            title('Day ', d)
             
             if strcmp(parname, 'trial_firingrate')
                 ylabel('Firing rate (Hz)')
                 ylim([0 100])
             end
             
+            if strcmp(parname, 'cl_calcpower')
+                ylabel('spikes/sec^{2}/Hz')
+                ylim([0 100])
+            end
+            
+            if strcmp(parname, 'vector_strength_cycle_by_cycle')
+                ylabel('Vector strength')
+                ylim([0 0.3])
+            end
         end
     end
-end
-
-%% coefficient of variation
-
-cv = nan(1,3);
-
-for i = 1:3
-    cv(i) = std(output(:,i+3))/mean(output(:,i+3));
 end

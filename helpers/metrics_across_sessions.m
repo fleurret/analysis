@@ -1,11 +1,4 @@
-% parname = 'FiringRate';
-% parname = 'Power';
-parname = 'VScc';
-
-spth = 'D:\Caras\Analysis\MGB recordings\Data\';
-savedir = 'D:\Caras\Analysis\MGB recordings\';
-
-%% create file
+function metrics_across_sessions(parname, spth, savedir, meas, type)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -109,7 +102,22 @@ for i = 1:maxNumDays
         % get events and calculate baseline
         for k = 1:length(U)
             u = U(k);
-            b = baseline(u,parname);
+            [mAM, mNAM, cAM, cNAM] = calc_mas(u,parname);
+            
+            if strcmp(meas, 'Mean')
+                if strcmp(type, 'AM')
+                    b = mAM;
+                else
+                    b = mNAM;
+                end
+            else
+                if strcmp(type, 'AM')
+                    b = cAM;
+                else
+                    b = cNAM;
+                end
+            end
+            
             B = [B; b];
         end
         % add to list
@@ -125,13 +133,12 @@ for i = 1:maxNumDays
 end
 
 % save as file
-sf = fullfile(savedir,append(parname,'_baseline.xlsx'));
+sf = fullfile(savedir,append(parname,'_',type, meas,'.xlsx'));
 fprintf('Saving file %s \n', sf)
 writecell(output,sf);
 fprintf(' done\n')
 
-%% plot
-
+% plot
 cm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
 
 f = figure;
@@ -155,14 +162,22 @@ for d = 1:maxNumDays
             xticklabels({'Pre','','Active','','Post'})
             title('Day ', d)
             
-            if strcmp(parname, 'trial_firingrate')
+            if strcmp(parname, 'trial_firingrate') 
                 ylabel('Firing rate (Hz)')
-                ylim([0 100])
+                if strcmp(meas, 'Mean')
+                    ylim([0 100])
+                else
+                    ylim([0 15])
+                end
             end
             
             if strcmp(parname, 'cl_calcpower')
                 ylabel('spikes/sec^{2}/Hz')
-                ylim([0 100])
+                if strcmp(meas, 'Mean')
+                    ylim([0 100])
+                else
+                    ylim([0 10])
+                end
             end
             
             if strcmp(parname, 'vector_strength_cycle_by_cycle')
@@ -171,12 +186,4 @@ for d = 1:maxNumDays
             end
         end
     end
-end
-
-%% coefficient of variation
-
-cv = nan(1,3);
-
-for i = 1:3
-    cv(i) = std(output(:,i+3))/mean(output(:,i+3));
 end

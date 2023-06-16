@@ -1,5 +1,30 @@
 function compare_thresholds(savedir, parx, pary, shownans, session)
 
+% convert parnames to correct label
+if strcmp(parx,'FiringRate')
+    parx = 'trial_firingrate';
+end
+
+if strcmp(pary,'FiringRate')
+    pary = 'trial_firingrate';
+end
+    
+if strcmp(parx,'Power')
+    parx = 'cl_calcpower';
+end
+
+if strcmp(parx,'Power')
+    pary = 'cl_calcpower';
+end
+
+if strcmp(parx,'VScc')
+    parx = 'vector_strength_cycle_by_cycle';
+end
+
+if strcmp(pary,'VScc')
+    pary = 'vector_strength_cycle_by_cycle';
+end
+
 % load clusters
 load(fullfile(savedir,'Cday_original.mat'));
 
@@ -209,7 +234,6 @@ for i = 1:length(days)
                 'Marker','o',...
                 'MarkerSize', 12,...
                 'MarkerFaceColor',cm(k,:),...
-                'MarkerFaceAlpha', 0.2,...
                 'MarkerEdgeColor', 'none');
         end
     end

@@ -13,6 +13,17 @@ end
 
 behav = [a.threshold];
 
+% convert parname to correct label
+if contains(parname,'FiringRate')
+    parname = 'trial_firingrate';
+    
+elseif contains(parname,'Power')
+    parname = 'cl_calcpower';
+    
+else contains(parname,'VScc')
+    parname = 'vector_strength_cycle_by_cycle';
+end
+
 % load neural
 fn = 'Cday_original';
 % fn = strcat(fn,(parname),'.mat');
