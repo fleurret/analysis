@@ -2,8 +2,8 @@
 
 % which metric to use
 % parname = 'FiringRate';
-% parname = 'Power';
-parname = 'VScc';
+parname = 'Power';
+% parname = 'VScc';
 
 % region = "IC";
 % region = "IC shell";
@@ -52,10 +52,6 @@ flag_cluster(savedir, parname, "session", 3, "224_cluster1451", "Post")
 %% Plot thresholds across days
 % syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
 
-parname = 'FiringRate';
-% parname = 'Power';
-% parname = 'VScc';
-
 % subj: "all", "202", "222", "223", "224", "267"
 
 % condition: "all", "i" (improved), "w" (worsened)
@@ -64,12 +60,32 @@ parname = 'FiringRate';
 
 % replace (NaN thresholds with highest depth presented): "yes"
 
-plot_units(spth, behavdir, savedir, parname, "all", "all", "all", "no")
+plot_units(spth, behavdir, savedir, parname, "all", "all", "SU", "no")
+
+%% Plot dprime over days
+% syntax: plot_units(spth, behavdir, savedir, parname, subj, unit_type, depth)
+
+% subj: "all", "202", "222", "223", "224", "267"
+
+% unit_type: "all", "SU"
+
+% depth: in dB; 0 -3 -6 -9 -12 -15 -18
+
+plot_dprime(spth, behavdir, savedir, parname, "all", "SU", -9)
+
+%% Plot neurometric fits over days
+% syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
+
+% subj: "all", "202", "222", "223", "224", "267"
+
+% unit_type: "all", "SU"
+
+fit_over_days(spth, savedir, parname, "all", "all")
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, maxdays, subj)
 
-bvsn(behavdir, savedir, parname, 7, "378")
+bvsn(behavdir, savedir, parname, 7, "323")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, maxdays)
@@ -96,6 +112,15 @@ split_condition(savedir, 7, parname, "no")
 
 compare_thresholds(savedir, 'FiringRate', 'VScc', "yes", "all")
 
+%% Calculate vector change in threshold between passive/active
+
+output = change_in_threshold(savedir, spth, 'FiringRate', 'VScc');
+
+mean([output{:,3}], 'omitnan')
+mean([output{:,4}], 'omitnan')
+mean([output{:,5}], 'omitnan')
+mean([output{:,6}], 'omitnan')
+
 %% Extract mean/median/max firing rate info
 
 val = 'Mean';
@@ -103,7 +128,7 @@ val = 'Mean';
 % val = 'Max';
 
 % depth: in dB; 0 -3 -6 -9 -12 -15 -18
-depth = -3;
+depth = -9;
 
 makeplot = 'y';
 
@@ -142,10 +167,11 @@ plot_histo(savedir, parname)
 count_units(savedir)
 
 %% AM/Non-AM metrics across sessions
-% syntax: metrics_across_sessions(parname, spth, savedir, meas, type)
+% syntax: metrics_across_sessions(parname, spth, savedir, meas, type, depth)
 
 % meas: 'Mean', 'CoV' (Coefficient of variation)
 % type: 'AM', 'NonAM'
+% depth: in dB; 0 -3 -6 -9 -12 -15 -18
 
-metrics_across_sessions(parname, spth, savedir, 'CoV', 'AM')
+metrics_across_sessions(parname, spth, savedir, 'Mean', 'AM', -6)
 

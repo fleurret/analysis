@@ -1,4 +1,4 @@
-function metrics_across_sessions(parname, spth, savedir, meas, type)
+function metrics_across_sessions(parname, spth, savedir, meas, type, depth)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -93,6 +93,7 @@ for i = 1:maxNumDays
     for j = 1:length(uid)
         ind = uid(j) == id;
         U = Ci(ind);
+        presented = round(U(1).UserData.(parname).vals);
         
         % create output
         clear temp
@@ -101,8 +102,10 @@ for i = 1:maxNumDays
         
         % get events and calculate baseline
         for k = 1:length(U)
+            
+            % pull values
             u = U(k);
-            [mAM, mNAM, cAM, cNAM] = calc_mas(u,parname);
+            [mAM, mNAM, cAM, cNAM] = calc_mas(u, parname, depth);
             
             if strcmp(meas, 'Mean')
                 if strcmp(type, 'AM')
@@ -117,9 +120,9 @@ for i = 1:maxNumDays
                     b = cNAM;
                 end
             end
-            
             B = [B; b];
         end
+        
         % add to list
         temp{1} = uid(j);
         temp{2} = i;
@@ -133,10 +136,10 @@ for i = 1:maxNumDays
 end
 
 % save as file
-sf = fullfile(savedir,append(parname,'_',type, meas,'.xlsx'));
-fprintf('Saving file %s \n', sf)
-writecell(output,sf);
-fprintf(' done\n')
+% sf = fullfile(savedir,append(parname,'_',type, meas,'.xlsx'));
+% fprintf('Saving file %s \n', sf)
+% writecell(output,sf);
+% fprintf(' done\n')
 
 % plot
 cm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
@@ -162,7 +165,7 @@ for d = 1:maxNumDays
             xticklabels({'Pre','','Active','','Post'})
             title('Day ', d)
             
-            if strcmp(parname, 'trial_firingrate') 
+            if strcmp(parname, 'trial_firingrate')
                 ylabel('Firing rate (Hz)')
                 if strcmp(meas, 'Mean')
                     ylim([0 100])
