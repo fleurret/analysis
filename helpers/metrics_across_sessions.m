@@ -124,31 +124,39 @@ for i = 1:maxNumDays
         end
         
         % add to list
+
         temp{1} = uid(j);
         temp{2} = i;
         temp{3} = u.Type;
         temp{4} = B(1);
         temp{5} = B(2);
-        temp{6} = B(3);
+        
+        if length(B) ~= 3
+            temp{6} = NaN;
+        else
+            temp{6} = B(3);
+        end
+        
         
         output = [output; temp];
     end
 end
 
 % save as file
-% sf = fullfile(savedir,append(parname,'_',type, meas,'.xlsx'));
-% fprintf('Saving file %s \n', sf)
-% writecell(output,sf);
-% fprintf(' done\n')
+sf = fullfile(savedir,append(parname,'_',type, meas,'.xlsx'));
+fprintf('Saving file %s \n', sf)
+writecell(output,sf);
+fprintf(' done\n')
 
 % plot
-cm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
+cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
 
 f = figure;
 f.Position = [0, 0, 2000, 350];
 
 for d = 1:maxNumDays
     ax = subplot(1,maxNumDays,d);
+    set(gca, 'TickDir', 'out')
     hold on
     
     for i = 1:length(output)
@@ -185,7 +193,7 @@ for d = 1:maxNumDays
             
             if strcmp(parname, 'vector_strength_cycle_by_cycle')
                 ylabel('Vector strength')
-                ylim([0 0.3])
+                ylim([0 1])
             end
         end
     end

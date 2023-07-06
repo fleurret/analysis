@@ -45,8 +45,8 @@ ax(2) = subplot(132,'parent',f);
 ax(3) = subplot(133,'parent',f);
 
 set(ax,...
-    'xlim', [-30, 5],...
-    'ylim', [-30, 5]);
+    'xlim', [-25, 0],...
+    'ylim', [-25, 0]);
 
 % neural data
 days = 1:min(maxdays,length(Cday));

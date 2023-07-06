@@ -1,4 +1,4 @@
- function fit_over_days(spth, savedir, parname, subj, unit_type)
+ function fit_over_sessions(spth, savedir, parname, subj, unit_type)
 
 % Plot individual unit thresholds and means across days
 
@@ -7,15 +7,12 @@
 % convert parname to correct label
 if contains(parname,'FiringRate')
     parname = 'trial_firingrate';
-    titlepar = 'Firing Rate';
     
 elseif contains(parname,'Power')
     parname = 'cl_calcpower';
-    titlepar = 'Power';
     
 else contains(parname,'VScc')
     parname = 'vector_strength_cycle_by_cycle';
-    titlepar = 'VScc';
 end
 
 % load neural
@@ -38,12 +35,12 @@ maxNumDays = 7;
 % set properties
 sessionName = ["Pre","Active","Post"];
 
-cm = [250, 180, 207; 203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97;]./255; % session colormap
+cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 mk = '^^^';
 
 f = figure;
-f.Position = [0, 0, 700, 350];
+f.Position = [0, 0, 650, 300];
 set(f,'color','w');
 clf(f);
 ax = subplot(121,'parent',f);
@@ -56,9 +53,9 @@ sidx = DV;
 didx = DV;
 
 % neural data
-count = zeros(1,3);
 
-for i = 1:length(days)
+
+for i = 1
     Ci = Cday{i};
   
     % first make sure that there is a threshold/p_val field for the "parname"
@@ -228,12 +225,6 @@ for i = 1:length(days)
 end
 
 % % axes etc
-title(ax,sprintf('%s (n = %d)',titlepar,length(subjects)),...
-    'FontSize',15);
-
-set(findobj(ax,'-property','FontName'),...
-    'FontName','Arial')
-
 set([ax.XAxis], ...
     'TickDir','out',...
     'FontSize',12);

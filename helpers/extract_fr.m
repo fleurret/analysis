@@ -170,7 +170,7 @@ fprintf('File saved \n')
 
 if makeplot == 'y'
     FR = table2array(FiringRate);
-    cm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
+    cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
     
     f = figure;
     f.Position = [0, 0, 2000, 350];
@@ -192,7 +192,7 @@ if makeplot == 'y'
                     'LineWidth',2)
                 xticklabels({'Pre','','Active','','Post'})
                 ylabel('Firing rate (Hz)')
-                T = append(num2str(depth),' dB');
+                T = append('Day ', num2str(d));
                 title(T);
                 ylim([0 100])
             end

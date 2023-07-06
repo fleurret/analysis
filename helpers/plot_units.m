@@ -1,4 +1,4 @@
- function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
+ function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace, sv)
 
 % Plot individual unit thresholds and means across days
 
@@ -7,12 +7,15 @@
 % convert parname to correct label
 if contains(parname,'FiringRate')
     parname = 'trial_firingrate';
+    titlepar = 'Firing Rate';
     
 elseif contains(parname,'Power')
     parname = 'cl_calcpower';
+    titlepar = 'Power';
     
 else contains(parname,'VScc')
     parname = 'vector_strength_cycle_by_cycle';
+    titlepar = 'VScc';
 end
 
 % load behavior
@@ -49,6 +52,13 @@ subjects(ismember({subjects.name},{'.','..'})) = [];
 
 minNumSpikes = 0;
 maxNumDays = 7;
+
+% vars for output file
+unit = [];
+subj_id = [];
+thrs = [];
+day = [];
+session = [];
 
 % set properties
 sessionName = ["Pre","Active","Post"];
@@ -224,6 +234,7 @@ for i = 1:length(days)
     
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
+    uinfo = arrayfun(@(a) a.Name, Ci);
     
     y(ind) = [];
     Ci(ind) = [];
@@ -286,6 +297,22 @@ for i = 1:length(days)
             'Color',max(cm(j,:),0), ...
             'MarkerFaceColor',cm(j,:), ...
             'MarkerSize',8);
+        
+        % get info for output
+        U = uinfo(ind);
+        
+        for z = 1:length(U)
+            Subj = split(U(z), '_cluster');
+            subjlist(z) = Subj(1);
+        end
+        
+        unit = [unit; U'];
+        subj_id = [subj_id; subjlist'];
+        thrs = [thrs; thr{i}(ind)'];
+        day = [day; ones(length(thr{i}(ind)), 1)*i];
+        session = [session; repelem(sessionName(j), length(thr{i}(ind)), 1)];
+        
+        clear subjlist
     end
 end
 
@@ -368,7 +395,7 @@ bplot.Color = '#ff7bb1';
 bplot.MarkerFaceColor = '#ff7bb1';
 
 xi = log10(1:7);
-[b_fo,b_gof] = fit(xi',behav_mean','poly1');
+[b_fo,~] = fit(xi',behav_mean','poly1');
 yi = b_fo.p1.*xi + b_fo.p2;
     
 % fit
@@ -415,17 +442,26 @@ xlabel(ax,'Psychometric testing day',...
 ylabel(ax,'Threshold (dB re: 100%)',...
     'FontWeight','bold',...
     'FontSize', 15);
-title(ax,sprintf('%s (n = %d)',parname,length(subjects)),...
+title(ax,sprintf('%s (n = %d)',titlepar,length(subjects)),...
     'FontSize',15);
 
 box(ax,'on');
 
-legend(hfit,'Location','southwest','FontSize',12);
-legend([hfitm,bfit],'Location','southwest','FontSize',12);
-legend boxoff
+legend(hfit,'Location','southwest','FontSize',12, 'box', 'off');
+legend([hfitm,bfit],'Location','southwest','FontSize',12, 'box', 'off');
 
 fprintf('Behavior R = %s, p = %s \n', num2str(b_PR(2)), num2str(b_P(2)))
 fprintf('Pre R = %s, p = %s \n', num2str(PR{1}), num2str(PRP{1}))
 fprintf('Active R = %s, p = %s \n', num2str(PR{2}), num2str(PRP{2}))
 fprintf('Post R = %s, p = %s \n', num2str(PR{3}), num2str(PRP{3}))
 fprintf('%s Pre, %s Active, %s Post', num2str(count(1)), num2str(count(2)), num2str(count(3)))
+
+% save as file
+if sv == 1
+    output = [unit, subj_id, day, thrs, session];
+    
+    sf = fullfile(savedir,append(parname,'_threshold.csv'));
+    fprintf('Saving file %s \n', sf)
+    writematrix(output,sf);
+    fprintf(' done\n')
+end
