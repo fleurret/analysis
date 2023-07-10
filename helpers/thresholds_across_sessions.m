@@ -1,4 +1,4 @@
-function metrics_across_sessions(parname, spth, savedir, meas, type, subj, unit_type, depth)
+function thresholds_across_sessions(spth, savedir, parname, subj, unit_type, day)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -115,6 +115,13 @@ for i = 1:maxNumDays
         Ci = Ci(removeind);
     end
     
+    % replace NaN thresholds with 1
+    for j = 1:length(Ci)
+        if isnan(Ci(j).UserData.(parname).threshold)
+            Ci(j).UserData.(parname).threshold = 1;
+        end
+    end
+    
     % replace Cday
     Cday{1,i} = Ci;
     
@@ -138,21 +145,8 @@ for i = 1:maxNumDays
             
             % pull values
             u = U(k);
-            [mAM, mNAM, cAM, cNAM] = calc_mas(u, parname, depth);
+            b = u.UserData.(parname).threshold;
             
-            if strcmp(meas, 'Mean')
-                if strcmp(type, 'AM')
-                    b = mAM;
-                else
-                    b = mNAM;
-                end
-            else
-                if strcmp(type, 'AM')
-                    b = cAM;
-                else
-                    b = cNAM;
-                end
-            end
             B = [B; b];
         end
         
@@ -179,12 +173,6 @@ end
 output = cell2table(output);
 output.Properties.VariableNames = ["Unit","Day", "Type", "Pre", "Active", "Post"];
 
-% save as file
-sf = fullfile(savedir,append(parname,'_',type, meas,'.xlsx'));
-fprintf('Saving file %s \n', sf)
-writetable(output,sf);
-fprintf(' done\n')
-
 % plot
 cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
 
@@ -193,12 +181,12 @@ f.Position = [0, 0, 1800, 250];
 
 x = 1:3;
 
-for d = 1%:maxNumDays
+for d = day
     ax = subplot(1,maxNumDays,d);
     set(gca, 'TickDir', 'out',...
         'XTickLabelRotation', 0)
     set(findobj(ax,'-property','FontName'),...
-    'FontName','Arial')
+        'FontName','Arial')
     ucm = cm(d,:);
     hold on
     
@@ -233,28 +221,8 @@ for d = 1%:maxNumDays
         
         xticklabels({'Pre','','Active','','Post'})
         title('Day ', d)
+        ylabel('Threshold (dB re: 100%)')
+        ylim([-20 2])
         
-        if strcmp(parname, 'trial_firingrate')
-            ylabel('Firing rate (Hz)')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 15])
-            end
-        end
-        
-        if strcmp(parname, 'cl_calcpower')
-            ylabel('spikes/sec^{2}/Hz')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 10])
-            end
-        end
-        
-        if strcmp(parname, 'vector_strength_cycle_by_cycle')
-            ylabel('Vector strength')
-            ylim([0 1])
-        end
     end
 end

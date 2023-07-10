@@ -45,7 +45,7 @@ precm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185;
 activecm = [212,249,251; 176,245,247; 141,240,243; 105,235,240; 34,226,232; 21,200,206; 18,165,170;]./255; % session colormap
 postcm = [11,116,249; 6,107,234; 5,89,196; 4,72,158; 3,54,119; 2,37,81; 1,11,24;]./255; % session colormap
 
-for i = 1%:length(days)
+for i = 1:length(days)
     Ci = Cday{i};
     
     % first make sure that there is a threshold/p_val field for the "parname"
@@ -241,13 +241,16 @@ for i = 1%:length(days)
 end
 
 box(ax,'on');
+xline(0)
+yline(0)
 
 xlabel(ax,{'Threshold (dB)';parx});
 ylabel(ax,{'Threshold (dB)';pary});
+set(findobj(ax,'-property','FontName'),...
+    'FontName','Arial')
 
 axis(ax,'equal');
 axis(ax,'square');
-
 
 ax = findobj(f,'type','axes');
 y = get(ax,'ylim');
