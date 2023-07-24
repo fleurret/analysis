@@ -2,13 +2,13 @@ function metrics_across_sessions(parname, spth, savedir, meas, type, subj, unit_
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
-    parname = 'trial_firingrate';
+    Parname = 'trial_firingrate';
     
 elseif contains(parname,'Power')
-    parname = 'cl_calcpower';
+    Parname = 'cl_calcpower';
     
 else contains(parname,'VScc')
-    parname = 'vector_strength_cycle_by_cycle';
+    Parname = 'vector_strength_cycle_by_cycle';
 end
 
 % load neural
@@ -24,25 +24,31 @@ maxNumDays = 7;
 
 output = [];
 
+parnames = ["trial_firingrate"; "cl_calcpower"; "vector_strength_cycle_by_cycle"];
+
 for i = 1:maxNumDays
     Ci = Cday{i};
     
-    % first make sure that there is a threshold/p_val field for the "parname"
+    % first make sure that there is a threshold/p_val field for all
+    % parnames
     % threshold = NaN means curve did not cross d' = 1
     % threshold = 0 means there were no spikes/failed to compute threshold
     for j = 1:length(Ci)
         c = Ci(j);
         
-        if contains(c.SessionName, 'FreqTuning')
-            continue
-        end
-        
-        if ~isfield(c.UserData.(parname),'threshold')
-            c.UserData.(parname).threshold = 0;
-        end
-        
-        if ~isfield(c.UserData.(parname),'p_val')
-            c.UserData.(parname).p_val = nan;
+        for k = 1:length(parnames)
+            parname = char(parnames(k));
+            if contains(c.SessionName, 'FreqTuning')
+                continue
+            end
+            
+            if ~isfield(c.UserData.(parname),'threshold')
+                c.UserData.(parname).threshold = 0;
+            end
+            
+            if ~isfield(c.UserData.(parname),'p_val')
+                c.UserData.(parname).p_val = nan;
+            end
         end
     end
     
@@ -52,17 +58,33 @@ for i = 1:maxNumDays
     id = [Ci.Name];
     uid = unique(id);
     flaggedForRemoval = "";
+    
     for j = 1:length(uid)
         ind = uid(j) == id;
         
+        for k = 1:length(parnames)
+            parname = char(parnames(k));
+            
+            tt = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
+            tpval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
+            
+            if length(tt) < 3
+                tnan = nan(1, 3-length(tt));
+                t(:,k) = [tt tnan];
+            else
+                t(:,k) = tt;
+            end
+            
+            if length(tpval) < 3
+                pval(:,k) = [tpval tnan];
+            else
+                pval(:,k) = tpval;
+            end
+        end
+        
         % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
-        t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
-        pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
-        if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
+        if sum(sum(t,'omitnan')) == 0 || sum(sum(isnan(pval))) == length(parnames)*length(parnames) || sum(~any(pval<=alpha)) == length(parnames)*length(parnames)
             flaggedForRemoval(end+1) = uid(j);
-            %             fprintf(2,'ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
-        else
-            %             fprintf('ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
         end
     end
     
@@ -126,7 +148,7 @@ for i = 1:maxNumDays
     for j = 1:length(uid)
         ind = uid(j) == id;
         U = Ci(ind);
-        presented = round(U(1).UserData.(parname).vals);
+        presented = round(U(1).UserData.(Parname).vals);
         
         % create output
         clear temp
@@ -138,7 +160,7 @@ for i = 1:maxNumDays
             
             % pull values
             u = U(k);
-            [mAM, mNAM, cAM, cNAM] = calc_mas(u, parname, depth);
+            [mAM, mNAM, cAM, cNAM] = calc_mas(u, Parname, depth);
             
             if strcmp(meas, 'Mean')
                 if strcmp(type, 'AM')
@@ -234,27 +256,32 @@ for d = 1%:maxNumDays
         xticklabels({'Pre','','Active','','Post'})
         title('Day ', d)
         
-        if strcmp(parname, 'trial_firingrate')
-            ylabel('Firing rate (Hz)')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 15])
+        if strcmp(meas, 'Mean')
+            if strcmp(Parname, 'trial_firingrate')
+                ylabel('Firing rate (Hz)')
+                if strcmp(meas, 'Mean')
+                    ylim([0 100])
+                else
+                    ylim([0 15])
+                end
             end
-        end
-        
-        if strcmp(parname, 'cl_calcpower')
-            ylabel('spikes/sec^{2}/Hz')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 10])
+            
+            if strcmp(Parname, 'cl_calcpower')
+                ylabel('spikes/sec^{2}/Hz')
+                if strcmp(meas, 'Mean')
+                    ylim([0 100])
+                else
+                    ylim([0 10])
+                end
             end
-        end
-        
-        if strcmp(parname, 'vector_strength_cycle_by_cycle')
-            ylabel('Vector strength')
-            ylim([0 1])
+            
+            if strcmp(Parname, 'vector_strength_cycle_by_cycle')
+                ylabel('Vector strength')
+                ylim([0 1])
+            end
+        else
+            ylabel('Variation')
+            ylim([0 10])
         end
     end
 end

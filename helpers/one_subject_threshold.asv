@@ -1,0 +1,89 @@
+function one_subject_threshold(pth, maxdays, yl, c)
+
+% PROCESS
+
+% extract groups
+groups = dir(pth);
+groups(~[groups.isdir]) = [];
+groups(ismember({groups.name},{'.','..'})) = [];
+
+% access condition folders
+
+    % extract subjects
+    subjects = [groups(i).name];
+    fn = fullfile(pth, subjects);
+    
+    d = dir(fullfile(fn,'*.mat'));
+    ffn = fullfile(d.folder,d.name);
+    
+    fprintf('Loading subject %s ...',subjects)
+    load(ffn)
+    fprintf(' done\n')
+    
+    for j = 1:length(output)
+        t(j) = output(j).fitdata.threshold;
+    end
+    
+    thresholds(i,1:length(t)) = t;
+
+
+% PLOT
+
+f = figure();
+
+% set figure size (in px)
+f.Position = [0, 0, 800, 350];
+
+% change x values to log scale and offset
+y = mean(thresholds);
+y = y(1:maxdays);
+
+days = 1:maxdays;
+x = log10(days)+1;
+
+% set axes
+ax = gca;
+
+hold on
+
+% plot data
+plot(x,y,...
+    'Color', c(1,:),...
+    'LineStyle', 'none',...
+    'Marker', 'o',...
+    'MarkerFaceColor', c(1,:), ...
+    'MarkerSize',8);
+
+% fit line
+[fo,~] = fit(x',y','poly1');
+bf = fo.p1 .*x + fo.p2;
+f = line(x, bf,...
+    'LineWidth',3,...
+    'Color',c(1,:));
+    
+% GRAPH PROPERTIES
+
+% tick label, direction, line width, font size
+set(ax, 'XTick', log10(days)+1,...
+    'XTickLabel',x,...
+    'YLim',yl,...
+    'TickDir','out',...
+    'LineWidth',1.5,...
+    'FontSize',12);
+
+% set font
+set(findobj(ax,'-property','FontName'),...
+    'FontName','Arial')
+
+% axes labels and title
+xlabel(ax,'Psychometric testing day',...
+    'FontWeight','bold',...
+    'FontSize', 12);
+ylabel(ax,'Threshold (dB re: 100%)',...
+    'FontWeight','bold',...
+    'FontSize', 12);
+
+% legend
+% legend(flip(C),'Location','southwest','FontSize',12);
+% legend boxoff
+

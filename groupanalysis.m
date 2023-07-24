@@ -1,9 +1,9 @@
 %% Set directories - run first!
 
 % which metric to use
-parname = 'FiringRate';
+% parname = 'FiringRate';
 % parname = 'Power';
-% parname = 'VScc';
+parname = 'VScc';
 
 % region = "IC";
 % region = "IC shell";
@@ -56,7 +56,7 @@ flag_cluster(savedir, parname, "session", 3, "224_cluster1451", "Post")
 % type: 'AM', 'NonAM'
 % depth: in dB; 0 -3 -6 -9 -12 -15 -18
 
-metrics_across_sessions(parname, spth, savedir, 'Mean', 'AM', "all", "SU", -9)
+metrics_across_sessions(parname, spth, savedir, 'CoV', 'AM', "all", "SU", 0)
 
 %% Plot neurometric fits across sessions
 % syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
@@ -68,7 +68,7 @@ metrics_across_sessions(parname, spth, savedir, 'Mean', 'AM', "all", "SU", -9)
 fit_over_sessions(spth, savedir, parname, "all", "SU")
 
 %% Plot thresholds across sessions
-% syntax: thresholds_across_sessions(spth, savedir, parname, subj, unit_type)
+% syntax: thresholds_across_sessions(spth, savedir, parname, subj, unit_type, day)
 
 % subj: "all", "202", "222", "223", "224", "267"
 
@@ -89,7 +89,7 @@ thresholds_across_sessions(spth, savedir, parname, "all", "SU", 1)
 
 % save file?: 1 = yes, 0 = no
 
-plot_dprime(spth, savedir, parname, "all", "SU", -9, 0)
+plot_dprime(spth, savedir, parname, "all", "SU", -12, 0)
 
 %% Plot neurometric fits over days
 % syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
@@ -101,6 +101,21 @@ plot_dprime(spth, savedir, parname, "all", "SU", -9, 0)
 fit_over_days(spth, savedir, parname, "all", "SU")
 
 %% Plot thresholds across days
+% syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
+
+% subj: "all", "202", "222", "223", "224", "267"
+
+% condition: "all", "i" (improved), "w" (worsened)
+
+% unit_type: "all", "SU"
+
+% replace (NaN thresholds with highest depth presented): "yes"
+
+% save file?: 1 = yes, 0 = no
+
+plot_units(spth, behavdir, savedir, parname, "all", "all", "SU", "no", 0)
+
+%% Calculate CoV across days
 % syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
 
 % subj: "all", "202", "222", "223", "224", "267"
