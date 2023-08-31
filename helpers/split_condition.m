@@ -1,5 +1,19 @@
 function split_condition(savedir, maxNumDays, parname, replace)
 
+% convert parname to correct label
+if contains(parname,'FiringRate')
+    parname = 'trial_firingrate';
+    titlepar = 'Firing Rate';
+    
+elseif contains(parname,'Power')
+    parname = 'cl_calcpower';
+    titlepar = 'Power';
+    
+else contains(parname,'VScc')
+    parname = 'vector_strength_cycle_by_cycle';
+    titlepar = 'VScc';
+end
+
 % load clusters
 fn = 'Cday_original.mat';
 % fn = strcat(fn,(parname),'.mat');
@@ -172,9 +186,8 @@ worsened = output(~ind,:);
 improved = output(ind,:);
 
 % save as file
-savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\NeuralThresholds';
 
 fprintf('Saving files ...')
-save(fullfile(savedir,(parname),'thresholds_worsened.mat'), 'worsened')
-save(fullfile(savedir,(parname),'thresholds_improved.mat'), 'improved')
+save(fullfile(savedir,'thresholds_worsened.mat'), 'worsened')
+save(fullfile(savedir,'thresholds_improved.mat'), 'improved')
 fprintf(' done\n')

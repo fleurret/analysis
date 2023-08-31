@@ -37,7 +37,6 @@ didx = thr;
 
 % set figure
 f = figure;
-f.Color = 'w';
 clf(f);
 ax = gca;
 cm = [77,127,208; 52,228,234; 2,37,81;]./255; % session colormap
@@ -45,7 +44,7 @@ precm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185;
 activecm = [212,249,251; 176,245,247; 141,240,243; 105,235,240; 34,226,232; 21,200,206; 18,165,170;]./255; % session colormap
 postcm = [11,116,249; 6,107,234; 5,89,196; 4,72,158; 3,54,119; 2,37,81; 1,11,24;]./255; % session colormap
 
-for i = 1:length(days)
+for i = 1 %:length(days)
     Ci = Cday{i};
     
     % first make sure that there is a threshold/p_val field for the "parname"
@@ -77,38 +76,32 @@ for i = 1:length(days)
     uid = unique(id);
     
     % loop through parx
-    flaggedForRemovalx = "";
+    flaggedForRemoval = "";
     for j = 1:length(uid)
         ind = uid(j) == id;
         
-        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        % get fr threshold
         tx = arrayfun(@(a) a.UserData.(parx).threshold,Ci(ind));
         pvalx = arrayfun(@(a) a.UserData.(parx).p_val,Ci(ind));
         
-        if sum(tx,'omitnan') == 0 || all(isnan(pvalx)) || ~any(pvalx<=alpha)
-            flaggedForRemovalx(end+1) = uid(j);
-        end
-    end
-    
-    % loop through pary
-    flaggedForRemovaly = "";
-    for j = 1:length(uid)
-        ind = uid(j) == id;
-        
-        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        % get vscc threshold
         ty = arrayfun(@(a) a.UserData.(pary).threshold,Ci(ind));
         pvaly = arrayfun(@(a) a.UserData.(pary).p_val,Ci(ind));
         
-        if sum(ty,'omitnan') == 0 || all(isnan(pvaly)) || ~any(pvaly<=alpha)
-            flaggedForRemovaly(end+1) = uid(j);
+        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        if sum(tx,'omitnan') == 0 && sum(ty, 'omitnan') == 0 ||...
+                sum(tx,'omitnan') ~= 0 && all(isnan(pvalx)) ||...
+                sum(ty,'omitnan') ~= 0 && all(isnan(pvaly)) ||...
+                sum(tx,'omitnan') ~= 0 && ~any(pvalx<=alpha) ||...
+                sum(ty,'omitnan') ~= 0 && ~any(pvaly<=alpha)
+            flaggedForRemoval(end+1) = uid(j);
         end
     end
-    
     
     % remove invalid units
     idx = false(1,length(Ci));
     for j = 1:length(Ci)
-        if ismember(id(j),flaggedForRemovalx) && ismember(id(j),flaggedForRemovaly)
+        if ismember(id(j),flaggedForRemoval)
             idx(j) = 0;
         else
             idx(j) = 1;
@@ -174,7 +167,7 @@ for i = 1:length(days)
             line(ax,x,y,'LineStyle','none', ...
                 'Marker','o',...
                 'MarkerSize', 12,...
-                'MarkerFaceColor',precm(i,:),...
+                'MarkerFaceColor',cm(i,:),...
                 'MarkerEdgeColor', 'none');
         end
         
@@ -194,7 +187,7 @@ for i = 1:length(days)
             line(ax,x,y,'LineStyle','none', ...
                 'Marker','o',...
                 'MarkerSize', 12,...
-                'MarkerFaceColor',activecm(i,:),...
+                'MarkerFaceColor',cm(2,:),...
                 'MarkerEdgeColor', 'none');
         end
         
@@ -213,7 +206,7 @@ for i = 1:length(days)
             line(ax,x,y,'LineStyle','none', ...
                 'Marker','o',...
                 'MarkerSize', 12,...
-                'MarkerFaceColor',postcm(i,:),...
+                'MarkerFaceColor',cm(3,:),...
                 'MarkerEdgeColor', 'none');
         end
         
@@ -240,7 +233,6 @@ for i = 1:length(days)
     end
 end
 
-box(ax,'on');
 xline(0)
 yline(0)
 
@@ -253,6 +245,10 @@ axis(ax,'equal');
 axis(ax,'square');
 
 ax = findobj(f,'type','axes');
+ax.LineWidth = 3;
+ax.TickDir = 'out';
+ax.TickLength = [0.02,0.02];
+
 y = get(ax,'ylim');
 x = get(ax,'xlim');
 
@@ -264,8 +260,8 @@ if session == "all"
         'xdir', 'reverse',...
         'ydir', 'reverse');
 else
-    set(ax,'xlim', [-25, 5],...
-        'ylim', [-25, 5],...
+    set(ax,'xlim', [-20, 5],...
+        'ylim', [-20, 5],...
         'xdir', 'reverse',...
         'ydir', 'reverse');
 end

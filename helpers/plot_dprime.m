@@ -1,4 +1,4 @@
- function plot_dprime(spth, savedir, parname, subj, unit_type, depth, sv)
+function plot_dprime(spth, savedir, parname, subj, unit_type, depth, condition, sv)
 
 % Plot individual and mean d' across days for a given depth
 
@@ -70,7 +70,7 @@ count = zeros(1,3);
 
 for i = 1:length(days)
     Ci = Cday{i};
-  
+    
     % first make sure that there is a threshold/p_val field for the "parname"
     % threshold = NaN means curve did not cross d' = 1
     % threshold = 0 means there were no spikes/failed to compute threshold
@@ -91,8 +91,8 @@ for i = 1:length(days)
     end
     
     alpha = 0.05;
-
-    % create lookup table for each cluster 
+    
+    % create lookup table for each cluster
     id = [Ci.Name];
     uid = unique(id);
     flaggedForRemoval = "";
@@ -104,11 +104,39 @@ for i = 1:length(days)
         pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
         if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
             flaggedForRemoval(end+1) = uid(j);
-%             fprintf(2,'ID %s, DV = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+            %             fprintf(2,'ID %s, DV = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
         else
-%             fprintf('ID %s, DV = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+            %             fprintf('ID %s, DV = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
         end
     end
+    
+    % flag if fit is negative
+    id = [Ci.Name];
+    uid = unique(id);
+    flaggedForRemoval = "";
+    for j = 1:length(uid)
+        ind = nan(1,length(uid));
+        ind = uid(j) == id;
+        yfit = arrayfun(@(a) a.UserData.(parname).yfit,Ci(ind),'UniformOutput',false);
+        for k = 1:length(Ci(ind))
+            syfit = yfit{k};
+            curve = [syfit(1), syfit(500), syfit(1000)];
+            
+            if curve(1) > curve(2) && curve(2) > curve(3) && sum(yfit{k}>1) > 0
+                flaggedForRemoval(end+1) = uid(j);
+            end
+        end
+    end
+    
+    idx = false(1,length(Ci));
+    for j = 1:length(Ci)
+        if ismember(id(j),flaggedForRemoval)
+            idx(j) = 0;
+        else
+            idx(j) = 1;
+        end
+    end
+    Ci = Ci(idx);
     
     % remove invalid units
     idx = false(1,length(Ci));
@@ -124,12 +152,12 @@ for i = 1:length(days)
     % remove any additional manually flagged units
     note = {Ci.Note};
     removeind = cellfun(@isempty, note);
-    Ci = Ci(removeind);  
+    Ci = Ci(removeind);
     
-    % only plot one subject    
+    % only plot one subject
     if subj ~= "all"
         subj_idx = zeros(1,length(Ci));
-
+        
         for j = 1:length(Ci)
             if Ci(j).Subject == ""
                 nsubj = append(subj,"_");
@@ -148,17 +176,62 @@ for i = 1:length(days)
                 end
             end
         end
-            
+        
         subj_idx = logical(subj_idx);
         Ci = Ci(subj_idx);
     end
-   
+    
+    % only plot one condition
+    if condition ~= "all"
+        if condition == "w"
+            ffn = fullfile(savedir,'thresholds_worsened.mat');
+            load(ffn)
+            
+            subset = worsened;
+        end
+        
+        if condition == "i"
+            ffn = fullfile(savedir,'thresholds_improved.mat');
+            load(ffn)
+            
+            subset = improved;
+        end
+        
+        id = [Ci.Name];
+        uid = unique(id);
+        
+        j = 1:length(subset);
+        subj_idx = cell2mat(subset(j,2)) == i;
+        wid = subset(subj_idx);
+        wid = [wid{:}];
+        
+        flaggedForRemoval = "";
+        
+        for k = 1:length(uid)
+            ind = uid(k) == wid;
+            if sum(ind) == 0
+                flaggedForRemoval(end+1) = uid(k);
+            end
+        end
+        
+        idx = false(1,length(Ci));
+        
+        for j = 1:length(Ci)
+            if ismember(id(j),flaggedForRemoval)
+                idx(j) = 0;
+            else
+                idx(j) = 1;
+            end
+        end
+        Ci = Ci(idx);
+    end
+    
     % remove multiunits
     if unit_type == "SU"
         removeind = [Ci.Type] == "SU";
         Ci = Ci(removeind);
     end
-   
+    
     y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
     uinfo = arrayfun(@(a) a.Name, Ci);
@@ -192,12 +265,12 @@ for i = 1:length(days)
             dp = [dp, grp(pind)];
         end
         
-%         if isempty(dp)
-%             DV{i} = NaN;
-%         else
-%             DV{i} = dp;
-%         end
-
+        %         if isempty(dp)
+        %             DV{i} = NaN;
+        %         else
+        %             DV{i} = dp;
+        %         end
+        
         DV{i} = dp;
         didx{i} = ones(size(y))*i;
         sidx{i} = nan(size(y));
@@ -211,7 +284,7 @@ for i = 1:length(days)
     else
         continue
     end
-   
+    
     
     for j = 1:3 % plot each session seperately
         
@@ -257,13 +330,13 @@ for i = 1:length(days)
         
         % get info for output
         U = uinfo(ind);
-       
+        
         for z = 1:length(U)
             Subj = split(U(z), '_cluster');
             subjlist(z) = Subj(1);
         end
         
-        unit = [unit; U']; 
+        unit = [unit; U'];
         subj_id = [subj_id; subjlist'];
         thr = [thr; DV{i}(ind)'];
         day = [day; ones(length(DV{i}(ind)), 1)*i];
@@ -337,9 +410,13 @@ set([ax.XAxis], ...
     'TickValues',log10(days)+1, ...
     'TickLabels',arrayfun(@(a) num2str(a,'%d'),days,'uni',0),...
     'TickDir','out',...
+    'TickLength', [0.02,0.02],...
+    'LineWidth', 1.5,...
     'FontSize',12);
 set([ax.YAxis],...
-    'TickDir','out',...
+    'TickDir','out',...,
+    'TickLength', [0.02,0.02],...
+    'LineWidth', 1.5,...
     'FontSize',12);
 ax(1).YAxis.Label.Rotation = 90;
 ax(2).YAxis.Label.Rotation = 90;
@@ -356,8 +433,6 @@ ylabel(ax,'d''',...
 title(ax,sprintf('%s (n = %d)',titlepar,length(subjects)),...
     'FontSize',15);
 
-box(ax,'on');
-
 legend(ax(1), hfit,'Location','northwest','FontSize',12, 'box', 'off');
 
 legend(ax(2), [hfitm],'Location','northwest','FontSize',12, 'box', 'off');
@@ -371,7 +446,7 @@ fprintf('%s Pre, %s Active, %s Post \n', num2str(count(1)), num2str(count(2)), n
 if sv == 1
     output = [unit, subj_id, day, thr, session];
     
-    sf = fullfile(savedir,append(parname,'_dprime_',num2str(depth),'.xlsx'));
+    sf = fullfile(savedir,append(parname,'_dprime_',num2str(depth),'.csv'));
     fprintf('Saving file %s \n', sf)
     writematrix(output,sf);
     fprintf(' done\n')

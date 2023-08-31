@@ -104,26 +104,54 @@ for k = 1:3 % plot each session seperately
         end
         Ci = Ci(idx);
         
-        % restrict to subject
-        subj_idx = zeros(1,length(Ci));
-            for j = 1:length(Ci)
-                if Ci(j).Subject == ""
-                    nsubj = append(subj,"_");
-                    cs = convertCharsToStrings(Ci(j).Name);
-                    if contains(cs,nsubj)
-                        subj_idx(j) = 1;
-                    else
-                        subj_idx(j) = 0;
-                    end
-                else
-                    cs = convertCharsToStrings(Ci(j).Subject);
-                    if contains(cs,subj)
-                        subj_idx(j) = 1;
-                    else
-                        subj_idx(j) = 0;
-                    end
+        % flag if fit is negative
+        id = [Ci.Name];
+        uid = unique(id);
+        flaggedForRemoval = "";
+        for j = 1:length(uid)
+            ind = nan(1,length(uid));
+            ind = uid(j) == id;
+            yfit = arrayfun(@(a) a.UserData.(parname).yfit,Ci(ind),'UniformOutput',false);
+            for k = 1:length(Ci(ind))
+                syfit = yfit{k};
+                curve = [syfit(1), syfit(500), syfit(1000)];
+                
+                if curve(1) > curve(2) && curve(2) > curve(3) && sum(yfit{k}>1) > 0
+                    flaggedForRemoval(end+1) = uid(j);
                 end
             end
+        end
+        
+        idx = false(1,length(Ci));
+        for j = 1:length(Ci)
+            if ismember(id(j),flaggedForRemoval)
+                idx(j) = 0;
+            else
+                idx(j) = 1;
+            end
+        end
+        Ci = Ci(idx);
+        
+        % restrict to subject
+        subj_idx = zeros(1,length(Ci));
+        for j = 1:length(Ci)
+            if Ci(j).Subject == ""
+                nsubj = append(subj,"_");
+                cs = convertCharsToStrings(Ci(j).Name);
+                if contains(cs,nsubj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
+            else
+                cs = convertCharsToStrings(Ci(j).Subject);
+                if contains(cs,subj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
+            end
+        end
         subj_idx = logical(subj_idx);
         Ci = Ci(subj_idx);
         
@@ -187,7 +215,7 @@ for k = 1:3 % plot each session seperately
     
     set(findobj(ax,'-property','FontName'),...
         'FontName','Arial')
-   
+    
     xlabel(ax,'Neural threshold (dB re: 100%)',...
         'FontWeight','bold',...
         'FontSize', 12);

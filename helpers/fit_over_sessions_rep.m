@@ -1,4 +1,4 @@
-function fit_over_days(spth, savedir, parname, subj, unit_type)
+function fit_over_sessions_rep(spth, savedir, parname, subj, unit_type, cn)
 
 % Plot individual unit thresholds and means across days
 
@@ -7,15 +7,12 @@ function fit_over_days(spth, savedir, parname, subj, unit_type)
 % convert parname to correct label
 if contains(parname,'FiringRate')
     parname = 'trial_firingrate';
-    titlepar = 'Firing Rate';
     
 elseif contains(parname,'Power')
     parname = 'cl_calcpower';
-    titlepar = 'Power';
     
 else contains(parname,'VScc')
     parname = 'vector_strength_cycle_by_cycle';
-    titlepar = 'VScc';
 end
 
 % load neural
@@ -38,27 +35,24 @@ maxNumDays = 7;
 % set properties
 sessionName = ["Pre","Active","Post"];
 
-cm = [250, 180, 207; 203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97;]./255; % session colormap
+cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 mk = '^^^';
 
 f = figure;
-f.Position = [0, 0, 700, 350];
+f.Position = [0, 0, 500, 250];
 set(f,'color','w');
 clf(f);
 ax = subplot(121,'parent',f);
 ylim([-0.5,3]);
 
-days = 1:min(maxNumDays,length(Cday));
 
 DV = cell(size(days));
 sidx = DV;
 didx = DV;
 
 % neural data
-count = zeros(1,3);
-
-for i = 1:length(days)
+for i = 1
     Ci = Cday{i};
     
     % first make sure that there is a threshold/p_val field for the "parname"
@@ -89,7 +83,7 @@ for i = 1:length(days)
     for j = 1:length(uid)
         ind = uid(j) == id;
         
-        % flag if threesholds are all NaN or 0, or all pvals are NaN or > 0.05
+        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
         t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
         pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
         if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
@@ -100,7 +94,34 @@ for i = 1:length(days)
         end
     end
     
-    % remove invalid units
+    idx = false(1,length(Ci));
+    for j = 1:length(Ci)
+        if ismember(id(j),flaggedForRemoval)
+            idx(j) = 0;
+        else
+            idx(j) = 1;
+        end
+    end
+    Ci = Ci(idx);
+    
+    % flag if fit is negative
+    id = [Ci.Name];
+    uid = unique(id);
+    flaggedForRemoval = "";
+    for j = 1:length(uid)
+        ind = nan(1,length(uid));
+        ind = uid(j) == id;
+        yfit = arrayfun(@(a) a.UserData.(parname).yfit,Ci(ind),'UniformOutput',false);
+        for k = 1:length(Ci(ind))
+            syfit = yfit{k};
+            curve = [syfit(1), syfit(500), syfit(1000)];
+            
+            if curve(1) > curve(2) && curve(2) > curve(3) && sum(yfit{k}>1) > 0
+                flaggedForRemoval(end+1) = uid(j);
+            end
+        end
+    end
+    
     idx = false(1,length(Ci));
     for j = 1:length(Ci)
         if ismember(id(j),flaggedForRemoval)
@@ -116,140 +137,93 @@ for i = 1:length(days)
     removeind = cellfun(@isempty, note);
     Ci = Ci(removeind);
     
-    % only plot one subject
-    if subj ~= "all"
-        subj_idx = zeros(1,length(Ci));
-        
-        for j = 1:length(Ci)
-            if Ci(j).Subject == ""
-                nsubj = append(subj,"_");
-                cs = convertCharsToStrings(Ci(j).Name);
-                if contains(cs,nsubj)
-                    subj_idx(j) = 1;
-                else
-                    subj_idx(j) = 0;
-                end
-            else
-                cs = convertCharsToStrings(Ci(j).Subject);
-                if contains(cs,subj)
-                    subj_idx(j) = 1;
-                else
-                    subj_idx(j) = 0;
-                end
-            end
-        end
-        
-        subj_idx = logical(subj_idx);
-        Ci = Ci(subj_idx);
-    end
-    
     % remove multiunits
     if unit_type == "SU"
         removeind = [Ci.Type] == "SU";
         Ci = Ci(removeind);
     end
     
-    % clear vars
-    v = [];
-    dp = [];
+    s = [Ci.Name];
+    units = unique(s);
     
-    y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
-    ind = cellfun(@(a) isfield(a,'ERROR'),y);
+    if cn > length(units)
+        error('Unit does not exist :(')
+    end
     
-    y(ind) = [];
-    Ci(ind) = [];
-    
-    y = [y{:}];
-    
-    if ~isempty(y)
-        dprimes = {y.dprime};
+    % only the representative unit
+    for j = cn
+        uidx = units(j) == s;
+        U = Ci(uidx);
+        dd = arrayfun(@(a) a.UserData.(parname),U,'uni',0);
+        
+        dd = [dd{:}];
+        dprimes = {dd.dprime};
         dsz = cellfun('size', dprimes, 1);
         
-        DP = [];
-        
-        for j = 1:length(dprimes)
-            z = flip(dprimes{j});
-            
+        for b = 1:length(dprimes)
+            z = flip(dprimes{b});
             if all(dsz == dsz(1))
-                DP(j,:) = z;
+                DP(b,:) = z;
             else
-                if length(dprimes{j})~= max(dsz)
-                    dif = max(dsz)-length(dprimes{j});
+                if length(dprimes{b})~= max(dsz)
+                    dif = max(dsz)-length(dprimes{b});
                     Dif = 1:dif;
                     
                     for k = 1:length(Dif)
-                        z(length(dprimes{j})+Dif(k)) = NaN;
+                        z(length(dprimes{b})+Dif(k)) = NaN;
                     end
-                    DP(j,:) = z;
+                    DP(b,:) = z;
                 else
-                    DP(j,:) = z;
+                    DP(b,:) = z;
                 end
             end
         end
         
-        sn = [Ci.Session];
+        sn = [U.Session];
         sn = [sn.Name];
         sidx{i}(contains(sn,"Pre")) = 1;
         sidx{i}(contains(sn,"Aversive")) = 2;
         sidx{i}(contains(sn,"Post")) = 3;
-        x = 1+ones(size(sidx))*log10(days(i));
-    else
-        continue
-    end
-    
-    vals = {y.vals};
-    szv = cellfun('size', vals, 1);
-    [V] = cellfun(@max, vals);
-    vidx = szv == max(szv);
-    vv = vals(vidx);
-    v = flip(cell2mat(vv(end)));
-    
-    for j = 2 %:3 % plot each session seperately
-        ind = sidx{i} == j;
-        session = DP(ind,:);
         
-        if size(session, 1) ~= 1
-            dp = mean(session, 'omitnan');
-        else
-            dp = session;
+        vals = {dd.vals};
+        weights = {dd.weights};
+        
+        for j = 1:3 % plot each session seperately
+            session = dprimes{j};
+            session = session';
+            v = vals{j};
+            v = v';
+            w = weights{j};
+            w = w';
+            
+            [xfit,yfit] = epa.analysis.fit_sigmoid(v,session, w);
+            
+            hold on
+            plot(xfit,yfit,...
+                'Color', cm(j,:),...
+                'LineWidth', 4)
+            scatter(v, session, 50,...
+                'MarkerFaceColor', cm(j,:),...
+                'MarkerFaceAlpha', 0.5,...
+                'MarkerEdgeAlpha', 0)
+            legend(sessionName,...
+                'location', 'northwest')
+            legend boxoff
         end
-        
-        dp = dp';
-        [xfit,yfit] = epa.analysis.fit_sigmoid(v,dp);
-        
-        hold on
-        plot(xfit,yfit,...
-            'Color', cm(i,:),...
-            'LineWidth', 4)
-        legend('Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7',...
-            'location', 'northwest')
-        legend boxoff
     end
 end
 
 % % axes etc
-title(ax,sprintf('%s (n = %d)',titlepar,length(subjects)),...
-    'FontSize',15);
-
-set(findobj(ax,'-property','FontName'),...
-    'FontName','Arial')
-
 set([ax.XAxis], ...
     'TickDir','out',...
     'TickLength', [0.02,0.02],...
-    'LineWidth', 3,...
+    'LineWidth', 1.5,...
     'FontSize',12);
 set([ax.YAxis],...
     'TickDir','out',...
     'TickLength', [0.02,0.02],...
-    'LineWidth', 3,...
+    'LineWidth', 1.5,...
     'FontSize',12);
-
-set(gca, 'TickDir', 'out',...
-    'XTickLabelRotation', 0,...
-    'TickLength', [0.02,0.02],...
-    'LineWidth', 3);
-
 ax(1).YAxis.Label.Rotation = 90;
 
 xlabel(ax,'dB SPL re: 100%',...

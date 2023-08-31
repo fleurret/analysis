@@ -1,14 +1,14 @@
-function thresholds_across_sessions(spth, savedir, parname, subj, unit_type, day)
+function thresholds_across_sessions(spth, savedir, parname, subj, unit_type, day, savefile)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
-    parname = 'trial_firingrate';
+    Parname = 'trial_firingrate';
     
 elseif contains(parname,'Power')
-    parname = 'cl_calcpower';
+    Parname = 'cl_calcpower';
     
-else contains(parname,'VScc')
-    parname = 'vector_strength_cycle_by_cycle';
+elseif contains(parname,'VScc')
+    Parname = 'vector_strength_cycle_by_cycle';
 end
 
 % load neural
@@ -24,6 +24,11 @@ maxNumDays = 7;
 
 output = [];
 
+% set static variables
+parnames = ["trial_firingrate"; "cl_calcpower"; "vector_strength_cycle_by_cycle"];
+sessions = ["Pre", "Active", "Post"];
+sex = ["M", "F"];
+
 for i = 1:maxNumDays
     Ci = Cday{i};
     
@@ -37,12 +42,12 @@ for i = 1:maxNumDays
             continue
         end
         
-        if ~isfield(c.UserData.(parname),'threshold')
-            c.UserData.(parname).threshold = 0;
+        if ~isfield(c.UserData.(Parname),'threshold')
+            c.UserData.(Parname).threshold = 0;
         end
         
-        if ~isfield(c.UserData.(parname),'p_val')
-            c.UserData.(parname).p_val = nan;
+        if ~isfield(c.UserData.(Parname),'p_val')
+            c.UserData.(Parname).p_val = nan;
         end
     end
     
@@ -56,8 +61,8 @@ for i = 1:maxNumDays
         ind = uid(j) == id;
         
         % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
-        t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
-        pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
+        t = arrayfun(@(a) a.UserData.(Parname).threshold,Ci(ind));
+        pval = arrayfun(@(a) a.UserData.(Parname).p_val,Ci(ind));
         if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
             flaggedForRemoval(end+1) = uid(j);
             %             fprintf(2,'ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
@@ -67,6 +72,33 @@ for i = 1:maxNumDays
     end
     
     % remove invalid units
+    idx = false(1,length(Ci));
+    for j = 1:length(Ci)
+        if ismember(id(j),flaggedForRemoval)
+            idx(j) = 0;
+        else
+            idx(j) = 1;
+        end
+    end
+    Ci = Ci(idx);
+    
+    % flag if fit is negative
+    id = [Ci.Name];
+    uid = unique(id);
+    flaggedForRemoval = "";
+    for j = 1:length(uid)
+        ind = uid(j) == id;
+        yfit = arrayfun(@(a) a.UserData.(Parname).yfit,Ci(ind),'UniformOutput',false);
+        for k = 1:length(Ci(ind))
+            syfit = yfit{k};
+            curve = [syfit(1), syfit(500), syfit(1000)];
+            
+            if curve(1) > curve(2) && curve(2) > curve(3) && sum(yfit{k}>1) > 0
+                flaggedForRemoval(end+1) = uid(j);
+            end
+        end
+    end
+    
     idx = false(1,length(Ci));
     for j = 1:length(Ci)
         if ismember(id(j),flaggedForRemoval)
@@ -115,10 +147,10 @@ for i = 1:maxNumDays
         Ci = Ci(removeind);
     end
     
-    % replace NaN thresholds with 1
+    % replace NaN thresholds with 5
     for j = 1:length(Ci)
-        if isnan(Ci(j).UserData.(parname).threshold)
-            Ci(j).UserData.(parname).threshold = 1;
+        if isnan(Ci(j).UserData.(Parname).threshold)
+            Ci(j).UserData.(Parname).threshold = 5;
         end
     end
     
@@ -133,7 +165,7 @@ for i = 1:maxNumDays
     for j = 1:length(uid)
         ind = uid(j) == id;
         U = Ci(ind);
-        presented = round(U(1).UserData.(parname).vals);
+        presented = round(U(1).UserData.(Parname).vals);
         
         % create output
         clear temp
@@ -145,33 +177,52 @@ for i = 1:maxNumDays
             
             % pull values
             u = U(k);
-            b = u.UserData.(parname).threshold;
             
-            B = [B; b];
+            if ~isfield(u.UserData.(Parname),'threshold')
+                b = NaN;
+            else
+                b = u.UserData.(Parname).threshold;
+            end
+            
+            % set session
+            session = sessions(k);
+            
+            
+            % get subject
+            subjid = split(u.Name, '_');
+            
+            % get sex
+            if contains(subjid(1), '228') || contains(subjid(1), '267')
+                s = sex(1);
+            else
+                s = sex(2);
+            end
+            
+            % add to list
+            temp{1} = uid(j);
+            temp{2} = subjid(1);
+            temp{3} = s;
+            temp{4} = i;
+            temp{5} = u.Type;
+            temp{6} = session;
+            temp{7} = b;
+            output = [output; temp];
         end
-        
-        % add to list
-        
-        temp{1} = uid(j);
-        temp{2} = i;
-        temp{3} = u.Type;
-        temp{4} = B(1);
-        temp{5} = B(2);
-        
-        if length(B) ~= 3
-            temp{6} = NaN;
-        else
-            temp{6} = B(3);
-        end
-        
-        
-        output = [output; temp];
     end
 end
 
 % convert to table
 output = cell2table(output);
-output.Properties.VariableNames = ["Unit","Day", "Type", "Pre", "Active", "Post"];
+output.Properties.VariableNames = ["Unit","Subject", "Sex", "Day", "Type", "Session","Threshold"];
+
+
+% save as file
+if savefile == 1
+    sf = fullfile(savedir,append(parname,'_Day', mat2str(day), '_thresholds.csv'));
+    fprintf('Saving file %s \n', sf)
+    writetable(output,sf);
+    fprintf(' done\n')
+end
 
 % plot
 cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
@@ -181,18 +232,32 @@ f.Position = [0, 0, 1800, 250];
 
 x = 1:3;
 
-for d = day
+
+for d = 1%:maxNumDays
     ax = subplot(1,maxNumDays,d);
     set(gca, 'TickDir', 'out',...
-        'XTickLabelRotation', 0)
+        'XTickLabelRotation', 0,...
+        'TickLength', [0.02,0.02],...
+        'LineWidth', 1.5);
     set(findobj(ax,'-property','FontName'),...
         'FontName','Arial')
     ucm = cm(d,:);
     hold on
     
-    didx = output.Day == d;
+    for i = 1:length(sessions)
+        % only on that day
+        didx = output.Day == d;
+        daydata = output(didx,:);
+        
+        % get each session
+        sidx = contains(daydata{:,:}, sessions{i});
+        [row,~] = find(sidx);
+        onesession = daydata(row,:);
+        smean = mean(table2array(onesession(:,7)), 'omitnan');
+        
+        daymeans(i) = smean;
+    end
     
-    daymeans = [mean(output.Pre(didx), 'omitnan') mean(output.Active(didx), 'omitnan') mean(output.Post(didx), 'omitnan')];
     plot(daymeans,...
         'Color', ucm,...
         'Marker', 'o',...
@@ -200,29 +265,37 @@ for d = day
         'MarkerSize', 8,...
         'LineWidth', 2)
     
-    for i = 1:height(output)
-        unit = table2cell(output(i,:));
-        pap = [cell2mat(unit(4)) cell2mat(unit(5)) cell2mat(unit(6))];
-        ud = cell2mat(unit(2));
+    units = table2struct(output);
+    
+    for i = 1%:maxNumDays
+        currentday = [units.Day] == i;
+        means = [units.Threshold];
+        currentmeans = means(currentday);
+        sess = [units.Session];
+        currentsessions = sess(currentday);
         
-        if d == ud
-            scatter(x,pap,...
-                'Marker','o',...
-                'MarkerFaceColor', ucm,...
-                'MarkerFaceAlpha', 0.3,...
-                'MarkerEdgeAlpha', 0)
-            
-            line(x,pap,...
-                'Color', ucm,...
-                'LineWidth',0.75,...
-                'LineStyle', ':')
-            
+        for j = 1:3
+            seidx = currentsessions == sessions(j);
+            meantable(j,:) = currentmeans(seidx);
         end
+    end
+    
+    for i = 1:length(meantable)
+        scatter(x,meantable(:,i),...
+            'Marker','o',...
+            'MarkerFaceColor', ucm,...
+            'MarkerFaceAlpha', 0.3,...
+            'MarkerEdgeAlpha', 0)
         
-        xticklabels({'Pre','','Active','','Post'})
-        title('Day ', d)
-        ylabel('Threshold (dB re: 100%)')
-        ylim([-20 2])
-        
+        line(x,meantable(:,i),...
+            'Color', ucm,...
+            'LineWidth',0.75,...
+            'LineStyle', ':')
     end
 end
+
+xticklabels({'Pre','','Active','','Post'})
+title('Day ', d)
+ylabel('Threshold (dB re: 100%)')
+ylim([-20 5])
+

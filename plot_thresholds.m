@@ -1,5 +1,5 @@
 
-load('D:\Caras\Analysis\Caspase\Acquisition\Control\399\SUBJ-ID-399_allSessions.mat')
+load('D:\Caras\Analysis\IC recordings\Behavior\267\SUBJ-ID-267_allSessions.mat')
 f = figure;
 f.Position = [0, 0, 850, 400];
 hold on

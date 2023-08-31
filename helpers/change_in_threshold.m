@@ -44,7 +44,7 @@ maxNumDays = 7;
 
 % plot settings
 f = figure;
-f.Position = [0, 0, 1700, 350];
+f.Position = [0, 0, 1700, 250];
 tiledlayout(1, maxNumDays)
 
 for i = 1:maxNumDays
@@ -87,48 +87,38 @@ for i = 1:maxNumDays
     uid = unique(id);
     
     % loop through parx
-    flaggedForRemovalx = "";
+    flaggedForRemoval = "";
     for j = 1:length(uid)
         ind = uid(j) == id;
         
-        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        % get fr threshold
         tx = arrayfun(@(a) a.UserData.(parx).threshold,Ci(ind));
         pvalx = arrayfun(@(a) a.UserData.(parx).p_val,Ci(ind));
         
-        if sum(tx,'omitnan') == 0 || all(isnan(pvalx)) || ~any(pvalx<=alpha)
-            flaggedForRemovalx(end+1) = uid(j);
-        end
-    end
-    
-    % loop through pary
-    flaggedForRemovaly = "";
-    for j = 1:length(uid)
-        ind = uid(j) == id;
-        
-        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        % get vscc threshold
         ty = arrayfun(@(a) a.UserData.(pary).threshold,Ci(ind));
         pvaly = arrayfun(@(a) a.UserData.(pary).p_val,Ci(ind));
         
-        if sum(ty,'omitnan') == 0 || all(isnan(pvaly)) || ~any(pvaly<=alpha)
-            flaggedForRemovaly(end+1) = uid(j);
+        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
+        if sum(tx,'omitnan') == 0 && sum(ty, 'omitnan') == 0 ||...
+                sum(tx,'omitnan') ~= 0 && all(isnan(pvalx)) ||...
+                sum(ty,'omitnan') ~= 0 && all(isnan(pvaly)) ||...
+                sum(tx,'omitnan') ~= 0 && ~any(pvalx<=alpha) ||...
+                sum(ty,'omitnan') ~= 0 && ~any(pvaly<=alpha)
+            flaggedForRemoval(end+1) = uid(j);
         end
     end
     
     % remove invalid units
     idx = false(1,length(Ci));
     for j = 1:length(Ci)
-        if ismember(id(j),flaggedForRemovalx) && ismember(id(j),flaggedForRemovaly)
-            idx(j) = 0;
-        else
-            idx(j) = 1;
-        end
-        
-        if ismember(id(j),flaggedForRemovalx) && ismember(id(j),flaggedForRemovaly)
+        if ismember(id(j),flaggedForRemoval)
             idx(j) = 0;
         else
             idx(j) = 1;
         end
     end
+
     Ci = Ci(idx);
     
     % remove any additional manually flagged units
@@ -162,13 +152,13 @@ for i = 1:maxNumDays
             ythr = u.UserData.(pary).threshold;
             
             if isnan(xthr)
-                x(k) = 1;
+                x(k) = 0;
             else
                 x(k) = xthr;
             end
             
             if isnan(ythr)
-                y(k) = 1;
+                y(k) = 0;
             else
                 y(k) = ythr;
             end
@@ -213,20 +203,20 @@ for i = 1:maxNumDays
     %             'ylim', [-25 5]);
     
     % calculate average vector
-%     avgM = mean([output{:,3}], 'omitnan');
+    %     avgM = mean([output{:,3}], 'omitnan');
     avgX = mean([output{:,4}], 'omitnan');
     avgY = mean([output{:,5}], 'omitnan');
-%     avgA = mean([output{:,6}], 'omitnan');
-    
+    %     avgA = mean([output{:,6}], 'omitnan');
+
     % plot individual vectors
     for j = 1:length(output)
+        hold on
         X(1) = 0;
         Y(1) = 0;
         X(2) = [output{j,4}];
         Y(2) = [output{j,5}];
         
         for k = 1:2
-            hold on
             scatter(ax(i),X(k), Y(k),...
                 'Marker', 'none')
         end
@@ -237,7 +227,7 @@ for i = 1:maxNumDays
             'Y', Y,...
             'HeadLength', 4,...
             'HeadWidth', 4,...
-            'HeadStyle', 'plain');
+            'HeadStyle', 'vback2');
     end
     
     % plot mean vector
@@ -248,15 +238,20 @@ for i = 1:maxNumDays
     set(h2, 'parent', gca,...
         'X', xm,...
         'Y', ym,...
-        'LineWidth', 3,...
-        'Color', [34,226,232]./255,...
-        'HeadLength', 4,...
-        'HeadWidth', 4,...
+        'LineWidth', 1,...
+        'Color', '#cb83e6',...
+        'HeadLength', 3,...
+        'HeadWidth', 3,...
         'HeadStyle', 'ellipse');
     
     % set axes etc.
-    set(ax(i),'xlim', [-20 20],...
-        'ylim', [-20 20]);
+    set(ax(i),'xlim', [-15 15],...
+        'ylim', [-15 15],...
+        'LineWidth', 1.2,...
+        'TickDir', 'out',...
+        'TickLength', [0.02,0.02]);
+    axis(ax(i),'equal');
+    axis(ax(i),'square');
     
     title('Day ', i)
     xlabel(append('\Delta', x_label, ' threshold'))

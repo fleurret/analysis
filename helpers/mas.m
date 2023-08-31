@@ -41,11 +41,15 @@ end
 assert(isequal(size(data,2),length(targetTrials)),'epa:metric:neurometric_dprime:UnequalSizes', ...
     'size(data,2) must equal length(targetTrials)')
 
+% means
 mAM = mean(data(:,targetTrials),nanflag);
 mNAM = mean(data(:,~targetTrials),nanflag);
 
+% standard deviation
 sAM = std(data(:,targetTrials),nanflag);
 sNAM = std(data(:,~targetTrials),nanflag);
 
-cAM = mAM/sAM;
-cNAM = mNAM/sNAM;
+% coefficient of variation
+cAM = sAM/mAM;
+cNAM = sNAM/mNAM;
+

@@ -1,4 +1,4 @@
- function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace, sv)
+function plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace, sv)
 
 % Plot individual unit thresholds and means across days
 
@@ -56,19 +56,22 @@ maxNumDays = 7;
 % vars for output file
 unit = [];
 subj_id = [];
+sx = [];
 thrs = [];
 day = [];
 session = [];
+valid = [];
 
 % set properties
 sessionName = ["Pre","Active","Post"];
+sex = ["M", "F"];
 
 cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 mk = '^^^';
 xoffset = [.99, 1, 1.01];
 
-f = figure(sum(uint8(parname)));
+f = figure;
 f.Position = [0, 0, 1000, 350];
 set(f,'color','w');
 clf(f);
@@ -87,7 +90,7 @@ count = zeros(1,3);
 
 for i = 1:length(days)
     Ci = Cday{i};
-  
+    
     % first make sure that there is a threshold/p_val field for the "parname"
     % threshold = NaN means curve did not cross d' = 1
     % threshold = 0 means there were no spikes/failed to compute threshold
@@ -108,8 +111,8 @@ for i = 1:length(days)
     end
     
     alpha = 0.05;
-
-    % create lookup table for each cluster 
+    
+    % create lookup table for each cluster
     id = [Ci.Name];
     uid = unique(id);
     flaggedForRemoval = "";
@@ -121,11 +124,39 @@ for i = 1:length(days)
         pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
         if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
             flaggedForRemoval(end+1) = uid(j);
-%             fprintf(2,'ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+            %             fprintf(2,'ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
         else
-%             fprintf('ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
+            %             fprintf('ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
         end
     end
+    
+    % flag if fit is negative
+    id = [Ci.Name];
+    uid = unique(id);
+    flaggedForRemoval = "";
+    for j = 1:length(uid)
+        ind = nan(1,length(uid));
+        ind = uid(j) == id;
+        yfit = arrayfun(@(a) a.UserData.(parname).yfit,Ci(ind),'UniformOutput',false);
+        for k = 1:length(Ci(ind))
+            syfit = yfit{k};
+            curve = [syfit(1), syfit(500), syfit(1000)];
+            
+            if curve(1) > curve(2) && curve(2) > curve(3) && sum(yfit{k}>1) > 0
+                flaggedForRemoval(end+1) = uid(j);
+            end
+        end
+    end
+    
+    idx = false(1,length(Ci));
+    for j = 1:length(Ci)
+        if ismember(id(j),flaggedForRemoval)
+            idx(j) = 0;
+        else
+            idx(j) = 1;
+        end
+    end
+    Ci = Ci(idx);
     
     % remove invalid units
     idx = false(1,length(Ci));
@@ -141,12 +172,12 @@ for i = 1:length(days)
     % remove any additional manually flagged units
     note = {Ci.Note};
     removeind = cellfun(@isempty, note);
-    Ci = Ci(removeind);  
+    Ci = Ci(removeind);
     
-    % only plot one subject    
+    % only plot one subject
     if subj ~= "all"
         subj_idx = zeros(1,length(Ci));
-
+        
         for j = 1:length(Ci)
             if Ci(j).Subject == ""
                 nsubj = append(subj,"_");
@@ -165,7 +196,7 @@ for i = 1:length(days)
                 end
             end
         end
-            
+        
         subj_idx = logical(subj_idx);
         Ci = Ci(subj_idx);
     end
@@ -173,14 +204,14 @@ for i = 1:length(days)
     % only plot one condition
     if condition ~= "all"
         if condition == "w"
-            ffn = fullfile(savedir,'NeuralThresholds',(parname),'thresholds_worsened.mat');
+            ffn = fullfile(savedir,'thresholds_worsened.mat');
             load(ffn)
             
             subset = worsened;
         end
         
         if condition == "i"
-            ffn = fullfile(savedir,'NeuralThresholds',(parname),'thresholds_improved.mat');
+            ffn = fullfile(savedir,'thresholds_improved.mat');
             load(ffn)
             
             subset = improved;
@@ -223,7 +254,7 @@ for i = 1:length(days)
     
     % check if any threshold values are NaN, and replace with highest depth
     % presented
-    if replace == "yes"
+    if strcmp(replace, 'yes')
         for k = 1:length(Ci)
             if isnan(Ci(k).UserData.(parname).threshold)
                 highest_depth = Ci(k).UserData.FiringRate.vals(5);
@@ -304,6 +335,19 @@ for i = 1:length(days)
         for z = 1:length(U)
             Subj = split(U(z), '_cluster');
             subjlist(z) = Subj(1);
+            
+            if contains(U(z), '228') || contains(U(z), '267')
+                sx = [sx, sex(1)];
+            else
+                sx = [sx, sex(2)];
+            end
+            
+            TR = thr{i}(ind);
+            if isnan(TR(z))
+                valid = [valid, "NaN"];
+            else
+                valid = [valid, "Valid"];
+            end
         end
         
         unit = [unit; U'];
@@ -380,7 +424,7 @@ if subj == "all"
     behav_mean = behav_mean(1:7);
     behav_std = behav_std(1:7);
 else
-    behav_mean = behav_os;   
+    behav_mean = behav_os;
 end
 
 x = log10(days)+1;
@@ -397,7 +441,7 @@ bplot.MarkerFaceColor = '#ff7bb1';
 xi = log10(1:7);
 [b_fo,~] = fit(xi',behav_mean','poly1');
 yi = b_fo.p1.*xi + b_fo.p2;
-    
+
 % fit
 bfit = line(ax(2), xi+1, yi,...
     'DisplayName', sprintf('Behavior (%.2f)', b_fo.p1),...
@@ -411,7 +455,7 @@ if subj == "all"
     e.LineWidth= 2;
     e.Color = '#ff7bb1';
     e.CapSize = 0;
-
+    
     % set transparency
     alpha = 0.3;
     set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*alpha])
@@ -426,9 +470,13 @@ set([ax.XAxis], ...
     'TickValues',log10(days)+1, ...
     'TickLabels',arrayfun(@(a) num2str(a,'%d'),days,'uni',0),...
     'TickDir','out',...
+    'TickLength', [0.02,0.02],...
+    'LineWidth', 1.5,...
     'FontSize',12);
 set([ax.YAxis],...
-    'TickDir','out',...
+    'TickDir','out',...,
+    'TickLength', [0.02,0.02],...
+    'LineWidth', 1.5,...
     'FontSize',12);
 ax(1).YAxis.Label.Rotation = 90;
 ax(2).YAxis.Label.Rotation = 90;
@@ -445,8 +493,6 @@ ylabel(ax,'Threshold (dB re: 100%)',...
 title(ax,sprintf('%s (n = %d)',titlepar,length(subjects)),...
     'FontSize',15);
 
-box(ax,'on');
-
 legend(hfit,'Location','southwest','FontSize',12, 'box', 'off');
 legend([hfitm,bfit],'Location','southwest','FontSize',12, 'box', 'off');
 
@@ -458,10 +504,10 @@ fprintf('%s Pre, %s Active, %s Post', num2str(count(1)), num2str(count(2)), num2
 
 % save as file
 if sv == 1
-    output = [unit, subj_id, day, thrs, session];
+    output = [unit, subj_id, sx', day, thrs, session, valid'];
     
     sf = fullfile(savedir,append(parname,'_threshold.csv'));
-    fprintf('Saving file %s \n', sf)
+    fprintf('\n Saving file %s ...', sf)
     writematrix(output,sf);
     fprintf(' done\n')
 end

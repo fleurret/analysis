@@ -3,7 +3,7 @@
 % condition, and then sub-subfolder subject with behavior file
 % e.g. Caspase > Control > SUBJ200 > behaviorfile.mat; your path will be
 % C:\Users\rose\Caspase
-pth = 'D:\Caras\Analysis\IC recordings\Behavior';
+pth = 'D:\Caras\Analysis\Caspase\Maintenance\Experimental\';
 
 % number of days you want to analyze
 maxdays = 7;
@@ -21,10 +21,10 @@ avg_threshold(pth, maxdays, yl, c)
 
 %% SINGLE SUBJECT
 
-pth = 'D:\Caras\Analysis\IC recordings\Behavior\222';
+pth = 'D:\Caras\Analysis\Caspase\Maintenance\Experimental\527';
 
 % number of days you want to analyze
-maxdays = 7;
+maxdays = 10;
 
 % y limit - adjust as needed to make sure all data points are visible
 yl = [-20,-2];

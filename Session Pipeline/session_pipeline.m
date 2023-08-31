@@ -1,7 +1,7 @@
 
-% spth = '/mnt/CL_4TB_1/Rose/IC recording/SUBJ-ID-222';
+spth = '/mnt/CL_4TB_1/Rose/IC recording/SUBJ-ID-222';
 % spth = '/mnt/CL_8TB_3/Rose/IC recording/SUBJ-ID-267';
-spth = '/mnt/CL_4TB_2/Rose/MGN recording/SUBJ-ID-323';
+% spth = '/mnt/CL_4TB_2/Rose/MGN recording/SUBJ-ID-323';
 
 %% Create and save a new Session object(s)
 
