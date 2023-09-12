@@ -1,4 +1,4 @@
-function metrics_across_sessions(parname, spth, savedir, ndays, meas, type, unit_type, condition, depth, savefile)
+function am_ratio(parname, spth, savedir, ndays, unit_type, condition, depth, savefile)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -49,25 +49,9 @@ for i = ndays
             
             % pull values
             u = U(k);
-            [mAM, mNAM, cAM, cNAM] = calc_mas(u, Parname, depth);
+            [mAM, mNAM, ~, ~] = calc_mas(u, Parname, depth);
             
-            if strcmp(meas, 'Mean')
-                if strcmp(type, 'AM')
-                    b = mAM;
-                else
-                    b = mNAM;
-                end
-            else
-                if strcmp(type, 'AM')
-                    b = cAM;
-                else
-                    b = cNAM;
-                end
-            end
-            
-            if isempty(b)
-                b = NaN;
-            end
+            b = mAM/mNAM;
             
             % get subject
             subjid = split(u.Name, '_');
@@ -94,11 +78,11 @@ end
 
 % convert to table
 output = cell2table(output);
-output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Type", "Session", meas];
+output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Type", "Session", "Ratio"];
 
 % save as file
 if savefile == 1
-    sf = fullfile(savedir,append(Parname,'_',type, meas,'.csv'));
+    sf = fullfile(savedir,append(Parname,'_', length(ndays),'days_AMRatio.csv'));
     fprintf('Saving file %s \n', sf)
     writetable(output,sf);
     fprintf(' done\n')
@@ -107,12 +91,12 @@ end
 % plot
 cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
 f = figure;
-f.Position = [0, 0, numel(ndays)*200, 250];
+f.Position = [0, 0, 200, 250];
 
 x = 1:3;
 
-for d = 1:numel(ndays)
-    ax = subplot(1,numel(ndays),d);
+for d = 1:length(ndays)
+    ax = subplot(1,1,1);
     set(gca, 'TickDir', 'out',...
         'XTickLabelRotation', 0,...
         'TickLength', [0.02,0.02],...
@@ -147,13 +131,7 @@ for d = 1:numel(ndays)
     units = table2struct(output);
     
     currentday = [units.Day] == d;
-    
-    if strcmp(meas, 'Mean')
-        means = [units.Mean];
-    else
-        means = [units.CoV];
-    end
-    
+    means = [units.Ratio];
     currentmeans = means(currentday);
     sess = [units.Session];
     currentsessions = sess(currentday);
@@ -184,32 +162,19 @@ for d = 1:numel(ndays)
     xticklabels({'Pre','Active','Post'})
     title('Day ', d)
     
-    if strcmp(meas, 'Mean')
-        if strcmp(Parname, 'trial_firingrate')
-            ylabel('Firing rate (Hz)')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 15])
-            end
-        end
-        
-        if strcmp(Parname, 'cl_calcpower')
-            ylabel('spikes/sec^{2}/Hz')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 10])
-            end
-        end
-        
-        if strcmp(Parname, 'vector_strength_cycle_by_cycle')
-            ylabel('Vector strength')
-            ylim([0 1])
-        end
-    else
-        ylabel('Variation')
-        ylim([0 2])
+    if strcmp(Parname, 'trial_firingrate')
+        ylabel('Firing rate (Hz)')
+        ylim([0 3])
+    end
+    
+    if strcmp(Parname, 'cl_calcpower')
+        ylabel('spikes/sec^{2}/Hz')
+        ylim([0 4])
+    end
+    
+    if strcmp(Parname, 'vector_strength_cycle_by_cycle')
+        ylabel('Vector strength')
+        ylim([0 50])
     end
 end
 

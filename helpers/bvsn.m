@@ -1,4 +1,4 @@
-function bvsn(behavdir, savedir, parname, maxdays, subj)
+function bvsn(behavdir, savedir, parname, maxdays, subj, unit_type, condition)
 
 % load behavior
 pth = fullfile(behavdir,subj);
@@ -15,13 +15,13 @@ behav = [a.threshold];
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
-    parname = 'trial_firingrate';
+    Parname = 'trial_firingrate';
     
 elseif contains(parname,'Power')
-    parname = 'cl_calcpower';
+    Parname = 'cl_calcpower';
     
 else contains(parname,'VScc')
-    parname = 'vector_strength_cycle_by_cycle';
+    Parname = 'vector_strength_cycle_by_cycle';
 end
 
 % load neural
@@ -58,80 +58,8 @@ xall = nan(3,7);
 
 for k = 1:3 % plot each session seperately
     for i = 1:length(days)
-        Ci = Cday{i};
-        
-        % first make sure that there is a threshold/p_val field for the "parname"
-        % threshold = NaN means curve did not cross d' = 1
-        % threshold = 0 means there were no spikes/failed to compute threshold
-        for j = 1:length(Ci)
-            c = Ci(j);
-            if ~isfield(c.UserData.(parname),'threshold')
-                c.UserData.(parname).threshold = 0;
-            end
-            
-            if ~isfield(c.UserData.(parname),'p_val')
-                c.UserData.(parname).p_val = nan;
-            end
-        end
-        
-        alpha = 0.05;
-        
-        % create lookup table for each cluster
-        id = [Ci.Name];
-        uid = unique(id);
-        flaggedForRemoval = "";
-        for j = 1:length(uid)
-            ind = uid(j) == id;
-            % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
-            t = arrayfun(@(a) a.UserData.(parname).threshold,Ci(ind));
-            pval = arrayfun(@(a) a.UserData.(parname).p_val,Ci(ind));
-            if sum(t,'omitnan') == 0 || all(isnan(pval)) || ~any(pval<=alpha)
-                flaggedForRemoval(end+1) = uid(j);
-                %             fprintf(2,'ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
-            else
-                %             fprintf('ID %s, thr = %s , pval = %s\n',uid(j),mat2str(t,2),mat2str(pval,2))
-            end
-        end
-        
-        % remove invalid units
-        idx = false(1,length(Ci));
-        for j = 1:length(Ci)
-            if ismember(id(j),flaggedForRemoval)
-                idx(j) = 0;
-            else
-                idx(j) = 1;
-            end
-        end
-        Ci = Ci(idx);
-        
-        % flag if fit is negative
-        id = [Ci.Name];
-        uid = unique(id);
-        flaggedForRemoval = "";
-        for j = 1:length(uid)
-            ind = nan(1,length(uid));
-            ind = uid(j) == id;
-            yfit = arrayfun(@(a) a.UserData.(parname).yfit,Ci(ind),'UniformOutput',false);
-            for k = 1:length(Ci(ind))
-                syfit = yfit{k};
-                curve = [syfit(1), syfit(500), syfit(1000)];
-                
-                if curve(1) > curve(2) && curve(2) > curve(3) && sum(yfit{k}>1) > 0
-                    flaggedForRemoval(end+1) = uid(j);
-                end
-            end
-        end
-        
-        idx = false(1,length(Ci));
-        for j = 1:length(Ci)
-            if ismember(id(j),flaggedForRemoval)
-                idx(j) = 0;
-            else
-                idx(j) = 1;
-            end
-        end
-        Ci = Ci(idx);
-        
+        Ci = filterunits(Parname, Cday, i, unit_type, condition);
+
         % restrict to subject
         subj_idx = zeros(1,length(Ci));
         for j = 1:length(Ci)
@@ -152,15 +80,12 @@ for k = 1:3 % plot each session seperately
                 end
             end
         end
+        
         subj_idx = logical(subj_idx);
         Ci = Ci(subj_idx);
         
-        % remove any additional manually flagged units
-        note = {Ci.Note};
-        removeind = cellfun(@isempty, note);
-        Ci = Ci(removeind);
         
-        y = arrayfun(@(a) a.UserData.(parname),Ci,'uni',0);
+        y = arrayfun(@(a) a.UserData.(Parname),Ci,'uni',0);
         ind = cellfun(@(a) isfield(a,'ERROR'),y);
         
         y(ind) = [];
@@ -201,7 +126,7 @@ for k = 1:3 % plot each session seperately
             'MarkerFaceColor', cm(k,:));
         
         % set title
-        title(ax(k),sprintf('%s (%s)',sessionName(k),parname),...
+        title(ax(k),sprintf('%s (%s)',sessionName(k),Parname),...
             'FontSize',15);
     end
     

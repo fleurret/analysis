@@ -1,4 +1,4 @@
-function output = change_in_threshold(savedir, spth, parx, pary)
+function output = change_in_threshold(savedir, spth, parx, pary, ndays, unit_type, condition)
 
 % convert parnames to correct label
 if strcmp(parx,'FiringRate')
@@ -39,95 +39,33 @@ subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
-minNumSpikes = 0;
-maxNumDays = 7;
-
 % plot settings
 f = figure;
 f.Position = [0, 0, 1700, 250];
-tiledlayout(1, maxNumDays)
+tiledlayout(1, length(ndays))
 
-for i = 1:maxNumDays
-    
+for i = ndays  
     % make subplot
     ax(i) = nexttile;
+    
+    % set axes etc.
+    axis(ax(i),'equal');
+    axis(ax(i),'square');
+    set(ax(i),'xlim', [-15 15],...
+        'ylim', [-15 15],...
+        'LineWidth', 1.2,...
+        'TickDir', 'out',...
+        'TickLength', [0.02,0.02]);
+
     xline(0)
     yline(0)
     
     output = [];
     
-    Ci = Cday{i};
+    Ci_x = filterunits(savedir, parx, Cday, i, unit_type, condition);
+    Ci_y = filterunits(savedir, pary, Cday, i, unit_type, condition);
     
-    % first make sure that there is a threshold/p_val field for the "parname"
-    % threshold = NaN means curve did not cross d' = 1
-    % threshold = 0 means there were no spikes/failed to compute threshold
-    for j = 1:length(Ci)
-        c = Ci(j);
-        if ~isfield(c.UserData.(parx),'threshold')
-            c.UserData.(parx).threshold = 0;
-        end
-        
-        if ~isfield(c.UserData.(pary),'threshold')
-            c.UserData.(pary).threshold = 0;
-        end
-        
-        if ~isfield(c.UserData.(parx),'p_val')
-            c.UserData.(parx).p_val = nan;
-        end
-        
-        if ~isfield(c.UserData.(pary),'p_val')
-            c.UserData.(pary).p_val = nan;
-        end
-    end
-    
-    alpha = 0.05;
-    
-    % create lookup table for each cluster
-    id = [Ci.Name];
-    uid = unique(id);
-    
-    % loop through parx
-    flaggedForRemoval = "";
-    for j = 1:length(uid)
-        ind = uid(j) == id;
-        
-        % get fr threshold
-        tx = arrayfun(@(a) a.UserData.(parx).threshold,Ci(ind));
-        pvalx = arrayfun(@(a) a.UserData.(parx).p_val,Ci(ind));
-        
-        % get vscc threshold
-        ty = arrayfun(@(a) a.UserData.(pary).threshold,Ci(ind));
-        pvaly = arrayfun(@(a) a.UserData.(pary).p_val,Ci(ind));
-        
-        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
-        if sum(tx,'omitnan') == 0 && sum(ty, 'omitnan') == 0 ||...
-                sum(tx,'omitnan') ~= 0 && all(isnan(pvalx)) ||...
-                sum(ty,'omitnan') ~= 0 && all(isnan(pvaly)) ||...
-                sum(tx,'omitnan') ~= 0 && ~any(pvalx<=alpha) ||...
-                sum(ty,'omitnan') ~= 0 && ~any(pvaly<=alpha)
-            flaggedForRemoval(end+1) = uid(j);
-        end
-    end
-    
-    % remove invalid units
-    idx = false(1,length(Ci));
-    for j = 1:length(Ci)
-        if ismember(id(j),flaggedForRemoval)
-            idx(j) = 0;
-        else
-            idx(j) = 1;
-        end
-    end
-
-    Ci = Ci(idx);
-    
-    % remove any additional manually flagged units
-    note = {Ci.Note};
-    removeind = cellfun(@isempty, note);
-    Ci = Ci(removeind);
-    
-    % replace Cday
-    Cday{1,i} = Ci;
+    Ci = union(Ci_x, Ci_y);
     
     % only valid clusters
     id = [Ci.Name];
@@ -244,19 +182,10 @@ for i = 1:maxNumDays
         'HeadWidth', 3,...
         'HeadStyle', 'ellipse');
     
-    % set axes etc.
-    set(ax(i),'xlim', [-15 15],...
-        'ylim', [-15 15],...
-        'LineWidth', 1.2,...
-        'TickDir', 'out',...
-        'TickLength', [0.02,0.02]);
-    axis(ax(i),'equal');
-    axis(ax(i),'square');
     
     title('Day ', i)
     xlabel(append('\Delta', x_label, ' threshold'))
     ylabel(append('\Delta', y_label, ' threshold'))
 end
-
 
 

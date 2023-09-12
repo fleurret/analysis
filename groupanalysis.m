@@ -1,9 +1,9 @@
 %% Set directories - run first!
 
 % which metric to use
-parname = 'FiringRate';
+% parname = 'FiringRate';
 % parname = 'Power';
-% parname = 'VScc';
+parname = 'VScc';
 
 region = "IC";
 % region = "IC shell";
@@ -50,13 +50,20 @@ load_clusters(spth, savedir);
 flag_cluster(savedir, parname, "session", 3, "224_cluster1451", "Post")
 
 %% AM/Non-AM metrics across sessions first day
-% syntax: metrics_across_sessions(parname, spth, savedir, ndays, meas, type, unit_type, condition, depth)
+% syntax: metrics_across_sessions(parname, spth, savedir, ndays, meas, type, unit_type, condition, depth, savefile)
 
 % meas: 'Mean', 'CoV' (Coefficient of variation)
 % type: 'AM', 'NonAM'
 % depth: in dB; 0 -3 -6 -9 -12 -15 -18
 
-metrics_across_sessions(parname, spth, savedir, 1, 'Mean', 'AM', "SU", "all", 0)
+metrics_across_sessions(parname, spth, savedir, 1:7, 'CoV', 'NonAM', "SU", "all", -9, 0)
+
+%% Calculate AM/NonAM ratio
+% syntax: am_ratio(parname, spth, savedir, ndays, unit_type, condition, depth, savefile)
+
+% am_ratio(parname, spth, savedir, 1, "SU", "all", 0 ,0)
+
+am_ratio_combined(parname, spth, savedir, 1:7, "SU", "i", -9 ,0)
 
 %% Plot neurometric fits across sessions
 % syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
@@ -68,7 +75,7 @@ metrics_across_sessions(parname, spth, savedir, 1, 'Mean', 'AM', "SU", "all", 0)
 fit_over_sessions(spth, savedir, parname, "all", "SU")
 
 %% Plot neurometric fits across sessions from one unit
-% syntax: fit_over_days(spth, savedir, parname, subj, unit_type, cn)
+% syntax: fit_over_days(spth, savedir, parname, ndays, unit_type, condition, cn)
 
 % subj: "all", "202", "222", "223", "224", "267"
 
@@ -76,10 +83,10 @@ fit_over_sessions(spth, savedir, parname, "all", "SU")
 
 % cn = which number unit
 
-fit_over_sessions_rep(spth, savedir, parname, "all", "SU", 1)
+fit_over_sessions_rep(spth, savedir, parname, 1, "SU", "all", 12)
 
 %% Plot thresholds across sessions
-% syntax: thresholds_across_sessions(spth, savedir, parname, subj, unit_type, day, savefile)
+% syntax: thresholds_across_sessions(spth, savedir, parname, day, unit_type, condition,  savefile)
 
 % subj: "all", "202", "222", "223", "224", "267"
 
@@ -87,9 +94,13 @@ fit_over_sessions_rep(spth, savedir, parname, "all", "SU", 1)
 
 % day: day number
 
+% condition: all, improved, worsened
+
 % savefile: 0 no 1 yes
 
-thresholds_across_sessions(spth, savedir, parname, "all", "SU", 1, 0)
+% thresholds_across_sessions(spth, savedir, parname, 1:7, "SU", "all", 0)
+
+thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "SU", "all", 0)
 
 %% Plot dprime over days
 % syntax: plot_dprime(spth, savedir, parname, subj, unit_type, depth, condition, sv)
@@ -114,7 +125,7 @@ plot_dprime(spth, savedir, parname, "all", "SU", -9, "i", 0)
 fit_over_days(spth, savedir, parname, "all", "SU")
 
 %% Plot thresholds across days
-% syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
+% syntax: plot_units(spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, savefile)
 
 % subj: "all", "202", "222", "223", "224", "267"
 
@@ -126,27 +137,12 @@ fit_over_days(spth, savedir, parname, "all", "SU")
 
 % save file?: 1 = yes, 0 = no
 
-plot_units(spth, behavdir, savedir, parname, "all", "all", "SU", 0, 0)
-
-%% Calculate CoV across days
-% syntax: plot_units(spth, behavdir, savedir, parname, subj, condition, unit_type, replace)
-
-% subj: "all", "202", "222", "223", "224", "267"
-
-% condition: "all", "i" (improved), "w" (worsened)
-
-% unit_type: "all", "SU"
-
-% replace (NaN thresholds with highest depth presented): "yes"
-
-% save file?: 1 = yes, 0 = no
-
-plot_units(spth, behavdir, savedir, parname, "all", "all", "SU", "no", 1)
+plot_units(spth, behavdir, savedir, parname, 1:7, "all", "all", "SU", 0)
 
 %% Plot behavior vs neural for an individual subject
-% syntax: bvsn(behavdir, savedir, parname, maxdays, subj)
+% syntax: bvsn(behavdir, savedir, parname, maxdays, subj, unit_type, condition)
 
-bvsn(behavdir, savedir, parname, 7, "202")
+bvsn(behavdir, savedir, parname, 7, "322", "all", "active")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, maxdays)
@@ -163,7 +159,7 @@ bvsn_pop(behavdir, savedir, parname, 7)
 split_condition(savedir, 7, parname, "no")
 
 %% Compare thresholds by coding
-% syntax: compare_thresholds(savedir, parx, pary, shownans)
+% syntax: compare_thresholds(savedir, parx, pary, ndays, unit_type, condition, shownans, session)
 
 % parx/pary: 'FiringRate', 'VScc', 'Power'
 
@@ -171,11 +167,11 @@ split_condition(savedir, 7, parname, "no")
 
 % session: "pre", "active", "post", "all"
 
-compare_thresholds(savedir, 'FiringRate', 'VScc', "yes", "active")
+compare_thresholds(savedir, 'FiringRate', 'VScc', 1, "SU", "all",  "yes", "active")
 
 %% Calculate vector change in threshold between passive/active
 
-change_in_threshold(savedir, spth, 'FiringRate', 'VScc');
+change_in_threshold(savedir, spth, 'FiringRate', 'VScc', 1:7, "SU", "all");
 % 
 % mean([output{:,3}], 'omitnan')
 % mean([output{:,4}], 'omitnan')

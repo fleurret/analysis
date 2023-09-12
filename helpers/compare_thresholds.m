@@ -1,4 +1,4 @@
-function compare_thresholds(savedir, parx, pary, shownans, session)
+function compare_thresholds(savedir, parx, pary, ndays, unit_type, condition, shownans, session)
 
 % convert parnames to correct label
 if strcmp(parx,'FiringRate')
@@ -28,10 +28,7 @@ end
 % load clusters
 load(fullfile(savedir,'Cday_original.mat'));
 
-maxNumDays = 7;
-days = 1:min(maxNumDays,length(Cday));
-
-thr = cell(size(days));
+thr = cell(size(ndays));
 sidx = thr;
 didx = thr;
 
@@ -40,81 +37,15 @@ f = figure;
 clf(f);
 ax = gca;
 cm = [77,127,208; 52,228,234; 2,37,81;]./255; % session colormap
-precm = [138,156,224; 117,139,219; 97,122,213; 77,105,208; 57,88,203; 49,78,185; 44,70,165;]./255; % session colormap
-activecm = [212,249,251; 176,245,247; 141,240,243; 105,235,240; 34,226,232; 21,200,206; 18,165,170;]./255; % session colormap
-postcm = [11,116,249; 6,107,234; 5,89,196; 4,72,158; 3,54,119; 2,37,81; 1,11,24;]./255; % session colormap
 
-for i = 1 %:length(days)
-    Ci = Cday{i};
+for i = ndays
     
-    % first make sure that there is a threshold/p_val field for the "parname"
-    % threshold = NaN means curve did not cross d' = 1
-    % threshold = 0 means there were no spikes/failed to compute threshold
-    for j = 1:length(Ci)
-        c = Ci(j);
-        if ~isfield(c.UserData.(parx),'threshold')
-            c.UserData.(parx).threshold = 0;
-        end
-        
-        if ~isfield(c.UserData.(pary),'threshold')
-            c.UserData.(pary).threshold = 0;
-        end
-        
-        if ~isfield(c.UserData.(parx),'p_val')
-            c.UserData.(parx).p_val = nan;
-        end
-        
-        if ~isfield(c.UserData.(pary),'p_val')
-            c.UserData.(pary).p_val = nan;
-        end
-    end
+    Ci_x = filterunits(savedir, parx, Cday, i, unit_type, condition);
+    Ci_y = filterunits(savedir, pary, Cday, i, unit_type, condition);
     
-    alpha = 0.05;
+    Ci = union(Ci_x, Ci_y);
     
-    % create lookup table for each cluster
-    id = [Ci.Name];
-    uid = unique(id);
-    
-    % loop through parx
-    flaggedForRemoval = "";
-    for j = 1:length(uid)
-        ind = uid(j) == id;
-        
-        % get fr threshold
-        tx = arrayfun(@(a) a.UserData.(parx).threshold,Ci(ind));
-        pvalx = arrayfun(@(a) a.UserData.(parx).p_val,Ci(ind));
-        
-        % get vscc threshold
-        ty = arrayfun(@(a) a.UserData.(pary).threshold,Ci(ind));
-        pvaly = arrayfun(@(a) a.UserData.(pary).p_val,Ci(ind));
-        
-        % flag if thresholds are all NaN or 0, or all pvals are NaN or > 0.05
-        if sum(tx,'omitnan') == 0 && sum(ty, 'omitnan') == 0 ||...
-                sum(tx,'omitnan') ~= 0 && all(isnan(pvalx)) ||...
-                sum(ty,'omitnan') ~= 0 && all(isnan(pvaly)) ||...
-                sum(tx,'omitnan') ~= 0 && ~any(pvalx<=alpha) ||...
-                sum(ty,'omitnan') ~= 0 && ~any(pvaly<=alpha)
-            flaggedForRemoval(end+1) = uid(j);
-        end
-    end
-    
-    % remove invalid units
-    idx = false(1,length(Ci));
-    for j = 1:length(Ci)
-        if ismember(id(j),flaggedForRemoval)
-            idx(j) = 0;
-        else
-            idx(j) = 1;
-        end
-    end
-    Ci = Ci(idx);
-    
-    % remove any additional manually flagged units
-    note = {Ci.Note};
-    removeind = cellfun(@isempty, note);
-    Ci = Ci(removeind);
-    
-    % replace NaN thresholds with 0
+    % replace NaN thresholds with 5
     if shownans == "yes"
         for j = 1:length(Ci)
             if isnan(Ci(j).UserData.(parx).threshold)
@@ -145,7 +76,7 @@ for i = 1 %:length(days)
         sidx{i}(contains(sn,"Pre")) = 1;
         sidx{i}(contains(sn,"Aversive")) = 2;
         sidx{i}(contains(sn,"Post")) = 3;
-        x = 1+ones(size(thr{i}))*log10(days(i));
+        x = 1+ones(size(thr{i}))*log10(ndays(i));
     end
     
     % plot according to session input
@@ -164,11 +95,12 @@ for i = 1 %:length(days)
                 y(j) = ud{j}.(pary).threshold;
             end
             
-            line(ax,x,y,'LineStyle','none', ...
+            scatter(ax,x,y,...
                 'Marker','o',...
-                'MarkerSize', 12,...
-                'MarkerFaceColor',cm(i,:),...
-                'MarkerEdgeColor', 'none');
+                'SizeData', 100,...
+                'MarkerFaceColor',cm(1,:),...
+                'MarkerEdgeColor', 'none',...
+                'MarkerFaceAlpha', 0.3);
         end
         
         % active only
@@ -184,11 +116,12 @@ for i = 1 %:length(days)
                 y(j) = ud{j}.(pary).threshold;
             end
             
-            line(ax,x,y,'LineStyle','none', ...
+            scatter(ax,x,y,...
                 'Marker','o',...
-                'MarkerSize', 12,...
+                'SizeData', 100,...
                 'MarkerFaceColor',cm(2,:),...
-                'MarkerEdgeColor', 'none');
+                'MarkerEdgeColor', 'none',...
+                'MarkerFaceAlpha', 0.3);
         end
         
         if session == "post"
@@ -203,11 +136,12 @@ for i = 1 %:length(days)
                 y(j) = ud{j}.(pary).threshold;
             end
             
-            line(ax,x,y,'LineStyle','none', ...
+            scatter(ax,x,y,...
                 'Marker','o',...
-                'MarkerSize', 12,...
+                'SizeData', 100,...
                 'MarkerFaceColor',cm(3,:),...
-                'MarkerEdgeColor', 'none');
+                'MarkerEdgeColor', 'none',...
+                'MarkerFaceAlpha', 0.3);
         end
         
     else
@@ -224,11 +158,12 @@ for i = 1 %:length(days)
             end
             
             hold on
-            plot(ax,x,y,'LineStyle','none', ...
+            scatter(ax,x,y,...
                 'Marker','o',...
-                'MarkerSize', 12,...
+                'SizeData', 100,...
                 'MarkerFaceColor',cm(k,:),...
-                'MarkerEdgeColor', 'none');
+                'MarkerEdgeColor', 'none',...
+                'MarkerFaceAlpha', 0.3);
         end
     end
 end
@@ -248,6 +183,8 @@ ax = findobj(f,'type','axes');
 ax.LineWidth = 3;
 ax.TickDir = 'out';
 ax.TickLength = [0.02,0.02];
+ax.XAxisLocation = "origin";
+ax.YAxisLocation = "origin";
 
 y = get(ax,'ylim');
 x = get(ax,'xlim');

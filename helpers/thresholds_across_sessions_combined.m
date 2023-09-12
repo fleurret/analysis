@@ -1,4 +1,4 @@
-function metrics_across_sessions(parname, spth, savedir, ndays, meas, type, unit_type, condition, depth, savefile)
+function thresholds_across_sessions_combined(spth, savedir, parname, day, unit_type, condition,  savefile)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -7,7 +7,7 @@ if contains(parname,'FiringRate')
 elseif contains(parname,'Power')
     Parname = 'cl_calcpower';
     
-else contains(parname,'VScc')
+elseif contains(parname,'VScc')
     Parname = 'vector_strength_cycle_by_cycle';
 end
 
@@ -26,8 +26,10 @@ parnames = ["trial_firingrate"; "cl_calcpower"; "vector_strength_cycle_by_cycle"
 sessions = ["Pre", "Active", "Post"];
 sex = ["M", "F"];
 
-for i = ndays
+for i = day
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
+    
+    % only valid clusters
     id = [Ci.Name];
     uid = unique(id);
     
@@ -35,39 +37,28 @@ for i = ndays
     for j = 1:length(uid)
         ind = uid(j) == id;
         U = Ci(ind);
+        presented = round(U(1).UserData.(Parname).vals);
         
         % create output
         clear temp
         temp = {};
-        b = [];
+        B = [];
         
         % get events and calculate baseline
         for k = 1:length(U)
             
+            % pull values
+            u = U(k);
+            
+            if ~isfield(u.UserData.(Parname),'threshold')
+                b = NaN;
+            else
+                b = u.UserData.(Parname).threshold;
+            end
+            
             % set session
             session = sessions(k);
             
-            % pull values
-            u = U(k);
-            [mAM, mNAM, cAM, cNAM] = calc_mas(u, Parname, depth);
-            
-            if strcmp(meas, 'Mean')
-                if strcmp(type, 'AM')
-                    b = mAM;
-                else
-                    b = mNAM;
-                end
-            else
-                if strcmp(type, 'AM')
-                    b = cAM;
-                else
-                    b = cNAM;
-                end
-            end
-            
-            if isempty(b)
-                b = NaN;
-            end
             
             % get subject
             subjid = split(u.Name, '_');
@@ -94,66 +85,58 @@ end
 
 % convert to table
 output = cell2table(output);
-output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Type", "Session", meas];
+output.Properties.VariableNames = ["Unit","Subject", "Sex", "Day", "Type", "Session","Threshold"];
 
 % save as file
 if savefile == 1
-    sf = fullfile(savedir,append(Parname,'_',type, meas,'.csv'));
+    sf = fullfile(savedir,append(parname,'_Day', mat2str(day), '_thresholds.csv'));
     fprintf('Saving file %s \n', sf)
     writetable(output,sf);
     fprintf(' done\n')
 end
 
+% replace nans with 5 for visualization
+output.Threshold(isnan(output.Threshold)) = 5;
+
 % plot
 cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
+
 f = figure;
-f.Position = [0, 0, numel(ndays)*200, 250];
+f.Position = [0, 0, 500, 625];
+
 
 x = 1:3;
 
-for d = 1:numel(ndays)
-    ax = subplot(1,numel(ndays),d);
+
+for d = day
+    ax = gca;
     set(gca, 'TickDir', 'out',...
         'XTickLabelRotation', 0,...
         'TickLength', [0.02,0.02],...
-        'LineWidth', 1.5);
+        'LineWidth', 3);
     set(findobj(ax,'-property','FontName'),...
         'FontName','Arial')
-    ucm = cm(d,:);
+    ucm = cm(1,:);
     hold on
     
+    smean = nan(1,3);
     for i = 1:length(sessions)
-        
-        % only on that day
-        didx = output.Day == d;
-        daydata = output(didx,:);
-        
-        % get each session
-        sidx = contains(daydata{:,:}, sessions{i});
-        [row,~] = find(sidx);
-        onesession = daydata(row,:);
-        smean = mean(table2array(onesession(:,7)), 'omitnan');
-        
-        daymeans(i) = smean;
+        sidx = output.Session == sessions{i};
+        sdata = output(sidx,:);
+        smean(i) = mean(table2array(sdata(:,7)), 'omitnan');
     end
     
-    plot(daymeans,...
+    plot(smean,...
         'Color', ucm,...
         'Marker', 'o',...
         'MarkerFaceColor', ucm,...
-        'MarkerSize', 8,...
+        'MarkerSize', 18,...
         'LineWidth', 2)
     
-    units = table2struct(output);
+  units = table2struct(output);
     
     currentday = [units.Day] == d;
-    
-    if strcmp(meas, 'Mean')
-        means = [units.Mean];
-    else
-        means = [units.CoV];
-    end
-    
+    means = [units.Threshold];
     currentmeans = means(currentday);
     sess = [units.Session];
     currentsessions = sess(currentday);
@@ -166,7 +149,7 @@ for d = 1:numel(ndays)
     [~, cols] = size(meantable);
     
     for j = 1:cols
-        scatter(x,meantable(:,j),...
+        scatter(x,meantable(:,j), 120,...
             'Marker','o',...
             'MarkerFaceColor', ucm,...
             'MarkerFaceAlpha', 0.3,...
@@ -179,38 +162,17 @@ for d = 1:numel(ndays)
     end
     
     clear meantable
-    
-    xticks([1:3])
-    xticklabels({'Pre','Active','Post'})
-    title('Day ', d)
-    
-    if strcmp(meas, 'Mean')
-        if strcmp(Parname, 'trial_firingrate')
-            ylabel('Firing rate (Hz)')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 15])
-            end
-        end
-        
-        if strcmp(Parname, 'cl_calcpower')
-            ylabel('spikes/sec^{2}/Hz')
-            if strcmp(meas, 'Mean')
-                ylim([0 100])
-            else
-                ylim([0 10])
-            end
-        end
-        
-        if strcmp(Parname, 'vector_strength_cycle_by_cycle')
-            ylabel('Vector strength')
-            ylim([0 1])
-        end
-    else
-        ylabel('Variation')
-        ylim([0 2])
-    end
 end
 
+xticks([1:3])
+set(gca,'XTickLabelMode','auto',...
+    'FontSize', 36)
+xticklabels({'Pre','Active','Post'})
+
+xlabel(ax,'Session','FontSize',36,...
+    'FontWeight','bold')
+ylabel(ax,'Threshold (dB re: 100%)',...
+    'FontSize', 36,...
+    'FontWeight', 'bold');
+ylim([-20 5])
 
