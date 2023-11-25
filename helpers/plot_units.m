@@ -69,12 +69,11 @@ mk = '^^^';
 xoffset = [.99, 1, 1.01];
 
 f = figure;
-f.Position = [0, 0, 1000, 350];
+f.Position = [0, 0, 1200, 375];
 set(f,'color','w');
 clf(f);
 ax = subplot(121,'parent',f);
 ax(2) = subplot(122,'parent',f);
-ylim([-20,2]);
 
 thr = cell(size(ndays));
 sidx = thr;
@@ -85,6 +84,27 @@ count = zeros(1,3);
 
 for i = ndays
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
+    
+%     % replace NaN thresholds 
+%     for j = 1:length(Ci)
+%         if isnan(Ci(j).UserData.(Parname).threshold)
+%             Ci(j).UserData.(Parname).threshold = 0;
+%         end
+%     end
+    
+    % only one sex
+%     for j = 1:length(Ci)
+%         if contains(Ci(j).Name, 'SUBJ-ID-228') || contains(Ci(j).Name, 'SUBJ-ID-267')
+%             idx(j) = 0;
+%         else
+%             idx(j) = 1;
+%         end
+%     end
+%     
+%     idx = logical(idx);
+%     Ci = Ci(idx);
+%     
+%     clear idx
     
     y = arrayfun(@(a) a.UserData.(Parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
@@ -104,6 +124,7 @@ for i = ndays
         sn = [Ci.Session];
         sn = [sn.Name];
         sidx{i}(contains(sn,"Pre")) = 1;
+        sidx{i}(contains(sn,"Active")) = 2;
         sidx{i}(contains(sn,"Aversive")) = 2;
         sidx{i}(contains(sn,"Post")) = 3;
         x = 1+ones(size(thr{i}))*log10(ndays(i));
@@ -117,7 +138,6 @@ for i = ndays
         n_mean(j,i) = mean(thr{i}(ind),'omitnan');
         
         % calculate number of valid units
-        
         count(j) = count(j) + sum(~isnan(thr{i}(ind)));
         
         % individual points
@@ -126,7 +146,7 @@ for i = ndays
             'Marker',mk(j),...
             'Color',(cm(j,:)), ...
             'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',8,...
+            'MarkerSize',10,...
             'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),Parname});
         
         % means and error bars
@@ -150,7 +170,7 @@ for i = ndays
             'Marker',mk(j),...
             'Color',max(cm(j,:),0), ...
             'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',8);
+            'MarkerSize',10);
         
         % get info for output
         U = uinfo(ind);
@@ -167,9 +187,9 @@ for i = ndays
             
             TR = thr{i}(ind);
             if isnan(TR(z))
-                valid = [valid, "NaN"];
+                valid = [valid, "0"];
             else
-                valid = [valid, "Valid"];
+                valid = [valid, "1"];
             end
         end
         
@@ -301,8 +321,12 @@ set([ax.YAxis],...
     'TickLength', [0.02,0.02],...
     'LineWidth', 1.5,...
     'FontSize',12);
-ax(1).YAxis.Label.Rotation = 90;
-ax(2).YAxis.Label.Rotation = 90;
+ax(1).XLim = [0.8,1.95];
+ax(2).XLim = [0.8,1.95];
+ax(1).YTick = [-20 -15 -10 -5 0];
+ax(2).YTick = [-20 -15 -10 -5 0];
+ax(1).YLim = [-20,2];
+ax(2).YLim = [-20,2];
 
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
@@ -328,9 +352,13 @@ fprintf('%s Pre, %s Active, %s Post', num2str(count(1)), num2str(count(2)), num2
 % save as file
 if sv == 1
     output = [unit, subj_id, sx', day, thrs, session, valid'];
+    output = array2table(output);
+    output.Properties.VariableNames = ["Unit", "Subject", "Sex", "Day", "Threshold", "Session", "Validity"];
     
-    sf = fullfile(savedir,append(parname,'_threshold.csv'));
+    sf = fullfile(savedir,append(parname,'_threshold_zero.csv'));
     fprintf('\n Saving file %s ...', sf)
-    writematrix(output,sf);
+    writetable(output,sf);
     fprintf(' done\n')
+    
+    
 end

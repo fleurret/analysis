@@ -29,6 +29,13 @@ sex = ["M", "F"];
 for i = day
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
     
+    % replace NaN thresholds with 1
+%     for j = 1:length(Ci)
+%         if isnan(Ci(j).UserData.(Parname).threshold)
+%             Ci(j).UserData.(Parname).threshold = 1;
+%         end
+%     end
+    
     % only valid clusters
     id = [Ci.Name];
     uid = unique(id);
@@ -64,7 +71,7 @@ for i = day
             subjid = split(u.Name, '_');
             
             % get sex
-            if contains(subjid(1), '228') || contains(subjid(1), '267')
+            if contains(subjid(1), '378') || contains(subjid(1), '380')
                 s = sex(1);
             else
                 s = sex(2);
@@ -97,6 +104,10 @@ end
 
 % replace nans with 5 for visualization
 output.Threshold(isnan(output.Threshold)) = 5;
+
+% one sex
+% idx = output.Sex == "M";
+% output = output(idx,:);
 
 % plot
 cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap

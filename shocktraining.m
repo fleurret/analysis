@@ -1,11 +1,11 @@
-spth = 'D:\Caras\Analysis\IC recordings\Shock';
+spth = 'D:\Caras\Analysis\MGB recordings\Shock';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
 % figure properties
 f = figure;
-f.Position = [0, 0, 600 600];
+f.Position = [0, 0, 800 500];
 f.Resize = 'off';
 hold on
 
@@ -25,7 +25,8 @@ ax.FontSize = 20;
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
-cm = [250, 180, 207; 203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97;]./255; % session colormap
+% cm = [250, 180, 207; 203, 131, 230;
+cm = [131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97;]./255; % session colormap
 
 % extract output
 for subj = 1:length(subjects)
@@ -65,11 +66,14 @@ end
 
 % add days after surgery
 % for IC animals
-A = [1.4861 2.1998; 1.6459 2.2778; 2.2290 NaN; 2.9698 NaN; 1.8781 2.5641; 2.6480 NaN];
+% A = [1.4861 2.1998; 1.6459 2.2778; 2.2290 NaN; 2.9698 NaN; 1.8781 2.5641; 2.6480 NaN];
+
+% MGN animals
+A = [2.5212 NaN NaN NaN; 2.5887 NaN NaN NaN; 2.0385 2.0795 NaN NaN; 1.6331 2.0252 1.8570 2.3694];
 
 % plot
 for i = 1:length(A)
-    x = [9 10];
+    x = [11 12 13 14];
     y = A(i,:);
     
     line(x, y,...

@@ -1,4 +1,4 @@
-function bvsn(behavdir, savedir, parname, maxdays, subj, unit_type, condition)
+function bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
 
 % load behavior
 pth = fullfile(behavdir,subj);
@@ -36,7 +36,8 @@ mk = '^^^';
 cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 % set figure
-f = figure(sum(uint8(parname)));
+f = figure;
+f.Position = [0, 0, 900, 300];
 
 clf(f);
 
@@ -45,11 +46,11 @@ ax(2) = subplot(132,'parent',f);
 ax(3) = subplot(133,'parent',f);
 
 set(ax,...
-    'xlim', [-25, 0],...
-    'ylim', [-25, 0]);
+    'xlim', [-20, 0],...
+    'ylim', [-25, -5]);
 
 % neural data
-days = 1:min(maxdays,length(Cday));
+days = length(ndays);
 
 thr = cell(size(days));
 sidx = thr;
@@ -57,33 +58,15 @@ sidx = thr;
 xall = nan(3,7);
 
 for k = 1:3 % plot each session seperately
-    for i = 1:length(days)
-        Ci = filterunits(Parname, Cday, i, unit_type, condition);
+    for i = ndays
+        Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
 
         % restrict to subject
         subj_idx = zeros(1,length(Ci));
-        for j = 1:length(Ci)
-            if Ci(j).Subject == ""
-                nsubj = append(subj,"_");
-                cs = convertCharsToStrings(Ci(j).Name);
-                if contains(cs,nsubj)
-                    subj_idx(j) = 1;
-                else
-                    subj_idx(j) = 0;
-                end
-            else
-                cs = convertCharsToStrings(Ci(j).Subject);
-                if contains(cs,subj)
-                    subj_idx(j) = 1;
-                else
-                    subj_idx(j) = 0;
-                end
-            end
-        end
         
-        subj_idx = logical(subj_idx);
-        Ci = Ci(subj_idx);
-        
+        c = [Ci.Name];
+        sind = contains(c, subj);
+        Ci = Ci(sind);
         
         y = arrayfun(@(a) a.UserData.(Parname),Ci,'uni',0);
         ind = cellfun(@(a) isfield(a,'ERROR'),y);
@@ -102,9 +85,13 @@ for k = 1:3 % plot each session seperately
             sn = [Ci.Session];
             sn = [sn.Name];
             sidx{i}(contains(sn,"Pre")) = 1;
+            sidx{i}(contains(sn,"Active")) = 2;
             sidx{i}(contains(sn,"Aversive")) = 2;
             sidx{i}(contains(sn,"Post")) = 3;
+        else
+            continue
         end
+        
         
         ind = sidx{i} == k;
         
@@ -163,7 +150,7 @@ PRP = {nan(2,2), nan(2,2), nan(2,2)};
 
 for i = 1:3
     xi = xall(i,:);
-    yi = behav(1:maxdays);
+    yi = behav(ndays);
     
     ind = isnan(xi);
     

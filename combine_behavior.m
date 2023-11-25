@@ -1,4 +1,4 @@
-spth = 'D:\Caras\Analysis\IC recordings\Behavior';
+spth = 'D:\Caras\Analysis\MGB recordings\Behavior';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
@@ -41,7 +41,7 @@ behav_std = thresholds(subj+2,:);
 
 %%
 % save as file
-file = 'D:\Caras\Analysis\IC recordings\Behavior\behavior_combined.mat';
+file = 'D:\Caras\Analysis\MGB recordings\Behavior\behavior_combined.mat';
 save(file, 'behav_mean','behav_std')
 
 %%

@@ -57,7 +57,7 @@ for i = ndays
             subjid = split(u.Name, '_');
             
             % get sex
-            if contains(subjid(1), '228') || contains(subjid(1), '267')
+            if contains(subjid(1), '228') || contains(subjid(1), '267') || contains(subjid(1), '378') || contains(subjid(1), '380') || contains(subjid(1), '642')
                 s = sex(1);
             else
                 s = sex(2);
@@ -172,7 +172,7 @@ if strcmp(Parname, 'cl_calcpower')
 end
 
 if strcmp(Parname, 'vector_strength_cycle_by_cycle')
-    ylim([0 150])
+    ylim([0 50])
 end
 
 % count number of neurons

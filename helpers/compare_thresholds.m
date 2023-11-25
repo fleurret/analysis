@@ -1,4 +1,4 @@
-function compare_thresholds(savedir, parx, pary, ndays, unit_type, condition, shownans, session)
+function compare_thresholds(savedir, parx, pary, ndays, unit_type, condition, shownans, savefile)
 
 % convert parnames to correct label
 if strcmp(parx,'FiringRate')
@@ -8,7 +8,7 @@ end
 if strcmp(pary,'FiringRate')
     pary = 'trial_firingrate';
 end
-    
+
 if strcmp(parx,'Power')
     parx = 'cl_calcpower';
 end
@@ -25,6 +25,11 @@ if strcmp(pary,'VScc')
     pary = 'vector_strength_cycle_by_cycle';
 end
 
+output = [];
+sessions = ["Pre", "Active", "Post"];
+sex = ["M", "F"];
+av = {'Aversive', 'Active'};
+
 % load clusters
 load(fullfile(savedir,'Cday_original.mat'));
 
@@ -32,21 +37,13 @@ thr = cell(size(ndays));
 sidx = thr;
 didx = thr;
 
-% set figure
-f = figure;
-clf(f);
-ax = gca;
-cm = [77,127,208; 52,228,234; 2,37,81;]./255; % session colormap
-
 for i = ndays
-    
     Ci_x = filterunits(savedir, parx, Cday, i, unit_type, condition);
     Ci_y = filterunits(savedir, pary, Cday, i, unit_type, condition);
-    
     Ci = union(Ci_x, Ci_y);
     
-    % replace NaN thresholds with 5
-    if shownans == "yes"
+    % replace NaN thresholds
+    if shownans == 1
         for j = 1:length(Ci)
             if isnan(Ci(j).UserData.(parx).threshold)
                 Ci(j).UserData.(parx).threshold = 5;
@@ -58,152 +55,129 @@ for i = ndays
         end
     end
     
-    y = arrayfun(@(a) a.UserData.(pary),Ci,'uni',0);
-    ind = cellfun(@(a) isfield(a,'ERROR'),y);
+    id = [Ci.Name];
+    uid = unique(id);
     
-    y(ind) = [];
-    Ci(ind) = [];
-    y = [y{:}];
-    
-    if ~isempty(y)
-        thr{i} = [y.threshold];
+    % isolate units across sessions
+    for j = 1:length(uid)
+        ind = uid(j) == id;
+        U = Ci(ind);
         
-        didx{i} = ones(size(y))*i;
-        sidx{i} = nan(size(y));
+        % create output
+        clear temp
+        temp = {};
+        bx = [];
+        by = [];
         
-        sn = [Ci.Session];
-        sn = [sn.Name];
-        sidx{i}(contains(sn,"Pre")) = 1;
-        sidx{i}(contains(sn,"Aversive")) = 2;
-        sidx{i}(contains(sn,"Post")) = 3;
-        x = 1+ones(size(thr{i}))*log10(ndays(i));
-    end
-    
-    % plot according to session input
-    if session ~= "all"
-        
-        % pre only
-        if session == "pre"
-            k = 1;
-            ud = {Ci(sidx{i}==k).UserData};
+        % get threshold
+        for k = 1:length(U)
             
-            x = nan(size(ud));
-            y = x;
+            % set session
+            session = sessions(k);
             
-            for j = 1:length(ud)
-                x(j) = ud{j}.(parx).threshold;
-                y(j) = ud{j}.(pary).threshold;
+            % find the right session in cluster
+            sns = [U.SessionName];
+            
+            if k == 1
+                cind = contains(sns, "Pre");
+            elseif k == 2
+                cind = contains(sns, av);
+            elseif k == 3
+                cind = contains(sns, "Post");
+            end
+
+            u = U(cind);
+            bx = u.UserData.(parx).threshold;
+            by = u.UserData.(pary).threshold;
+            
+            % get subject
+            subjid = split(u.Name, '_');
+            
+            % get sex
+            if contains(subjid(1), '228') || contains(subjid(1), '267')
+                s = sex(1);
+            else
+                s = sex(2);
             end
             
-            scatter(ax,x,y,...
-                'Marker','o',...
-                'SizeData', 100,...
-                'MarkerFaceColor',cm(1,:),...
-                'MarkerEdgeColor', 'none',...
-                'MarkerFaceAlpha', 0.3);
-        end
-        
-        % active only
-        if session == "active"
-            k = 2;
-            ud = {Ci(sidx{i}==k).UserData};
-            
-            x = nan(size(ud));
-            y = x;
-            
-            for j = 1:length(ud)
-                x(j) = ud{j}.(parx).threshold;
-                y(j) = ud{j}.(pary).threshold;
-            end
-            
-            scatter(ax,x,y,...
-                'Marker','o',...
-                'SizeData', 100,...
-                'MarkerFaceColor',cm(2,:),...
-                'MarkerEdgeColor', 'none',...
-                'MarkerFaceAlpha', 0.3);
-        end
-        
-        if session == "post"
-            k = 3;
-            ud = {Ci(sidx{i}==k).UserData};
-            
-            x = nan(size(ud));
-            y = x;
-            
-            for j = 1:length(ud)
-                x(j) = ud{j}.(parx).threshold;
-                y(j) = ud{j}.(pary).threshold;
-            end
-            
-            scatter(ax,x,y,...
-                'Marker','o',...
-                'SizeData', 100,...
-                'MarkerFaceColor',cm(3,:),...
-                'MarkerEdgeColor', 'none',...
-                'MarkerFaceAlpha', 0.3);
-        end
-        
-    else
-        for k = 1:3
-            
-            ud = {Ci(sidx{i}==k).UserData};
-            
-            x = nan(size(ud));
-            y = x;
-            
-            for j = 1:length(ud)
-                x(j) = ud{j}.(parx).threshold;
-                y(j) = ud{j}.(pary).threshold;
-            end
-            
-            hold on
-            scatter(ax,x,y,...
-                'Marker','o',...
-                'SizeData', 100,...
-                'MarkerFaceColor',cm(k,:),...
-                'MarkerEdgeColor', 'none',...
-                'MarkerFaceAlpha', 0.3);
+            % add to lists
+            temp{1} = u.SessionName;
+            temp{2} = subjid(1);
+            temp{3} = s;
+            temp{4} = i;
+            temp{5} = u.Type;
+            temp{6} = session;
+            temp{7} = bx;
+            temp{8} = by;
+            output = [output; temp];
         end
     end
 end
 
-xline(0)
-yline(0)
+% convert to table
+output = cell2table(output);
+output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Type", "Session", parx, pary];
 
-xlabel(ax,{'Threshold (dB)';parx});
-ylabel(ax,{'Threshold (dB)';pary});
-set(findobj(ax,'-property','FontName'),...
-    'FontName','Arial')
+% save as file
+if savefile == 1
+    sf = fullfile(savedir,append('comparethresholds.csv'));
+    fprintf('Saving file %s \n', sf)
+    writetable(output,sf);
+    fprintf(' done\n')
+end
 
-axis(ax,'equal');
-axis(ax,'square');
+% plot
+cm = [77,127,208; 52,228,234; 2,37,81;]./255; % session colormap
+f = figure;
+f.Position = [0, 0, 1200, 500];
 
-ax = findobj(f,'type','axes');
-ax.LineWidth = 3;
-ax.TickDir = 'out';
-ax.TickLength = [0.02,0.02];
-ax.XAxisLocation = "origin";
-ax.YAxisLocation = "origin";
+% plot by session
+for i = 1:3
+    
+    session = sessions(i);
+    ind = output.Session == session;
+    data = output(ind,:);
 
-y = get(ax,'ylim');
-x = get(ax,'xlim');
-
-if session == "all"
-    m = [x; y];
-    m = [min(m(:)) max(m(:))];
-    set(ax,'xlim', m,...
-        'ylim',m,...
-        'xdir', 'reverse',...
-        'ydir', 'reverse');
-else
-    set(ax,'xlim', [-20, 5],...
-        'ylim', [-20, 5],...
-        'xdir', 'reverse',...
-        'ydir', 'reverse');
+    % set plot
+    ax(i) = subplot(1,3,i);
+    set(gca, 'TickDir', 'out',...
+        'XTickLabelRotation', 0,...
+        'TickLength', [0.02,0.02],...
+        'TickDir', 'out',...
+        'LineWidth', 1.5,...
+        'XDir', 'reverse',...
+        'YDir', 'reverse',...
+        'XLim', [-21 5],...
+        'YLim', [-21 5],...
+        'XAxisLocation', "origin",...
+        'YAxisLocation', "origin");
+    set(findobj(ax,'-property','FontName'),...
+        'FontName','Arial')
+    hold on
+    
+    tx = table2array(data(:,7));
+    ty = table2array(data(:,8));
+    
+    scatter(ax(i),tx,ty,...
+        'Marker','o',...
+        'SizeData', 100,...
+        'MarkerFaceColor',cm(i,:),...
+        'MarkerEdgeColor', 'none',...
+        'MarkerFaceAlpha', 0.3);
+    
+    xline(0)
+    yline(0)
+    axis(ax(i),'equal');
+    axis(ax(i),'square');
+    
+    xlabel(ax(i),{'Threshold (dB)';parx});
+    ylabel(ax(i),{'Threshold (dB)';pary});
+    set(findobj(ax(i),'-property','FontName'),...
+        'FontName','Arial')
 end
 
 
-refline(1,0)
 
 sgtitle(f,'Threshold Coding Comparisons Across Days');
+
+clear output

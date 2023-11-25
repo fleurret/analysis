@@ -1,5 +1,6 @@
-parentDir = 'D:\Caras\Analysis\IC recordings\Behavior\222';
-behav_file = fullfile(parentDir,'SUBJ-ID-222_allSessions.mat');
+% parentDir = 'D:\Caras\Analysis\Caspase\Acquisition\Control\512';
+parentDir = 'D:\Caras\Analysis\Caspase\Acquisition\Experimental\504';
+behav_file = fullfile(parentDir,'SUBJ-ID-504_allSessions.mat');
 load(behav_file)
 %%
 f = figure;
@@ -22,7 +23,7 @@ ax.TickLength = [0.02,0.02];
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
-cm = [250, 180, 207; 203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97;]./255; % session colormap
+cm = [250, 180, 207; 203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97; 249, 226, 128; 242, 187, 64; 244, 145, 96;]./255; % session colormap
 %% one fit
 % day 1
 x = output(1).fitdata.fit_plot.x([413:870]);
@@ -41,25 +42,25 @@ set(gca, 'XLimMode', 'manual', 'XLim', [-27 2])
 set(gca, 'YLimMode', 'manual', 'YLim', [-0.25 3.2])
 
 %% all fits
-for i = 1:7
+for i = 1:10
     x = output(i).fitdata.fit_plot.x([413:870]);
     y = output(i).fitdata.fit_plot.dprime([413:870]);
     p = plot(x,y);
     p.LineWidth = 5;
     p.Color = cm(i,:);
-    % xpoint = output(i).dprimemat(:,1);
-    % ypoint = output(i).dprimemat(:,2);
-    % points = scatter(xpoint,ypoint,100);
-    %     points.MarkerFaceColor = cm(i);
-    %     points.MarkerFaceAlpha = 0.5;
-    %     points.MarkerEdgeAlpha = 0;
+    xpoint = output(i).dprimemat(:,1);
+    ypoint = output(i).dprimemat(:,2);
+    points = scatter(xpoint,ypoint,100);
+    points.MarkerFaceColor = cm(i,:);
+    points.MarkerFaceAlpha = 0.5;
+    points.MarkerEdgeAlpha = 0;
 end
 
 set(gca, 'XLimMode', 'manual', 'XLim', [-27 2])
 set(gca, 'YLimMode', 'manual', 'YLim', [-0.25 3.2])
 
 % clear legend
-legend('Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7',...
+legend('Day 1', '','Day 2','', 'Day 3', '','Day 4', '','Day 5', '','Day 6', '','Day 7','','Day 8', '', 'Day 9', '', 'Day 10',...
     'FontSize',20,...
     'Location', 'Northwest')
 legend boxoff
@@ -71,9 +72,9 @@ f.Resize = 'off';
 hold on
 
 % best fit line
-x = [1:7];
+x = [1:10];
 y = [];
-for i = 1:7
+for i = x
     a = output(i).fitdata.threshold;
     y = [y, a];
 end
@@ -85,7 +86,7 @@ bestfit = plot(xfit, yfit, '-','LineWidth',2);
 bestfit.LineWidth = 3;
 bestfit.Color = '#000';
 
-for i = 1:7
+for i = x
     x = i;
     y = output(i).fitdata.threshold;
     s = scatter(x,y,100);
@@ -93,12 +94,12 @@ for i = 1:7
     s.MarkerEdgeAlpha = 0;
 end
 
-set(gca, 'XLimMode', 'manual', 'XLim', [0.9 8])
-set(gca, 'YLimMode', 'manual', 'YLim', [-20 -5])
+set(gca, 'XLimMode', 'manual', 'XLim', [0.9 11])
+set(gca, 'YLimMode', 'manual', 'YLim', [-20 0])
 set(gca, 'XScale', 'log')
 
-xticks([1, 2, 3, 4, 5, 6, 7])
-yticks([-20, -15, -10, -5])
+xticks([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+yticks([-20, -15, -10, -5, 0])
 xlabel('Psychometric Testing Day',...
     'FontSize', 16,...
     'FontWeight','bold')
@@ -106,13 +107,16 @@ ylabel('Threshold (dB re: 100%)',...
     'FontSize', 16,...
     'FontWeight','bold')
 ax = gca;
-ax.FontSize = 16;
+ax.FontSize = 20;
+ax.LineWidth = 3;
+ax.TickDir = 'out';
+ax.TickLength = [0.02,0.02];
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
 %% pretty plots
 % average thresholds
-behavdir = 'D:\Caras\Analysis\IC recordings\Behavior\';
+behavdir = 'D:\Caras\Analysis\MGB recordings\Behavior\';
 load(fullfile(behavdir,'behavior_combined.mat'));
 
 % plot vars
@@ -121,7 +125,7 @@ f.Position = [0, 0, 415, 300];
 
 set(f,'color','w');
 clf(f);
-cm = [250, 180, 207; 203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97;]./255; % session colormap
+cm = [131,31,94; 181,37,126; 206,71,148; 240,122,174; 241,157,196; 243,181,210; 250,211,228]./255; % session colormap
 
 ylim([-20 -5])
 

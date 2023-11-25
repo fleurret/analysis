@@ -100,20 +100,20 @@ for i = ndays
         sidx{i}(contains(sn,"Post")) = 3;
         
         vals = {dd.vals};
-        weights = {dd.weights};
-        
+%         weights = {dd.weights};
+%         
         for j = 1:3 % plot each session seperately
             session = dprimes{j};
             session = session';
             v = vals{j};
             v = v';
-            w = weights{j};
-            w = w';
-            
-            [xfit,yfit] = epa.analysis.fit_sigmoid(v,session, w);
+%             w = weights{j};
+%             w = w';
+%             
+%             [xfit,yfit] = epa.analysis.fit_sigmoid(v,session, w);
             
             hold on
-            plot(xfit,yfit,...
+            plot(dd(j).xfit,dd(j).yfit,...
                 'Color', cm(j,:),...
                 'LineWidth', 8)
             scatter(v, session, 120,...

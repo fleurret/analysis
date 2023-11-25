@@ -1,4 +1,4 @@
-function output = change_in_threshold(savedir, spth, parx, pary, ndays, unit_type, condition)
+function output = change_in_threshold_combined(savedir, spth, parx, pary, ndays, unit_type, condition)
 
 % convert parnames to correct label
 if strcmp(parx,'FiringRate')
@@ -41,27 +41,25 @@ subjects(ismember({subjects.name},{'.','..'})) = [];
 
 % plot settings
 f = figure;
-f.Position = [0, 0, 1700, 250];
-tiledlayout(1, length(ndays))
+f.Position = [0, 0, 600, 600];
+ax = gca;
+axis(ax,'equal');
+axis(ax,'square');
+set(ax,'xlim', [-15 15],...
+    'ylim', [-15 15],...
+    'LineWidth', 1.2,...
+    'TickDir', 'out',...
+    'TickLength', [0.02,0.02]);
+set(findobj(ax,'-property','FontName'),...
+    'FontName','Arial')
+
+xline(0)
+yline(0)
+
+output = [];
+sex = ["M", "F"];
 
 for i = ndays
-    % make subplot
-    ax(i) = nexttile;
-    
-    % set axes etc.
-    axis(ax(i),'equal');
-    axis(ax(i),'square');
-    set(ax(i),'xlim', [-15 15],...
-        'ylim', [-15 15],...
-        'LineWidth', 1.2,...
-        'TickDir', 'out',...
-        'TickLength', [0.02,0.02]);
-    
-    xline(0)
-    yline(0)
-    
-    output = [];
-    
     Ci_x = filterunits(savedir, parx, Cday, i, unit_type, condition);
     Ci_y = filterunits(savedir, pary, Cday, i, unit_type, condition);
     
@@ -120,7 +118,7 @@ for i = ndays
                 else
                     y(2) = ythr;
                 end
-            end
+            end        
         end
         
         % ignore units that didnt change between pre and active
@@ -132,85 +130,93 @@ for i = ndays
         xcomp = x(2)- x(1);
         ycomp = y(2)- y(1);
         V = sqrt(xcomp^2 + ycomp^2);
-        a = rad2deg(atan(ycomp/xcomp));
+        a = atan(ycomp/xcomp);
+        
+        % get subject
+        subjid = split(u.Name, '_');
+        
+        % get sex
+        if contains(subjid(1), '228') || contains(subjid(1), '267')
+            s = sex(1);
+        else
+            s = sex(2);
+        end
         
         % add to list
         temp{1} = uid(j);
-        temp{2} = i;
-        temp{3} = V;
-        temp{4} = xcomp;
-        temp{5} = ycomp;
-        temp{6} = a;
+        temp{2} = subjid(1);
+        temp{3} = s;
+        temp{4} = i;
+        temp{5} = V;
+        temp{6} = xcomp;
+        temp{7} = ycomp;
+        temp{8} = a;
         
         output = [output; temp];
     end
+end
+
+% convert to table
+output = cell2table(output);
+output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Magnitude", "X component", "Y component", "Angle"];
+
+% save as file
+sf = fullfile(savedir,append('vectors.csv'));
+fprintf('Saving file %s \n', sf)
+writetable(output,sf);
+fprintf(' done\n')
+
+% calculate average vector
+%     avgM = mean([output{:,3}], 'omitnan');
+avgX = mean([output{:,6}], 'omitnan');
+avgY = mean([output{:,7}], 'omitnan');
+%     avgA = mean([output{:,6}], 'omitnan');
+
+% plot individual vectors
+for j = 1:height(output)
+    hold on
+    X(1) = 0;
+    Y(1) = 0;
+    X(2) = [output{j,6}];
+    Y(2) = [output{j,7}];
     
-    % plot
-    %         for k = 1:2
-    %             hold on
-    %             scatter(ax(i),x(k),y(k), 75,...
-    %                 'Marker','o',...
-    %                 'MarkerFaceColor',cm(i,:),...
-    %                 'MarkerFaceAlpha', 0.3,...
-    %                 'MarkerEdgeAlpha', 0);
-    %         end
-    %
-    %         h = annotation('arrow');
-    %         set(h,'parent', gca, ...
-    %             'X', x,...
-    %             'Y', y,...
-    %             'HeadLength', 4, 'HeadWidth', 4, 'HeadStyle', 'ellipse');
-    %
-    %         set(ax(i), 'xdir', 'reverse',...
-    %             'ydir', 'reverse',...
-    %             'xlim', [-25 5],...
-    %             'ylim', [-25 5]);
-    
-    % calculate average vector
-    %     avgM = mean([output{:,3}], 'omitnan');
-    avgX = mean([output{:,4}], 'omitnan');
-    avgY = mean([output{:,5}], 'omitnan');
-    %     avgA = mean([output{:,6}], 'omitnan');
-    
-    % plot individual vectors
-    for j = 1:length(output)
-        hold on
-        X(1) = 0;
-        Y(1) = 0;
-        X(2) = [output{j,4}];
-        Y(2) = [output{j,5}];
-        
-        for k = 1:2
-            scatter(ax(i),X(k), Y(k),...
-                'Marker', 'none')
-        end
-        
-        h1 = annotation('arrow');
-        set(h1,'parent', gca, ...
-            'X', X,...
-            'Y', Y,...
-            'HeadLength', 4,...
-            'HeadWidth', 4,...
-            'HeadStyle', 'vback2');
+    for k = 1:2
+        scatter(ax,X(k), Y(k),...
+            'Marker', 'none')
     end
     
-    % plot mean vector
-    xm = [0 avgX];
-    ym = [0 avgY];
-    
-    h2 = annotation('arrow');
-    set(h2, 'parent', gca,...
-        'X', xm,...
-        'Y', ym,...
-        'LineWidth', 1,...
-        'Color', '#cb83e6',...
-        'HeadLength', 3,...
-        'HeadWidth', 3,...
-        'HeadStyle', 'ellipse');
-    
-    title('Day ', i)
-    xlabel(append('\Delta', x_label, ' threshold'))
-    ylabel(append('\Delta', y_label, ' threshold'))
+    h1 = annotation('arrow');
+    set(h1, 'parent', gca,...
+        'X', X,...
+        'Y', Y,...
+        'LineWidth', 1.2,...
+        'Color', '#c4c4c4',...
+        'HeadLength', 10,...
+        'HeadWidth', 10,...
+        'HeadStyle', 'vback3');
 end
+
+% plot mean vector
+xm = [0 avgX];
+ym = [0 avgY];
+
+h2 = annotation('arrow');
+set(h2, 'parent', gca,...
+    'X', xm,...
+    'Y', ym,...
+    'LineWidth', 2.5,...
+    'HeadLength', 7,...
+    'HeadWidth', 7,...
+    'HeadStyle', 'ellipse');
+xlabel(ax, append('\Delta', x_label, ' threshold'),...
+    'FontWeight','bold',...
+    'FontSize', 15);
+ylabel(ax,append('\Delta', y_label, ' threshold'),...
+    'FontWeight','bold',...
+    'FontSize', 15);
+
+
+
+
 
 

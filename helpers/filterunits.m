@@ -1,7 +1,6 @@
 function [Ci] = filterunits(savedir, Parname, Cday, i, unit_type, condition)
 
 Ci = Cday{i};
-minNumSpikes = 0;
 alpha = 0.05;
 
 % first make sure that there is a threshold/p_val field for the "parname"
@@ -33,7 +32,7 @@ for j = 1:length(Ci)
         yfit = Ci(j).UserData.(Parname).yfit;
         curve = [yfit(1), yfit(500), yfit(1000)];
         
-        if curve(1) > curve(2) && curve(2) > curve(3) && sum(yfit>1) > 0
+        if curve(1) >= curve(2) && curve(2) >= curve(3) && sum(yfit>1) > 0
             Ci(j).UserData.(Parname).threshold = NaN;
         end
     end
@@ -175,9 +174,3 @@ for j = 1:length(Ci)
 end
 Ci = Ci(idx);
 
-% replace NaN thresholds with 1
-%     for j = 1:length(Ci)
-%         if isnan(Ci(j).UserData.(parname).threshold)
-%             Ci(j).UserData.(parname).threshold = 1;
-%         end
-%     end

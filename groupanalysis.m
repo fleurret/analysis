@@ -29,9 +29,9 @@ if region == "MGN"
 end
 
 if region == "ACx"
-    spth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted\';
-    savedir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\';
-    behavdir = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Behavior\';
+    spth = 'D:\Caras\Analysis\ACx recordings\Reformatted\';
+    savedir = 'D:\Caras\Analysis\ACx recordings\';
+    behavdir = 'D:\Caras\Analysis\ACx recordings\Behavior\';
 end
 
 %% Load .mat and convert neural data
@@ -63,7 +63,7 @@ metrics_across_sessions(parname, spth, savedir, 1:7, 'CoV', 'NonAM', "SU", "all"
 
 % am_ratio(parname, spth, savedir, 1, "SU", "all", 0 ,0)
 
-am_ratio_combined(parname, spth, savedir, 1:7, "SU", "i", -9 ,0)
+am_ratio_combined(parname, spth, savedir, 1:7, "SU", "all", -9 ,1)
 
 %% Plot neurometric fits across sessions
 % syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
@@ -83,7 +83,12 @@ fit_over_sessions(spth, savedir, parname, "all", "SU")
 
 % cn = which number unit
 
-fit_over_sessions_rep(spth, savedir, parname, 1, "SU", "all", 12)
+fit_over_sessions_rep(spth, savedir, parname, 1, "SU", "all", 9)
+
+%% Plot histograms for each unit
+% plot_histo(savedir, parname, ndays, unit_type, condition)
+
+plot_histo(savedir, parname, 1, "SU", "all", 9)
 
 %% Plot thresholds across sessions
 % syntax: thresholds_across_sessions(spth, savedir, parname, day, unit_type, condition,  savefile)
@@ -100,7 +105,7 @@ fit_over_sessions_rep(spth, savedir, parname, 1, "SU", "all", 12)
 
 % thresholds_across_sessions(spth, savedir, parname, 1:7, "SU", "all", 0)
 
-thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "SU", "all", 0)
+thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "SU", "all", 1)
 
 %% Plot dprime over days
 % syntax: plot_dprime(spth, savedir, parname, subj, unit_type, depth, condition, sv)
@@ -137,12 +142,12 @@ fit_over_days(spth, savedir, parname, "all", "SU")
 
 % save file?: 1 = yes, 0 = no
 
-plot_units(spth, behavdir, savedir, parname, 1:7, "all", "all", "SU", 0)
+plot_units(spth, behavdir, savedir, parname, 1:7, "all", "all", "SU", 1)
 
 %% Plot behavior vs neural for an individual subject
-% syntax: bvsn(behavdir, savedir, parname, maxdays, subj, unit_type, condition)
+% syntax: bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
 
-bvsn(behavdir, savedir, parname, 7, "322", "all", "active")
+bvsn(behavdir, savedir, parname, 1:7, "642", "SU", "all")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, maxdays)
@@ -150,28 +155,31 @@ bvsn(behavdir, savedir, parname, 7, "322", "all", "active")
 bvsn_pop(behavdir, savedir, parname, 7)
 
 %% Sort units into improved/worsened
-% syntax: split_condition(savedir, maxNumDays, parname, replace)
+% syntax: split_condition(savedir, parname, ndays, unit_type, condition)
 
-% maxNumDays: max days for analysis, default = 7
-
-% replace: replace NaN thresholds with lowest depth presented. "yes", "no"
-
-split_condition(savedir, 7, parname, "no")
+split_condition(savedir, parname, 1:7, "SU", "all")
 
 %% Compare thresholds by coding
-% syntax: compare_thresholds(savedir, parx, pary, ndays, unit_type, condition, shownans, session)
+% syntax: compare_thresholds(savedir, parx, pary, ndays, unit_type, condition, shownans, savefile)
 
 % parx/pary: 'FiringRate', 'VScc', 'Power'
 
-% shownans: "yes", "no"
+% shownans: yes 1, no 0
 
-% session: "pre", "active", "post", "all"
+% savefile: yes 1, no 0
 
-compare_thresholds(savedir, 'FiringRate', 'VScc', 1, "SU", "all",  "yes", "active")
+compare_thresholds(savedir, 'FiringRate', 'VScc', 1:7, "SU", "all", 1, 1)
+
+%% Coding strategy
+% syntax: (spth, savedir, ndays, unit_type, condition)
+
+coding_strategy(spth, savedir, 1:7, "SU", "all")
 
 %% Calculate vector change in threshold between passive/active
 
-change_in_threshold(savedir, spth, 'FiringRate', 'VScc', 1:7, "SU", "all");
+% change_in_threshold(savedir, spth, 'FiringRate', 'VScc', 1:7, "SU", "all");
+change_in_threshold_combined(savedir, spth, 'FiringRate', 'VScc', 1:7, "SU", "all");
+
 % 
 % mean([output{:,3}], 'omitnan')
 % mean([output{:,4}], 'omitnan')
@@ -214,10 +222,6 @@ load(fullfile(sd1,fn));
 
 sd2 = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\';
 sd3 = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\';
-
-%% Plot histograms for each unit
-
-plot_histo(savedir, parname)
 
 %% Count units
 
