@@ -1,0 +1,109 @@
+function split_condition(savedir, parname, ndays, unit_type, condition)
+% convert parname to correct label
+if contains(parname,'FiringRate')
+    Parname = 'trial_firingrate';
+elseif contains(parname,'Power')
+    Parname = 'cl_calcpower';
+else contains(parname,'VScc')
+    Parname = 'vector_strength_cycle_by_cycle';
+end
+
+% load clusters
+fn = 'Cday_original.mat';
+load(fullfile(savedir,fn));
+
+temp = [];
+output = [];
+
+wc = 0;
+bc = 0;
+sc = 0;
+
+av = {'Aversive', 'Active'};
+
+% only AM responsive
+for i = ndays
+    Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
+    y = arrayfun(@(a) a.UserData.(Parname),Ci,'uni',0);
+    
+    ind = cellfun(@(a) isfield(a,'ERROR'),y);
+    uinfo = arrayfun(@(a) a.Name, Ci);
+    
+    y(ind) = [];
+    Ci(ind) = [];
+    
+    y = [y{:}];
+    
+    if ~isempty(y)
+        thr{i} = [y.threshold];
+        
+        didx{i} = ones(size(y))*i;
+        sidx{i} = nan(size(y));
+        
+        sn = [Ci.Session];
+        sn = [sn.Name];
+        sidx{i}(contains(sn,"Pre")) = 1;
+        sidx{i}(contains(sn,av)) = 2;
+        sidx{i}(contains(sn,"Post")) = 3;
+    else
+        continue
+    end
+    
+    % get info for output
+    U = uinfo(ind);
+    
+    for z = 1:length(U)
+        Subj = split(U(z), '_cluster');
+        subjlist(z) = Subj(1);
+        
+        if contains(U(z), '228') || contains(U(z), '267')
+            sx = [sx, sex(1)];
+        else
+            sx = [sx, sex(2)];
+        end
+        
+        TR = thr{i}(ind);
+        if isnan(TR(z))
+            valid = [valid, "0"];
+        else
+            valid = [valid, "1"];
+        end
+    end
+    
+    unit = [unit; U'];
+    subj_id = [subj_id; subjlist'];
+    thrs = [thrs; thr{i}(ind)'];
+    day = [day; ones(length(thr{i}(ind)), 1)*i];
+    session = [session; repelem(sessionName(j), length(thr{i}(ind)), 1)];
+    
+    
+    id = [Ci.Name];
+    uid = unique(id);
+    
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+output = cell2table(output);
+output.Properties.VariableNames = ["Unit", "Subject", "Day", "Session", "Threshold","Condition"];
+
+% save as file
+sf = fullfile(savedir,append(parname,'_threshold_split.csv'));
+
+fprintf('Saving file ...')
+writetable(output,sf);
+fprintf(' done\n')
+
+fprintf('Better = %d\n', bc)
+fprintf('Worse = %d\n', wc)
+fprintf('Same = %d\n', sc)

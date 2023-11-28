@@ -15,6 +15,10 @@ load(fullfile(savedir,fn));
 temp = [];
 output = [];
 
+wc = 0;
+bc = 0;
+sc = 0;
+
 av = {'Aversive', 'Active'};
 
 % only AM responsive
@@ -65,17 +69,25 @@ for i = ndays
         pre = Tx(1);
         active = Tx(2);
         
-        if pre > active
+        if pre > active && pre~=active
             c = "Better";
-        else
+            bc = bc + 1;
+        elseif pre < active && pre~=active
             c = "Worse";
-        end
-        
-        if pre == active
+            wc = wc + 1;
+        elseif pre == active
             c = "Same";
+            sc = sc + 1;
         end
         
         temp(:,6) = cellstr(c);
+        
+        % Validity
+        V = ones(1,3);
+        nanidx = isnan(cell2mat(T));
+        V(nanidx) = 0;
+        
+        temp(:,7) = num2cell(V)';
 
         output = [output; temp];
     end
@@ -84,9 +96,15 @@ for i = ndays
 end
 
 output = cell2table(output);
-output.Properties.VariableNames = ["Unit", "Subject", "Day", "Session", "Threshold","Condition"];
+output.Properties.VariableNames = ["Unit", "Subject", "Session", "Day", "Threshold","Condition","Validity"];
 
 % save as file
+sf = fullfile(savedir,append(parname,'_threshold_split.csv'));
+
 fprintf('Saving file ...')
-save(fullfile(savedir,'thresholds_split.mat'), 'output')
+writetable(output,sf);
 fprintf(' done\n')
+
+fprintf('Better = %d\n', bc)
+fprintf('Worse = %d\n', wc)
+fprintf('Same = %d\n', sc)

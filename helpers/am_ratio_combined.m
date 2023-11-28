@@ -25,11 +25,13 @@ output = [];
 parnames = ["trial_firingrate"; "cl_calcpower"; "vector_strength_cycle_by_cycle"];
 sessions = ["Pre", "Active", "Post"];
 sex = ["M", "F"];
+count = 0;
 
 for i = ndays
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
     id = [Ci.Name];
     uid = unique(id);
+    count = count+length(uid);
     
     % isolate units across sessions
     for j = 1:length(uid)
@@ -176,5 +178,4 @@ if strcmp(Parname, 'vector_strength_cycle_by_cycle')
 end
 
 % count number of neurons
-[row, ~] = size(output);
-fprintf('n = %s \n', num2str(row))
+fprintf('n = %s \n', num2str(count))

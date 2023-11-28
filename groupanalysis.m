@@ -5,9 +5,9 @@
 % parname = 'Power';
 parname = 'VScc';
 
-region = "IC";
+% region = "IC";
 % region = "IC shell";
-% region = "MGN";
+region = "MGN";
 % region = "ACx";
 
 if region == "IC"
@@ -63,7 +63,7 @@ metrics_across_sessions(parname, spth, savedir, 1:7, 'CoV', 'NonAM', "SU", "all"
 
 % am_ratio(parname, spth, savedir, 1, "SU", "all", 0 ,0)
 
-am_ratio_combined(parname, spth, savedir, 1:7, "SU", "all", -9 ,1)
+am_ratio_combined(parname, spth, savedir, 1:7, "SU", "all", -9 ,0)
 
 %% Plot neurometric fits across sessions
 % syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
@@ -105,7 +105,7 @@ plot_histo(savedir, parname, 1, "SU", "all", 9)
 
 % thresholds_across_sessions(spth, savedir, parname, 1:7, "SU", "all", 0)
 
-thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "SU", "all", 1)
+thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "SU", "all", 0)
 
 %% Plot dprime over days
 % syntax: plot_dprime(spth, savedir, parname, subj, unit_type, depth, condition, sv)
@@ -154,7 +154,7 @@ bvsn(behavdir, savedir, parname, 1:7, "642", "SU", "all")
 
 bvsn_pop(behavdir, savedir, parname, 7)
 
-%% Sort units into improved/worsened
+%% Sort units into better/worse/same
 % syntax: split_condition(savedir, parname, ndays, unit_type, condition)
 
 split_condition(savedir, parname, 1:7, "SU", "all")
