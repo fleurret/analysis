@@ -1,0 +1,31 @@
+function qm(spth)
+
+datafolders = dir(spth);
+datafolders(~[datafolders.isdir]) = [];
+datafolders(ismember({datafolders.name},{'.','..'})) = [];
+datafolders(~contains({datafolders.name},{'concat'})) = [];
+
+for i = 1:length(datafolders)
+    DataPath = fullfile(datafolders(i).folder,datafolders(i).name);
+    fd = dir(fullfile(DataPath,'CSV files','*quality_metrics.csv'));
+    
+    Q = readtable(fullfile(fd.folder,fd.name));
+    
+    for j = 1:height(Q)
+        unit = Q(j,:);
+        type = convertCharsToStrings(cell2mat(unit.Cluster_quality));
+        
+        if type == "good"
+            if unit.ISI_FPRate < 0.5 && unit.ISI_ViolationRate < 2 && unit.Fraction_missing < 0.1
+                continue
+            else
+                Q(j,4) = {'mua'};
+            end
+        end
+    end
+    
+    sf = fullfile(fd.folder,fd.name);
+    fprintf('\n Saving quality metrics for %s ...', fd.name)
+    writetable(Q,sf);
+    fprintf(' done\n')
+end
