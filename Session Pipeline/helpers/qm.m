@@ -1,13 +1,15 @@
 function qm(spth)
 
-datafolders = dir(spth);
-datafolders(~[datafolders.isdir]) = [];
-datafolders(ismember({datafolders.name},{'.','..'})) = [];
-datafolders(~contains({datafolders.name},{'concat'})) = [];
+% prompt user to select folder
+datafolders_names = uigetfile_n_dir(spth,'Select data directory');
+datafolders = {};
+for i=1:length(datafolders_names)
+    [~, datafolders{end+1}, ~] = fileparts(datafolders_names{i});
+end
 
 for i = 1:length(datafolders)
-    DataPath = fullfile(datafolders(i).folder,datafolders(i).name);
-    fd = dir(fullfile(DataPath,'CSV files','*quality_metrics.csv'));
+    DataPath = cell2mat(datafolders(i));
+    fd = dir(fullfile(spth, DataPath,'CSV files','*quality_metrics.csv'));
     
     Q = readtable(fullfile(fd.folder,fd.name));
     
