@@ -1,4 +1,4 @@
-function thresholds_across_sessions_combined(spth, savedir, parname, day, unit_type, condition,  savefile)
+function cov_combined(parname, spth, savedir, ndays, type, unit_type, condition, depth, savefile)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -7,7 +7,7 @@ if contains(parname,'FiringRate')
 elseif contains(parname,'Power')
     Parname = 'cl_calcpower';
     
-elseif contains(parname,'VScc')
+else contains(parname,'VScc')
     Parname = 'vector_strength_cycle_by_cycle';
 end
 
@@ -26,17 +26,8 @@ parnames = ["trial_firingrate"; "cl_calcpower"; "vector_strength_cycle_by_cycle"
 sessions = ["Pre", "Active", "Post"];
 sex = ["M", "F"];
 
-for i = day
+for i = ndays
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
-    
-    % replace NaN thresholds with 1
-%     for j = 1:length(Ci)
-%         if isnan(Ci(j).UserData.(Parname).threshold)
-%             Ci(j).UserData.(Parname).threshold = 1;
-%         end
-%     end
-    
-    % only valid clusters
     id = [Ci.Name];
     uid = unique(id);
     
@@ -48,28 +39,33 @@ for i = day
         % create output
         clear temp
         temp = {};
-        B = [];
+        b = [];
         
         % get events and calculate baseline
         for k = 1:length(U)
             
-            % pull values
-            u = U(k);
-            
-            if ~isfield(u.UserData.(Parname),'threshold')
-                b = NaN;
-            else
-                b = u.UserData.(Parname).threshold;
-            end
-            
             % set session
             session = sessions(k);
+            
+            % pull values
+            u = U(k);
+            [~, ~, cAM, cNAM] = calc_mas(u, Parname, depth);
+            
+            if strcmp(type, 'AM')
+                b = cAM;
+            else
+                b = cNAM;
+            end
+            
+            if isempty(b)
+                b = NaN;
+            end
             
             % get subject
             subjid = split(u.Name, '_');
             
             % get sex
-            if contains(subjid(1), '378') || contains(subjid(1), '380')
+            if contains(subjid(1), '228') || contains(subjid(1), '267')
                 s = sex(1);
             else
                 s = sex(2);
@@ -90,29 +86,20 @@ end
 
 % convert to table
 output = cell2table(output);
-output.Properties.VariableNames = ["Unit","Subject", "Sex", "Day", "Type", "Session","Threshold"];
+output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Type", "Session", "CoV"];
 
 % save as file
 if savefile == 1
-    sf = fullfile(savedir,append(parname,'_Day', mat2str(day), '_thresholds.csv'));
+    sf = fullfile(savedir,append(Parname,'_',type, 'CoV.csv'));
     fprintf('Saving file %s \n', sf)
     writetable(output,sf);
     fprintf(' done\n')
 end
 
-% replace nans with 5 for visualization
-output.Threshold(isnan(output.Threshold)) = 5;
-
-% one sex
-% idx = output.Sex == "M";
-% output = output(idx,:);
-
 % plot
 cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
-
 f = figure;
 f.Position = [0, 0, 500, 625];
-
 
 x = 1:3;
 
@@ -123,10 +110,10 @@ set(gca, 'TickDir', 'out',...
     'LineWidth', 3);
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
-ucm = cm(1,:);
-hold on
 
-for d = day
+for d = 1:length(ndays)
+    ucm = cm(1,:);
+    hold on
     
     smean = nan(1,3);
     for i = 1:length(sessions)
@@ -142,10 +129,10 @@ for d = day
         'MarkerSize', 18,...
         'LineWidth', 2)
     
-  units = table2struct(output);
+    units = table2struct(output);
     
     currentday = [units.Day] == d;
-    means = [units.Threshold];
+    means = [units.CoV];
     currentmeans = means(currentday);
     sess = [units.Session];
     currentsessions = sess(currentday);
@@ -158,7 +145,7 @@ for d = day
     [~, cols] = size(meantable);
     
     for j = 1:cols
-        if d == 1 && j == 12 || d == 1 && j == 3 || d ==3 && j == 7
+        if d == 1 && j == 10
             scatter(x,meantable(:,j), 120,...
                 'Marker','o',...
                 'MarkerFaceColor', '#cb83e6',...
@@ -168,9 +155,10 @@ for d = day
             line(x,meantable(:,j),...
                 'Color', '#cb83e6',...
                 'LineWidth',0.75,...
-                'LineStyle', '-')
+                'LineStyle', ':')
         else
-            scatter(x,meantable(:,j), 120,...
+            
+            scatter(x,meantable(:,j),120,...
                 'Marker','o',...
                 'MarkerFaceColor', ucm,...
                 'MarkerFaceAlpha', 0.3,...
@@ -184,18 +172,28 @@ for d = day
     end
     
     clear meantable
+    
 end
 
 xticks([1:3])
+xlim([0.8 3])
 set(gca,'XTickLabelMode','auto',...
     'FontSize', 36)
 xticklabels({'Pre','Task','Post'})
 
 xlabel(ax,'Session','FontSize',36,...
     'FontWeight','bold')
-ylabel(ax,'Threshold (dB re: 100%)',...
-    'FontSize', 36,...
-    'FontWeight', 'bold');
-xlim([0.8 3])
-ylim([-25 5])
+ylabel(ax,'CoV',...
+    'FontSize', 36);
 
+if strcmp(Parname, 'trial_firingrate')
+    ylim([0 2])
+end
+
+if strcmp(Parname, 'cl_calcpower')
+    ylim([0 5])
+end
+
+if strcmp(Parname, 'vector_strength_cycle_by_cycle')
+    ylim([0 50])
+end

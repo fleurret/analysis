@@ -65,18 +65,18 @@ for i = ndays
         
         % condition
         Tx = cell2mat(T);
-        Tx(isnan(Tx)) = 0;
         pre = Tx(1);
         active = Tx(2);
+        post = Tx(3);
         
-        if pre > active && pre~=active
+        if isnan(pre) && ~isnan(active) && isnan(post)
             c = "Better";
             bc = bc + 1;
-        elseif pre < active && pre~=active
+        elseif ~isnan(pre) && isnan(active) && ~isnan(post) || isnan(pre) && isnan(active) && ~isnan(post) || ~isnan(pre) && isnan(active) && isnan(post)
             c = "Worse";
             wc = wc + 1;
-        elseif pre == active
-            c = "Same";
+        else
+            c = "Both";
             sc = sc + 1;
         end
         
@@ -105,6 +105,6 @@ fprintf('Saving file ...')
 writetable(output,sf);
 fprintf(' done\n')
 
-fprintf('Better = %d\n', bc)
-fprintf('Worse = %d\n', wc)
-fprintf('Same = %d\n', sc)
+fprintf('Task-responsive = %d\n', bc)
+fprintf('Passive-responsive = %d\n', wc)
+fprintf('Both = %d\n', sc)

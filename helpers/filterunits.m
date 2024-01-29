@@ -3,15 +3,15 @@ function [Ci] = filterunits(savedir, Parname, Cday, i, unit_type, condition)
 Ci = Cday{i};
 alpha = 0.05;
 
+% remove freqtuning sessions - currently empty
+sn = [Ci.SessionName];
+ftind = contains(sn, 'FreqTuning');
+Ci = Ci(~ftind);
+
 % first make sure that there is a threshold/p_val field for the "parname"
 % threshold = NaN means curve did not cross d' = 1
 % threshold = 0 means there were no spikes/failed to compute threshold
 for j = 1:length(Ci)
-    
-    % skip freq tuning sessions
-    if contains(Ci(j).SessionName, 'FreqTuning')
-        continue
-    end
     
     % no threshold is invalid
     if ~isfield(Ci(j).UserData.(Parname),'threshold')
@@ -46,7 +46,7 @@ uid = unique(id);
 
 for j = 1:length(uid)
     ind = uid(j) == id;
-    
+
     % make sure at least one threshold is not NaN and curve has a good fit
     t = arrayfun(@(a) a.UserData.(Parname).threshold,Ci(ind));
     pval = arrayfun(@(a) a.UserData.(Parname).p_val,Ci(ind));
@@ -100,51 +100,37 @@ Ci = Ci(removeind);
 
 % only plot one condition
 if condition ~= "all"
+    ffn = fullfile(savedir,'VScc_threshold_split.csv');
+    U = readtable(ffn);
+    
+    % only that day
+    didx = U.Day == i;
+    U = U(didx,:);
+    
     if condition == "w"
-        ffn = fullfile(savedir,'thresholds_worsened.mat');
-        load(ffn)
-        
-        subset = worsened;
+        sind = ismember(U.Condition, 'Worse');
+        subset = U(sind,:);
     end
     
     if condition == "i"
-        ffn = fullfile(savedir,'thresholds_improved.mat');
-        load(ffn)
-        
-        subset = improved;
+        sind = ismember(U.Condition, 'Better');
+        subset = U(sind,:);
     end
     
-    id = [Ci.Name];
-    uid = unique(id);
-    
-    j = 1:length(subset);
-    subj_idx = cell2mat(subset(j,2)) == i;
-    wid = subset(subj_idx);
-    wid = [wid{:}];
-    
-    flaggedForRemoval = "";
-    
-    for k = 1:length(uid)
-        ind = uid(k) == wid;
-        if sum(ind) == 0
-            flaggedForRemoval(end+1) = uid(k);
-        end
+    if condition == "s"
+        sind = ismember(U.Condition, 'Both');
+        subset = U(sind,:);
     end
     
-    idx = false(1,length(Ci));
+    uid = [Ci.Name];
+    sid = unique([subset.Unit]);
     
-    for j = 1:length(Ci)
-        if ismember(id(j),flaggedForRemoval)
-            idx(j) = 0;
-        else
-            idx(j) = 1;
-        end
-    end
-    Ci = Ci(idx);
+    [xid,~] = ismember(uid, sid);
+    Ci = Ci(xid);
 end
 
 % remove multiunits
-if unit_type == "SU"
+if unit_type == "SU" && ~isempty(Ci)
     removeind = [Ci.Type] == "SU";
     Ci = Ci(removeind);
 end
@@ -172,5 +158,6 @@ for j = 1:length(Ci)
         idx(j) = 1;
     end
 end
+
 Ci = Ci(idx);
 

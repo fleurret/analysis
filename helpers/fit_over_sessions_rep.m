@@ -34,16 +34,16 @@ maxNumDays = 7;
 
 % set properties
 sessionName = ["Pre","Active","Post"];
+av = {'Aversive', 'Active'};
 
 cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
-
 mk = '^^^';
 
 f = figure;
 f.Position = [0, 0, 500, 625];
 
 ax = gca;
-xlim([-16, 0])
+xlim([-16, -0])
 ylim([-0.5,3]);
 
 set(findobj(ax,'-property','FontName'),...
@@ -96,7 +96,7 @@ for i = ndays
         sn = [U.Session];
         sn = [sn.Name];
         sidx{i}(contains(sn,"Pre")) = 1;
-        sidx{i}(contains(sn,"Aversive")) = 2;
+        sidx{i}(contains(sn,av)) = 2;
         sidx{i}(contains(sn,"Post")) = 3;
         
         vals = {dd.vals};
