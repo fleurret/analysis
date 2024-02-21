@@ -1,4 +1,4 @@
-function thresholds_across_sessions_combined(spth, savedir, parname, day, unit_type, condition,  savefile)
+function thresholds_across_sessions_combined(spth, savedir, parname, day, subj, unit_type, condition, savefile)
 
 % convert parname to correct label
 if contains(parname,'FiringRate')
@@ -35,6 +35,33 @@ for i = day
 %             Ci(j).UserData.(Parname).threshold = 1;
 %         end
 %     end
+
+    % only plot one subject
+    if subj ~= "all"
+        subj_idx = zeros(1,length(Ci));
+        
+        for j = 1:length(Ci)
+            if Ci(j).Subject == ""
+                nsubj = append(subj,"_");
+                cs = convertCharsToStrings(Ci(j).Name);
+                if contains(cs,nsubj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
+            else
+                cs = convertCharsToStrings(Ci(j).Subject);
+                if contains(cs,subj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
+            end
+        end
+        
+        subj_idx = logical(subj_idx);
+        Ci = Ci(subj_idx);
+    end
     
     % only valid clusters
     id = [Ci.Name];
@@ -158,7 +185,8 @@ for d = day
     [~, cols] = size(meantable);
     
     for j = 1:cols
-        if d == 1 && j == 12 || d == 1 && j == 3 || d ==3 && j == 7
+%         if d == 1 && j == 27 || d == 1 && j == 7 || d == 4 && j == 4
+        if d == 1 && j == 24
             scatter(x,meantable(:,j), 120,...
                 'Marker','o',...
                 'MarkerFaceColor', '#cb83e6',...

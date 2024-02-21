@@ -1,5 +1,5 @@
+load('D:\Caras\Analysis\MGB recordings\Behavior\670\SUBJ-ID-670_allSessions.mat')
 
-load('D:\Caras\Analysis\IC recordings\Behavior\267\SUBJ-ID-267_allSessions.mat')
 f = figure;
 f.Position = [0, 0, 850, 400];
 hold on
@@ -51,11 +51,3 @@ efit = line(xi+1, yi,...
     'DisplayName', sprintf('Behavior (%.2f)', e_fo.p1),...
     'LineWidth',3,...
     'Color', ecolor);
-
-%%
-
-b1 = thresholds(1);
-B1 = thresholds-b1;
-
-b2 = thresholds2(1);
-B2 = thresholds2-b2;

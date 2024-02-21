@@ -85,26 +85,54 @@ count = zeros(1,3);
 for i = ndays
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
     
-%     % replace NaN thresholds 
-%     for j = 1:length(Ci)
-%         if isnan(Ci(j).UserData.(Parname).threshold)
-%             Ci(j).UserData.(Parname).threshold = 0;
-%         end
-%     end
+        % replace NaN thresholds
+        for j = 1:length(Ci)
+            if isnan(Ci(j).UserData.(Parname).threshold)
+                Ci(j).UserData.(Parname).threshold = 0;
+            end
+        end
     
     % only one sex
-%     for j = 1:length(Ci)
-%         if contains(Ci(j).Name, 'SUBJ-ID-228') || contains(Ci(j).Name, 'SUBJ-ID-267')
-%             idx(j) = 0;
-%         else
-%             idx(j) = 1;
-%         end
-%     end
-%     
-%     idx = logical(idx);
-%     Ci = Ci(idx);
-%     
-%     clear idx
+    %     for j = 1:length(Ci)
+    %         if contains(Ci(j).Name, 'SUBJ-ID-228') || contains(Ci(j).Name, 'SUBJ-ID-267')
+    %             idx(j) = 0;
+    %         else
+    %             idx(j) = 1;
+    %         end
+    %     end
+    %
+    %     idx = logical(idx);
+    %     Ci = Ci(idx);
+    %
+    %     clear idx
+    
+    % only plot one subject
+    if subj ~= "all"
+        subj_idx = zeros(1,length(Ci));
+        
+        for j = 1:length(Ci)
+            if Ci(j).Subject == ""
+                nsubj = append(subj,"_");
+                cs = convertCharsToStrings(Ci(j).Name);
+                if contains(cs,nsubj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
+            else
+                cs = convertCharsToStrings(Ci(j).Subject);
+                if contains(cs,subj)
+                    subj_idx(j) = 1;
+                else
+                    subj_idx(j) = 0;
+                end
+            end
+        end
+        subj_idx = logical(subj_idx);
+        Ci = Ci(subj_idx);
+    end
+    
+    
     
     y = arrayfun(@(a) a.UserData.(Parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
@@ -175,31 +203,36 @@ for i = ndays
         % get info for output
         U = uinfo(ind);
         
-        for z = 1:length(U)
-            Subj = split(U(z), '_cluster');
-            subjlist(z) = Subj(1);
+        if isempty(U)
+            continue
+        else
             
-            if contains(U(z), '228') || contains(U(z), '267')
-                sx = [sx, sex(1)];
-            else
-                sx = [sx, sex(2)];
+            for z = 1:length(U)
+                Subj = split(U(z), '_cluster');
+                subjlist(z) = Subj(1);
+                
+                if contains(U(z), '228') || contains(U(z), '267')
+                    sx = [sx, sex(1)];
+                else
+                    sx = [sx, sex(2)];
+                end
+                
+                TR = thr{i}(ind);
+                if isnan(TR(z))
+                    valid = [valid, "0"];
+                else
+                    valid = [valid, "1"];
+                end
             end
             
-            TR = thr{i}(ind);
-            if isnan(TR(z))
-                valid = [valid, "0"];
-            else
-                valid = [valid, "1"];
-            end
+            unit = [unit; U'];
+            subj_id = [subj_id; subjlist'];
+            thrs = [thrs; thr{i}(ind)'];
+            day = [day; ones(length(thr{i}(ind)), 1)*i];
+            session = [session; repelem(sessionName(j), length(thr{i}(ind)), 1)];
+            
+            clear subjlist
         end
-        
-        unit = [unit; U'];
-        subj_id = [subj_id; subjlist'];
-        thrs = [thrs; thr{i}(ind)'];
-        day = [day; ones(length(thr{i}(ind)), 1)*i];
-        session = [session; repelem(sessionName(j), length(thr{i}(ind)), 1)];
-        
-        clear subjlist
     end
 end
 
@@ -251,7 +284,10 @@ for i = 1:3
         'LineWidth',3);
     
 end
-uistack(hfit,'bottom');
+
+if ~any(hfit == 0)
+    uistack(hfit,'bottom');
+end
 
 % Pearson's R
 for i = 1:3
@@ -267,19 +303,19 @@ if subj == "all"
     behav_mean = behav_mean(1:7);
     behav_std = behav_std(1:7);
 else
-    behav_mean = behav_os;
+    behav_mean = behav_os(1:7);
 end
 
 x = log10(ndays)+1;
 xoffset = 0.98;
 x = x*xoffset;
 
-bplot = line(ax(2),x,behav_mean);
-bplot.Marker = 'o';
-bplot.MarkerSize = 8;
-bplot.LineStyle = 'none';
-bplot.Color = '#ff7bb1';
-bplot.MarkerFaceColor = '#ff7bb1';
+bplot = line(ax(2),x,behav_mean,...
+    'Marker', 'o',...
+    'MarkerSize', 8,...
+    'MarkerFaceColor', '#ff7bb1',...
+    'LineStyle', 'none',...
+    'Color', '#ff7bb1');
 
 xi = log10(1:7);
 [b_fo,~] = fit(xi',behav_mean','poly1');

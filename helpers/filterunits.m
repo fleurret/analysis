@@ -71,32 +71,6 @@ note = {Ci.Note};
 removeind = cellfun(@isempty, note);
 Ci = Ci(removeind);
 
-% % only plot one subject
-% if subj ~= "all"
-%     subj_idx = zeros(1,length(Ci));
-%
-%     for j = 1:length(Ci)
-%         if Ci(j).Subject == ""
-%             nsubj = append(subj,"_");
-%             cs = convertCharsToStrings(Ci(j).Name);
-%             if contains(cs,nsubj)
-%                 subj_idx(j) = 1;
-%             else
-%                 subj_idx(j) = 0;
-%             end
-%         else
-%             cs = convertCharsToStrings(Ci(j).Subject);
-%             if contains(cs,subj)
-%                 subj_idx(j) = 1;
-%             else
-%                 subj_idx(j) = 0;
-%             end
-%         end
-%     end
-%
-%     subj_idx = logical(subj_idx);
-%     Ci = Ci(subj_idx);
-% end
 
 % only plot one condition
 if condition ~= "all"

@@ -92,7 +92,7 @@ output.Properties.VariableNames = ["Unit", "Subject", "xPre", "xActive", "xPost"
 % plot
 f = figure;
 f.Position = [0, 0, 600, 600];
-cm = [115,161,198]./255;
+cm = [183, 134, 188]./255;
 
 % set plot
 ax = gca;
@@ -112,42 +112,62 @@ set(findobj(ax,'-property','FontName'),...
 hold on
 
 scount = 0;
-tcount = 0;
 mcount = 0;
 
+% only measureable active thresholds
+p = output(~isnan(output.yActive),:);
+tcount = height(p);
+
+% find multiplex
+midx = ~isnan(p.xActive);
+mp = p(midx,:);
+o = p(~midx,:);
+
 % plot each unit
-for i = 1:height(output)
-   
+for i = 1:height(mp)
+    
     % get thresholds
-    t1 = output.xPre(i);
-    t2 = output.yActive(i);
-    t3 = output.xActive(i);
-    
-    % only measureable active thresholds
-    if isnan(t2)
-        continue
-    end
-    
-    % count multiplex
-    if ~isnan(t3) && ~isnan(t1) 
-        mcount = mcount+1;
-    end
-    
+    t1 = mp.xPre(i);
+    t2 = mp.yActive(i);
+
     % replace pre nans
     if isnan(t1)
         t1 = 5; 
-        scount = scount+1;
     end
     
     scatter(ax, t1, t2,...
         'Marker','o',...
         'SizeData', 100,...
         'MarkerFaceColor',cm,...
+        'MarkerEdgeColor',cm,...
+        'MarkerFaceAlpha', 0.3,...
+        'MarkerEdgeAlpha', 1);
+    
+    mcount = mcount+1;
+end
+
+for i = 1:height(o)
+    
+    % get thresholds
+    t1 = o.xPre(i);
+    t2 = o.yActive(i);
+
+    % replace pre nans
+    if isnan(t1)
+        t1 = 5; 
+    end
+    
+    scatter(ax, t1, t2,...
+        'Marker','o',...
+        'SizeData', 100,...
+        'MarkerFaceColor',cm,...
+        'MarkerEdgeColor',cm,...
         'MarkerFaceAlpha', 0.3,...
         'MarkerEdgeAlpha', 0);
     
-    tcount = tcount+1;
+    scount = scount+1;
 end
+
 
 xline(0)
 yline(0)

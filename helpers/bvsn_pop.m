@@ -1,11 +1,12 @@
 function bvsn_pop(behavdir, savedir, parname, ndays, unit_type, condition)
 
-% load behavior
+% get subjects
 subjects = dir(behavdir);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
-load(fullfile(behavdir,'behavior_combined.mat'));
+% format subjs
+subjs = strcat('SUBJ-ID-', {subjects.name});
 
 % load neural
 fn = 'Cday_original.mat';
@@ -28,27 +29,77 @@ av = {'Aversive', 'Active'};
 
 % marker settings
 mk = '^^^';
-cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
+cm = [203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97; 249, 226, 128; 242, 187, 64; 244, 145, 96;]./255; % session colormap
+
+tc = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 % set figure
 f = figure;
 f.Position = [0, 0, 1500, 600];
-hold on
 
 ax(1) = subplot(131,'parent',f);
 ax(2) = subplot(132,'parent',f);
 ax(3) = subplot(133,'parent',f);
 
+hold(ax,'on')
+
+% axes etc
+set(ax, 'TickDir', 'out',...
+    'XTickLabelRotation', 0,...
+    'TickLength', [0.02,0.02],...
+    'LineWidth', 3);
+set(findobj(ax,'-property','FontName'),...
+    'FontName','Arial')
+
+for i = 1:length(ax)
+    ax(i).XLim = [-20, -5];
+    ax(i).YLim = [-15, 0];
+end
+
+set([ax.XAxis], ...
+    'FontSize',12);
+set([ax.YAxis],...
+    'FontSize',12);
+
+set(findobj(ax,'-property','FontName'),...
+    'FontName','Arial')
+
+xlabel(ax,'Behavioral threshold (dB re: 100%)',...
+    'FontWeight','bold',...
+    'FontSize', 12);
+ylabel(ax,'Neural threshold (dB re: 100%)',...
+    'FontWeight','bold',...
+    'FontSize', 12);
+
 % neural data
 thr = cell(size(days));
 sidx = thr;
 
-xall = nan(1,7);
-yall = nan(1,7);
+xall = nan(length(subjs),7);
+yall = cell(1,3);
 
-for k = 1:3 % plot each session seperately
+for i = 1:length(yall)
+    yall{i} = nan(length(subjs),7);
+end
+
+for j = 1:length(subjs)
+    
+    % load subj behavior
+    bfolder = fullfile(behavdir, subjects(j).name);
+    bfile = dir(fullfile(bfolder,'*.mat'));
+    ffn = fullfile(bfolder,bfile.name);
+    load(ffn)
+    
+    fitdata = [output.fitdata];
+    bthr = [fitdata.threshold];
+    xall(j,:) = bthr(ndays);
+    
     for i = ndays
         Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
+        
+        % only that subject
+        idx = contains([Ci.Name],subjs{j});
+        Ci = Ci(idx);
         
         y = arrayfun(@(a) a.UserData.(Parname),Ci,'uni',0);
         ind = cellfun(@(a) isfield(a,'ERROR'),y);
@@ -67,75 +118,57 @@ for k = 1:3 % plot each session seperately
             sidx{i}(contains(sn,"Pre")) = 1;
             sidx{i}(contains(sn,av)) = 2;
             sidx{i}(contains(sn,"Post")) = 3;
+        else
+            continue
         end
         
-        ind = sidx{i} == k;
-        
-        % neural means
-        xi = mean(thr{i}(ind),'omitnan');
-        yall(i) = xi;
-        
-        % behavior
-        xall(i) = behav_mean(i);
+        for k = 1:3 % plot each session seperately
+            ind = sidx{i} == k;
+            
+            % neural means
+            yi = mean(thr{i}(ind),'omitnan');
+            yall{k}(j,i) = yi;
+            
+            % plot
+            scatter(ax(k),bthr(i),yi,...
+                'Marker', 'o',...
+                'SizeData', 80,...
+                'MarkerFaceColor', cm(j,:),...
+                'MarkerEdgeAlpha', 0)
+
+        end
     end
+end
+
+% fit and corr
+for k = 1:3
+    sthr = yall{k};
+    sz = size(sthr);
+    sthr = reshape(sthr,1,sz(1)*sz(2));
+    xthr = reshape(xall,1,sz(1)*sz(2));
     
-    % plot
-    scatter(ax(k),xall,yall,...
-        'Marker', 'o',...
-        'SizeData', 80,...
-        'MarkerFaceColor', cm(k,:),...
-        'MarkerEdgeAlpha', 0)
-    
-    % fit and corr
-    idx = isnan(yall);
-    xf = xall(~idx);
-    yf = yall(~idx);
+    idx = isnan(sthr);
+    xf = xthr(~idx);
+    yf = sthr(~idx);
     
     coefficients = polyfit(xf, yf, 1);
     xFit = linspace(min(xf), max(xf), 1000);
     yFit = polyval(coefficients , xFit);
     
     hfit(k) = line(ax(k),xFit,yFit, ...
-        'Color',max(cm(k,:),0), ...
+        'Color',tc(k,:), ...
         'LineWidth',3);
     
-    [R,P] = corrcoef(xall,yall,'rows','complete');
+    [R,P] = corrcoef(xthr,sthr,'rows','complete');
     PR{k} = R;
     PRP{k} = P;
-    % set title
-    title(ax(k),sprintf('%s (%s)',sessionName(k),parname),...
-        'FontSize',15);
-    
-    % axes etc
-    set(ax(k), 'TickDir', 'out',...
-        'XTickLabelRotation', 0,...
-        'TickLength', [0.02,0.02],...
-        'LineWidth', 3);
-    set(findobj(ax,'-property','FontName'),...
-        'FontName','Arial')
-
-    ax(k).XLim = [-20, -10];
-    ax(k).YLim = [-20, -5];
-    
-    set([ax.XAxis], ...
-        'FontSize',12);
-    set([ax.YAxis],...
-        'FontSize',12);
-    
-    set(findobj(ax,'-property','FontName'),...
-        'FontName','Arial')
-    
-    xlabel(ax,'Behavioral threshold (dB re: 100%)',...
-        'FontWeight','bold',...
-        'FontSize', 12);
-    ylabel(ax,'Neural threshold (dB re: 100%)',...
-        'FontWeight','bold',...
-        'FontSize', 12);
 end
 
-
-grid(ax(1),'off');
-grid(ax(2),'off');
+% set title
+for k = 1:3
+    title(ax(k),sprintf('%s (%s)',sessionName(k),parname),...
+    'FontSize',15);
+end
 
 axis(ax,'square');
 

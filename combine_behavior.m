@@ -1,3 +1,5 @@
+%% combine behavior into one file
+
 spth = 'D:\Caras\Analysis\MGB recordings\Behavior';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
@@ -39,13 +41,13 @@ end
 behav_mean = thresholds(subj+1,:);
 behav_std = thresholds(subj+2,:);
 
-%%
 % save as file
 file = 'D:\Caras\Analysis\MGB recordings\Behavior\behavior_combined.mat';
 save(file, 'behav_mean','behav_std')
 
-%%
-spth = 'D:\Caras\Analysis\IC recordings\Behavior';
+%% combine shock training d' into one file
+
+spth = 'D:\Caras\Analysis\MGB recordings\Behavior';
 subjects = dir(spth);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];

@@ -1,6 +1,6 @@
 % parentDir = 'D:\Caras\Analysis\Caspase\Acquisition\Control\512';
-parentDir = 'D:\Caras\Analysis\Caspase\Acquisition\Experimental\504';
-behav_file = fullfile(parentDir,'SUBJ-ID-504_allSessions.mat');
+parentDir = 'D:\Caras\Analysis\MGB recordings\Behavior\670';
+behav_file = fullfile(parentDir,'SUBJ-ID-670_allSessions.mat');
 load(behav_file)
 %%
 f = figure;
@@ -72,7 +72,7 @@ f.Resize = 'off';
 hold on
 
 % best fit line
-x = [1:10];
+x = [1:7];
 y = [];
 for i = x
     a = output(i).fitdata.threshold;
@@ -113,6 +113,7 @@ ax.TickDir = 'out';
 ax.TickLength = [0.02,0.02];
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
+
 
 %% pretty plots
 % average thresholds

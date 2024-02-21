@@ -1,11 +1,18 @@
 function bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
 
-% load behavior
+% load subj behavior
 subjects = dir(behavdir);
 subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
-load(fullfile(behavdir,'behavior_combined.mat'));
+bfolder = fullfile(behavdir, subj);
+bfile = dir(fullfile(bfolder,'*.mat'));
+ffn = fullfile(bfolder,bfile.name);
+load(ffn)
+
+fitdata = [output.fitdata];
+bthr = [fitdata.threshold];
+xall = bthr(ndays);
 
 % load neural
 fn = 'Cday_original.mat';
@@ -43,7 +50,6 @@ ax(3) = subplot(133,'parent',f);
 thr = cell(size(days));
 sidx = thr;
 
-xall = nan(1,7);
 yall = nan(1,7);
 
 for k = 1:3 % plot each session seperately
@@ -86,8 +92,6 @@ for k = 1:3 % plot each session seperately
         xi = mean(thr{i}(ind),'omitnan');
         yall(i) = xi;
         
-        % behavior
-        xall(i) = behav_mean(i);
     end
     
     % plot
@@ -131,7 +135,7 @@ for k = 1:3 % plot each session seperately
     set(findobj(ax,'-property','FontName'),...
         'FontName','Arial')
 
-    ax(k).XLim = [-20,-10];
+    ax(k).XLim = [-20,-5];
     ax(k).YLim = [-15,0];
     
     set([ax.XAxis], ...

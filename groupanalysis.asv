@@ -85,14 +85,15 @@ fit_over_sessions(spth, savedir, parname, "all", "SU")
 
 % cn = which number unit
 
-fit_over_sessions_rep(spth, savedir, parname, 1, "SU", "all", 23)
+fit_over_sessions_rep(spth, savedir, parname, 1, "all", "all", 24)
 
 %% Plot histograms for each unit
-% plot_histo(savedir, parname, ndays, unit_type, condition)
+% plot_histo(savedir, parname, ndays, unit_type, condition, cn)
 
-plot_histo(savedir, parname, 1, "SU", "all", 19)
+plot_histo(savedir, parname, 1, "all", "all", 24)
+
 %% Plot thresholds across sessions
-% syntax: thresholds_across_sessions(spth, savedir, parname, day, unit_type, condition,  savefile)
+% syntax: thresholds_across_sessions(spth, savedir, parname, day, subj, unit_type, condition,  savefile)
 
 % subj: "all", "202", "222", "223", "224", "267"
 
@@ -106,7 +107,7 @@ plot_histo(savedir, parname, 1, "SU", "all", 19)
 
 % thresholds_across_sessions(spth, savedir, parname, 1:7, "SU", "all", 0)
 
-thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "SU", "all", 0)
+thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "6al", "all", "all", 0)
 
 %% Plot dprime over days
 % syntax: plot_dprime(spth, savedir, parname, subj, unit_type, depth, condition, sv)
@@ -143,17 +144,17 @@ fit_over_days(spth, savedir, parname, "all", "SU")
 
 % save file?: 1 = yes, 0 = no
 
-plot_units(spth, behavdir, savedir, parname, 1:7, "all", "all", "all", 0)
+plot_units(spth, behavdir, savedir, parname, 1:7, "all", "all", "all", 1)
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
 
-bvsn(behavdir, savedir, parname, 1:7, "669", "SU", "all")
+bvsn(behavdir, savedir, parname, 1:7, "670", "all", "all")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, ndays)
 
-bvsn_pop(behavdir, savedir, parname, 1:7, "SU", "all")
+bvsn_pop(behavdir, savedir, parname, 1:7, "all", "all")
 
 %% Sort units into better/worse/same
 % syntax: split_condition(savedir, parname, ndays, unit_type, condition)
