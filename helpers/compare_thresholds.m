@@ -127,7 +127,7 @@ if savefile == 1
 end
 
 % plot
-cm = [77,127,208; 52,228,234; 2,37,81;]./255; % session colormap
+cm = [77,127,208; 96,216,216; 2,37,81;]./255;% session colormap
 f = figure;
 f.Position = [0, 0, 1200, 500];
 

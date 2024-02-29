@@ -5,9 +5,9 @@ parname = 'FiringRate';
 % parname = 'Power';
 % parname = 'VScc';
 
-% region = "IC";
+region = "IC";
 % region = "IC shell";
-region = "MGN";
+% region = "MGN";
 % region = "ACx";
 
 if region == "IC"
@@ -54,18 +54,18 @@ flag_cluster(savedir, 1, "323", "784", "MUA")
 % type: 'AM', 'NonAM'
 % depth: in dB; 0 -3 -6 -9 -12 -15 -18
 
-metrics_across_sessions(parname, spth, savedir, 1:7, 'CoV', 'AM', "SU", "all", -9, 0)
+metrics_across_sessions(parname, spth, savedir, 1:7, 'CoV', 'AM', "all", "all", -9, 1)
 
 %% Calculate AM/NonAM ratio
 % syntax: am_ratio(parname, spth, savedir, ndays, unit_type, condition, depth, savefile)
 
 % am_ratio(parname, spth, savedir, 1, "SU", "all", 0 ,0)
 
-am_ratio_combined(parname, spth, savedir, 1:7, "all", "all", -9 ,0)
+am_ratio_combined(parname, spth, savedir, 1:7, "all", "all", -9 ,1)
 
 %% CoV combined
 
-cov_combined(parname, spth, savedir, 1:7, 'AM', "SU", "all", -9 ,0)
+cov_combined(parname, spth, savedir, 1:7, 'AM', "all", "all", -9 ,1)
 
 %% Plot neurometric fits across sessions
 % syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
@@ -107,7 +107,7 @@ plot_histo(savedir, parname, 1, "all", "all", 24)
 
 % thresholds_across_sessions(spth, savedir, parname, 1:7, "SU", "all", 0)
 
-thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "all", "SU", "all", 1)
+thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "all", "SU", "all", 0)
 
 %% Plot dprime over days
 % syntax: plot_dprime(spth, savedir, parname, subj, unit_type, depth, condition, sv)
@@ -132,7 +132,7 @@ plot_dprime(spth, savedir, parname, "all", "SU", -9, "i", 0)
 fit_over_days(spth, savedir, parname, "all", "SU")
 
 %% Plot thresholds across days
-% syntax: plot_units(spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, savefile)
+% syntax: plot_units(spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, replace, savefile)
 
 % subj: "all", "202", "222", "223", "224", "267"
 
@@ -144,15 +144,15 @@ fit_over_days(spth, savedir, parname, "all", "SU")
 
 % save file?: 1 = yes, 0 = no
 
-plot_units(spth, behavdir, savedir, parname, 1:7, "all", "all", "all", 1)
+plot_units(spth, behavdir, savedir, parname, 1:7, "all", "all", "SU", "yes", 0)
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
 
-bvsn(behavdir, savedir, parname, 1:7, "670", "all", "all")
+bvsn(behavdir, savedir, parname, 1:7, "267", "SU", "all")
 
 %% Plot behavior vs neural for population
-% syntax: bvsn(behavdir, savedir, parname, ndays)
+% syntax: bvsn(behavdir, savedir, parname, ndays, unit_type, condition)
 
 bvsn_pop(behavdir, savedir, parname, 1:7, "all", "all")
 

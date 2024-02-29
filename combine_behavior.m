@@ -6,8 +6,6 @@ subjects(~[subjects.isdir]) = [];
 subjects(ismember({subjects.name},{'.','..'})) = [];
 
 maxdays = 17;
-
-t = nan(1,maxdays);
 thresholds = nan(length(subjects),maxdays);
 
 % extract output
@@ -20,11 +18,13 @@ for subj = 1:length(subjects)
     load(ffn)
     fprintf(' done\n')
     
+    t = nan(1,maxdays);
     for i = 1:length(output)
         t(i) = output(i).fitdata.threshold;
     end
-
+    
     thresholds(subj,1:length(t)) = t;
+    clear t
 end
 
 % calculate mean and std across days

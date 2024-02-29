@@ -58,6 +58,7 @@ yline(0)
 
 output = [];
 sex = ["M", "F"];
+av = {'Aversive', 'Active'};
 
 for i = ndays
     Ci_x = filterunits(savedir, parx, Cday, i, unit_type, condition);
@@ -65,62 +66,70 @@ for i = ndays
     
     Ci = union(Ci_x, Ci_y);
     
+    % replace NaN with 0
+    for j = 1:length(Ci)
+        if isnan(Ci(j).UserData.(parx).threshold)
+            Ci(j).UserData.(parx).threshold = 0;
+        end
+        
+        if isnan(Ci(j).UserData.(pary).threshold)
+            Ci(j).UserData.(pary).threshold = 0;
+        end
+    end
+    
     % only valid clusters
     id = [Ci.Name];
     uid = unique(id);
     
     % isolate units across sessions
-    for j = 1:length(uid)
-        ind = uid(j) == id;
+    for k = 1:length(uid)
+        ind = uid(k) == id;
         U = Ci(ind);
         
         % create output
         clear temp
+        x = ones(1,3);
+        y = ones(1,3);
+        px = ones(1,3);
+        py = ones(1,3);
         temp = {};
         
-        % get thresholds
-        x = nan(1,2);
-        y = nan(1,2);
-        
-        for k = 1:3
-            u = U(k);
-            sn = u.SessionName;
+        for j = 1:length(U)
             
-            if contains(sn, 'Post')
-                continue
-            elseif contains(sn, 'Pre')
-                xthr = u.UserData.(parx).threshold;
-                ythr = u.UserData.(pary).threshold;
-                
-                if isnan(xthr)
-                    x(1) = 0;
-                else
-                    x(1) = xthr;
-                end
-                
-                if isnan(ythr)
-                    y(1) = 0;
-                else
-                    y(1) = ythr;
-                end
-            else
-                xthr = u.UserData.(parx).threshold;
-                ythr = u.UserData.(pary).threshold;
-                
-                if isnan(xthr)
-                    x(2) = 0;
-                else
-                    x(2) = xthr;
-                end
-                
-                if isnan(ythr)
-                    y(2) = 0;
-                else
-                    y(2) = ythr;
-                end
-            end        
+            if contains(U(j).SessionName,'Pre')
+                x(1) = U(j).UserData.(parx).threshold;
+                y(1) = U(j).UserData.(pary).threshold;
+                px(1) = U(j).UserData.(parx).p_val;
+                py(1) = U(j).UserData.(pary).p_val;
+            end
+            
+            if contains(U(j).SessionName, av)
+                x(2) = U(j).UserData.(parx).threshold;
+                y(2) = U(j).UserData.(pary).threshold;
+                px(2) = U(j).UserData.(parx).p_val;
+                py(2) = U(j).UserData.(pary).p_val;
+            end
+            
+            if contains(U(j).SessionName, 'Post')
+                x(3) = U(j).UserData.(parx).threshold;
+                y(3) = U(j).UserData.(pary).threshold;
+                px(3) = U(j).UserData.(parx).p_val;
+                py(3) = U(j).UserData.(pary).p_val;
+            end
         end
         
+        x = x(1:2);
+        y = y(1:2);
+        
+        % set to nan if invalid
+        if all(px > 0.05)
+            x = zeros(1,3);
+        end
+        
+        if all(py > 0.05)
+            y = zeros(1,3);
+        end
+
         % ignore units that didnt change between pre and active
         if sum(x) == 0 && sum(y) == 0
             continue
@@ -130,10 +139,26 @@ for i = ndays
         xcomp = x(2)- x(1);
         ycomp = y(2)- y(1);
         V = sqrt(xcomp^2 + ycomp^2);
-        a = atan(ycomp/xcomp);
+        
+        if isnan(V)
+            V = 0;
+        end
+        
+        a = atand(ycomp/xcomp);
+        
+        % correct angle
+        if xcomp < 0
+            a = a - 180;
+        end
+        
+        if ycomp < 0
+            a = a - 180;
+        end
+        
+        a = deg2rad(abs(a));
         
         % get subject
-        subjid = split(u.Name, '_');
+        subjid = split(U(1).Name, '_');
         
         % get sex
         if contains(subjid(1), '228') || contains(subjid(1), '267')
@@ -143,7 +168,7 @@ for i = ndays
         end
         
         % add to list
-        temp{1} = uid(j);
+        temp{1} = uid(k);
         temp{2} = subjid(1);
         temp{3} = s;
         temp{4} = i;
@@ -158,7 +183,7 @@ end
 
 % convert to table
 output = cell2table(output);
-output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Magnitude", "X component", "Y component", "Angle"];
+output.Properties.VariableNames = ["Unit", "Subject", "Sex", "Day", "Magnitude", "X component", "Y component", "Angle"];
 
 % save as file
 sf = fullfile(savedir,append('vectors.csv'));

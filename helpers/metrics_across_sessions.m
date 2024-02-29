@@ -98,7 +98,7 @@ output.Properties.VariableNames = ["Unit", "Subject", "Sex","Day", "Type", "Sess
 
 % save as file
 if savefile == 1
-    sf = fullfile(savedir,append(Parname,'_',type, meas,'.csv'));
+    sf = fullfile(savedir,append('Spreadsheets\Task\',parname,'_',type, meas,'.csv'));
     fprintf('Saving file %s \n', sf)
     writetable(output,sf);
     fprintf(' done\n')

@@ -41,14 +41,16 @@ for i = ndays
     uid = unique(id);
     
     % isolate units across sessions
-    for j = 1:length(uid)
-        ind = uid(j) == id;
+    for k = 1:length(uid)
+        ind = uid(k) == id;
         U = Ci(ind);
         
         % create output
         clear temp
         tx = ones(1,3);
         ty = ones(1,3);
+        px = ones(1,3);
+        py = ones(1,3);
         temp = {};
         
         % get subject
@@ -56,20 +58,36 @@ for i = ndays
         
         % get thresholds
         for j = 1:length(U)
+            
             if contains(U(j).SessionName,'Pre')
                 tx(1) = U(j).UserData.(parx).threshold;
                 ty(1) = U(j).UserData.(pary).threshold;
+                px(1) = U(j).UserData.(parx).p_val;
+                py(1) = U(j).UserData.(pary).p_val;
             end
             
             if contains(U(j).SessionName, av)
                 tx(2) = U(j).UserData.(parx).threshold;
                 ty(2) = U(j).UserData.(pary).threshold;
+                px(2) = U(j).UserData.(parx).p_val;
+                py(2) = U(j).UserData.(pary).p_val;
             end
             
             if contains(U(j).SessionName, 'Post')
                 tx(3) = U(j).UserData.(parx).threshold;
                 ty(3) = U(j).UserData.(pary).threshold;
+                px(3) = U(j).UserData.(parx).p_val;
+                py(3) = U(j).UserData.(pary).p_val;
             end
+        end
+        
+        % set to nan if invalid
+        if all(px > 0.05)
+            tx = nan(1,3);
+        end
+        
+        if all(py > 0.05)
+            ty = nan(1,3);
         end
         
         % add to lists
@@ -111,24 +129,22 @@ set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 hold on
 
-scount = 0;
-mcount = 0;
-
 % only measureable active thresholds
 p = output(~isnan(output.yActive),:);
-tcount = height(p);
 
 % find multiplex
-midx = ~isnan(p.xActive);
-mp = p(midx,:);
-o = p(~midx,:);
+bidx = ~isnan(p.xPre);
+b = p(bidx,:);
+o = p(~bidx,:);
+midx = ~isnan(b.xActive);
+mp = b(midx,:);
 
 % plot each unit
-for i = 1:height(mp)
+for i = 1:height(b)
     
     % get thresholds
-    t1 = mp.xPre(i);
-    t2 = mp.yActive(i);
+    t1 = b.xPre(i);
+    t2 = b.yActive(i);
 
     % replace pre nans
     if isnan(t1)
@@ -142,8 +158,6 @@ for i = 1:height(mp)
         'MarkerEdgeColor',cm,...
         'MarkerFaceAlpha', 0.3,...
         'MarkerEdgeAlpha', 1);
-    
-    mcount = mcount+1;
 end
 
 for i = 1:height(o)
@@ -164,8 +178,6 @@ for i = 1:height(o)
         'MarkerEdgeColor',cm,...
         'MarkerFaceAlpha', 0.3,...
         'MarkerEdgeAlpha', 0);
-    
-    scount = scount+1;
 end
 
 
@@ -179,4 +191,4 @@ ylabel(ax,{s2;'threshold (dB)';pary});
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
-fprintf('%s total, %s switch strategy, %s also had active VS\n', num2str(tcount), num2str(tcount-scount), num2str(mcount))
+fprintf('%s total, %s switch strategy, %s also had active VS\n', num2str(height(p)), num2str(height(b)), num2str(height(mp)))

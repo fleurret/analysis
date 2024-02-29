@@ -103,7 +103,7 @@ for k = 1:3 % plot each session seperately
     
     % fit and corr
     
-    if isnan(xall)
+    if isnan(xall) | isnan(yall)
         continue
     end
     

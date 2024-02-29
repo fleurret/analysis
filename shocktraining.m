@@ -25,8 +25,7 @@ ax.FontSize = 20;
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
-% cm = [250, 180, 207; 203, 131, 230;
-cm = [131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97;]./255; % session colormap
+cm = [223, 143, 234; 155, 95, 224; 40, 83, 221; 145, 209, 249; 58, 186, 137; 190, 232, 163]./255; % session colormap
 
 % extract output
 for subj = 1:length(subjects)
@@ -74,7 +73,8 @@ A = [2.5212 NaN NaN NaN; 2.5887 NaN NaN NaN; 2.0385 2.0795 NaN NaN; 1.6331 2.025
 % plot
 for i = 1:length(A)
     x = [11 12 13 14];
-    y = A(i,:);
+% x = [11 12];
+y = A(i,:);
     
     line(x, y,...
         Marker = 'o',...

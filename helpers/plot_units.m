@@ -1,4 +1,4 @@
-function plot_units(spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, sv)
+function plot_units(spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, replace, sv)
 
 % Plot individual unit thresholds and means across days
 
@@ -63,9 +63,9 @@ valid = [];
 sessionName = ["Pre","Active","Post"];
 sex = ["M", "F"];
 
-cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
+cm = [77,127,208; 96,216,216; 2,37,81;]./255;% session colormap
 
-mk = '^^^';
+mk = 'ooo';
 xoffset = [.99, 1, 1.01];
 
 f = figure;
@@ -86,9 +86,11 @@ for i = ndays
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
     
         % replace NaN thresholds
-        for j = 1:length(Ci)
-            if isnan(Ci(j).UserData.(Parname).threshold)
-                Ci(j).UserData.(Parname).threshold = 0;
+        if replace == "yes"
+            for j = 1:length(Ci)
+                if isnan(Ci(j).UserData.(Parname).threshold)
+                    Ci(j).UserData.(Parname).threshold = 1;
+                end
             end
         end
     
@@ -174,7 +176,7 @@ for i = ndays
             'Marker',mk(j),...
             'Color',(cm(j,:)), ...
             'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',10,...
+            'MarkerSize',8,...
             'ButtonDownFcn',{@cluster_plot_callback,Ci(ind),xi(ind),thr{i}(ind),Parname});
         
         % means and error bars
@@ -198,7 +200,7 @@ for i = ndays
             'Marker',mk(j),...
             'Color',max(cm(j,:),0), ...
             'MarkerFaceColor',cm(j,:), ...
-            'MarkerSize',10);
+            'MarkerSize',8);
         
         % get info for output
         U = uinfo(ind);
@@ -218,7 +220,7 @@ for i = ndays
                 end
                 
                 TR = thr{i}(ind);
-                if isnan(TR(z))
+                if TR(z)==0 || isnan(TR(z))
                     valid = [valid, "0"];
                 else
                     valid = [valid, "1"];
@@ -391,7 +393,7 @@ if sv == 1
     output = array2table(output);
     output.Properties.VariableNames = ["Unit", "Subject", "Sex", "Day", "Threshold", "Session", "Validity"];
     
-    sf = fullfile(savedir,append(parname,'_threshold_zero.csv'));
+    sf = fullfile(savedir,append('Spreadsheets\Learning\',parname,'_threshold_SU_zero.csv'));
     fprintf('\n Saving file %s ...', sf)
     writetable(output,sf);
     fprintf(' done\n')
