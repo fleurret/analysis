@@ -1,21 +1,26 @@
-function plot_units(spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, replace, sv)
+function plot_units(region, spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, replace, sv)
 
 % Plot individual unit thresholds and means across days
 
 % correlation coefficient is set to Spearman's
 
 % convert parname to correct label
-if contains(parname,'FiringRate')
-    Parname = 'trial_firingrate';
-    titlepar = 'Firing Rate';
-    
-elseif contains(parname,'Power')
-    Parname = 'cl_calcpower';
-    titlepar = 'Power';
-    
-else contains(parname,'VScc')
-    Parname = 'vector_strength_cycle_by_cycle';
-    titlepar = 'VScc';
+if strcmp(region,"ACx") == 0
+    if contains(parname,'FiringRate')
+        Parname = 'trial_firingrate';
+        titlepar = 'Firing Rate';
+        
+    elseif contains(parname,'Power')
+        Parname = 'cl_calcpower';
+        titlepar = 'Power';
+        
+    else contains(parname,'VScc')
+        Parname = 'vector_strength_cycle_by_cycle';
+        titlepar = 'VScc';
+    end
+else
+    Parname = parname;
+    titlepar = parname;
 end
 
 % load behavior
@@ -69,7 +74,7 @@ mk = 'ooo';
 xoffset = [.99, 1, 1.01];
 
 f = figure;
-f.Position = [0, 0, 1200, 375];
+f.Position = [0, 0, 1000, 290];
 set(f,'color','w');
 clf(f);
 ax = subplot(121,'parent',f);
@@ -83,13 +88,17 @@ didx = thr;
 count = zeros(1,3);
 
 for i = ndays
-    Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
+    if strcmp(region,"ACx") == 1
+        Ci = filterunits_acx(savedir, Parname, Cday, i, unit_type, condition);
+    else
+        Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
+    end
     
         % replace NaN thresholds
         if replace == "yes"
             for j = 1:length(Ci)
                 if isnan(Ci(j).UserData.(Parname).threshold)
-                    Ci(j).UserData.(Parname).threshold = 1;
+                    Ci(j).UserData.(Parname).threshold = 0;
                 end
             end
         end
@@ -282,7 +291,7 @@ for i = 1:3
     
     hfitm(i) = line(ax(2),1+xi,yi, ...
         'Color',max(cm(i,:),0), ...
-        'DisplayName',sprintf('%s (%.2f)',sessionName(i),fo{i,2}.p1),...
+        'DisplayName',sprintf('n = %s (%.2f)',num2str(count(i)),fo{i,2}.p1),...
         'LineWidth',3);
     
 end
@@ -291,7 +300,7 @@ if ~any(hfit == 0)
     uistack(hfit,'bottom');
 end
 
-% Pearson's R
+% Spearman's R
 for i = 1:3
     smean = n_mean(i,:);
     z = ~(isnan(smean));
@@ -352,19 +361,19 @@ set([ax.XAxis], ...
     'TickLabels',arrayfun(@(a) num2str(a,'%d'),ndays,'uni',0),...
     'TickDir','out',...
     'TickLength', [0.02,0.02],...
-    'LineWidth', 1.5,...
-    'FontSize',12);
+    'LineWidth', 3,...
+    'FontSize', 16);
 set([ax.YAxis],...
     'TickDir','out',...,
     'TickLength', [0.02,0.02],...
-    'LineWidth', 1.5,...
-    'FontSize',12);
+    'LineWidth', 3,...
+    'FontSize', 16);
 ax(1).XLim = [0.8,1.95];
 ax(2).XLim = [0.8,1.95];
-ax(1).YTick = [-20 -15 -10 -5 0];
-ax(2).YTick = [-20 -15 -10 -5 0];
-ax(1).YLim = [-20,2];
-ax(2).YLim = [-20,2];
+ax(1).YTick = [-15 -10 -5 0];
+ax(2).YTick = [-15 -10 -5 0];
+ax(1).YLim = [-17,0];
+ax(2).YLim = [-17,0];
 
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
@@ -378,8 +387,8 @@ ylabel(ax,'Threshold (dB re: 100%)',...
 title(ax,sprintf('%s (n = %d)',titlepar,length(subjects)),...
     'FontSize',15);
 
-legend(hfit,'Location','southwest','FontSize',12, 'box', 'off');
-legend([hfitm,bfit],'Location','southwest','FontSize',12, 'box', 'off');
+legend(hfit,'Location','southwest','FontSize', 16, 'box', 'off');
+legend([hfitm,bfit],'Location','southwest','FontSize', 16, 'box', 'off');
 
 fprintf('Behavior R = %s, p = %s \n', num2str(b_PR(2)), num2str(b_P(2)))
 fprintf('Pre R = %s, p = %s \n', num2str(PR{1}), num2str(PRP{1}))
@@ -393,7 +402,7 @@ if sv == 1
     output = array2table(output);
     output.Properties.VariableNames = ["Unit", "Subject", "Sex", "Day", "Threshold", "Session", "Validity"];
     
-    sf = fullfile(savedir,append('Spreadsheets\Learning\',parname,'_threshold_SU_zero.csv'));
+    sf = fullfile(savedir,append('Spreadsheets\Learning\',parname,'_threshold_zero.csv'));
     fprintf('\n Saving file %s ...', sf)
     writetable(output,sf);
     fprintf(' done\n')

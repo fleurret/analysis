@@ -34,7 +34,7 @@ tc = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 % set figure
 f = figure;
-f.Position = [0, 0, 1500, 600];
+f.Position = [0, 0, 1000, 300];
 
 ax(1) = subplot(131,'parent',f);
 ax(2) = subplot(132,'parent',f);
@@ -51,34 +51,34 @@ set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
 for i = 1:length(ax)
-    ax(i).XLim = [-20, -5];
-    ax(i).YLim = [-15, 0];
+    ax(i).XLim = [-20, 0];
+    ax(i).YLim = [-20, -5];
 end
 
 set([ax.XAxis], ...
-    'FontSize',12);
+    'FontSize',16);
 set([ax.YAxis],...
-    'FontSize',12);
+    'FontSize',16);
 
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
-xlabel(ax,'Behavioral threshold (dB re: 100%)',...
+xlabel(ax,'Neural threshold (dB re: 100%)',...
     'FontWeight','bold',...
-    'FontSize', 12);
-ylabel(ax,'Neural threshold (dB re: 100%)',...
+    'FontSize', 16);
+ylabel(ax,'Behavioral threshold (dB re: 100%)',...
     'FontWeight','bold',...
-    'FontSize', 12);
+    'FontSize', 16);
 
 % neural data
 thr = cell(size(days));
 sidx = thr;
 
-xall = nan(length(subjs),7);
-yall = cell(1,3);
+yall = nan(length(subjs),7);
+xall = cell(1,3);
 
-for i = 1:length(yall)
-    yall{i} = nan(length(subjs),7);
+for i = 1:length(xall)
+    xall{i} = nan(length(subjs),7);
 end
 
 for j = 1:length(subjs)
@@ -91,7 +91,7 @@ for j = 1:length(subjs)
     
     fitdata = [output.fitdata];
     bthr = [fitdata.threshold];
-    xall(j,:) = bthr(ndays);
+    yall(j,:) = bthr(ndays);
     
     for i = ndays
         Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
@@ -125,11 +125,11 @@ for j = 1:length(subjs)
             ind = sidx{i} == k;
             
             % neural means
-            yi = mean(thr{i}(ind),'omitnan');
-            yall{k}(j,i) = yi;
+            xi = mean(thr{i}(ind),'omitnan');
+            xall{k}(j,i) = xi;
             
             % plot
-            scatter(ax(k),bthr(i),yi,...
+            scatter(ax(k),xi,bthr(i),...
                 'Marker', 'o',...
                 'SizeData', 80,...
                 'MarkerFaceColor', cm(j,:),...
@@ -141,24 +141,24 @@ end
 
 % fit and corr
 for k = 1:3
-    sthr = yall{k};
+    sthr = xall{k};
     sz = size(sthr);
     sthr = reshape(sthr,1,sz(1)*sz(2));
-    xthr = reshape(xall,1,sz(1)*sz(2));
+    ythr = reshape(yall,1,sz(1)*sz(2));
     
     idx = isnan(sthr);
-    xf = xthr(~idx);
-    yf = sthr(~idx);
+    xf = sthr(~idx);
+    yf = ythr(~idx);
     
     coefficients = polyfit(xf, yf, 1);
     xFit = linspace(min(xf), max(xf), 1000);
     yFit = polyval(coefficients , xFit);
     
     hfit(k) = line(ax(k),xFit,yFit, ...
-        'Color',tc(k,:), ...
+        'Color','k', ...
         'LineWidth',3);
     
-    [R,P] = corrcoef(xthr,sthr,'rows','complete');
+    [R,P] = corrcoef(sthr,ythr,'rows','complete');
     PR{k} = R;
     PRP{k} = P;
 end

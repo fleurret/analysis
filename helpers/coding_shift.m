@@ -109,7 +109,7 @@ output.Properties.VariableNames = ["Unit", "Subject", "xPre", "xActive", "xPost"
 
 % plot
 f = figure;
-f.Position = [0, 0, 600, 600];
+f.Position = [0, 0, 600, 425];
 cm = [183, 134, 188]./255;
 
 % set plot
@@ -119,10 +119,8 @@ set(gca, 'TickDir', 'out',...
     'TickLength', [0.02,0.02],...
     'TickDir', 'out',...
     'LineWidth', 1.5,...
-    'XDir', 'reverse',...
-    'YDir', 'reverse',...
-    'XLim', [-21 5],...
-    'YLim', [-21 5],...
+    'XLim', [-25 5],...
+    'YLim', [-15 0],...
     'XAxisLocation', "origin",...
     'YAxisLocation', "origin");
 set(findobj(ax,'-property','FontName'),...
@@ -136,15 +134,16 @@ p = output(~isnan(output.yActive),:);
 bidx = ~isnan(p.xPre);
 b = p(bidx,:);
 o = p(~bidx,:);
-midx = ~isnan(b.xActive);
-mp = b(midx,:);
+midx = ~isnan(p.xActive);
+mp = p(midx,:);
+s = p(~midx,:);
 
 % plot each unit
-for i = 1:height(b)
+for i = 1:height(mp)
     
     % get thresholds
-    t1 = b.xPre(i);
-    t2 = b.yActive(i);
+    t1 = mp.xPre(i);
+    t2 = mp.yActive(i);
 
     % replace pre nans
     if isnan(t1)
@@ -153,18 +152,18 @@ for i = 1:height(b)
     
     scatter(ax, t1, t2,...
         'Marker','o',...
-        'SizeData', 100,...
+        'SizeData', 150,...
         'MarkerFaceColor',cm,...
         'MarkerEdgeColor',cm,...
         'MarkerFaceAlpha', 0.3,...
         'MarkerEdgeAlpha', 1);
 end
 
-for i = 1:height(o)
+for i = 1:height(s)
     
     % get thresholds
-    t1 = o.xPre(i);
-    t2 = o.yActive(i);
+    t1 = s.xPre(i);
+    t2 = s.yActive(i);
 
     % replace pre nans
     if isnan(t1)
@@ -173,18 +172,15 @@ for i = 1:height(o)
     
     scatter(ax, t1, t2,...
         'Marker','o',...
-        'SizeData', 100,...
+        'SizeData', 150,...
         'MarkerFaceColor',cm,...
         'MarkerEdgeColor',cm,...
         'MarkerFaceAlpha', 0.3,...
         'MarkerEdgeAlpha', 0);
 end
 
-
 xline(0)
 yline(0)
-axis(ax,'equal');
-axis(ax,'square');
 
 xlabel(ax,{s1;'threshold (dB)';parx});
 ylabel(ax,{s2;'threshold (dB)';pary});

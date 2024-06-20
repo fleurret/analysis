@@ -1,4 +1,4 @@
-function fit_over_sessions_rep(spth, savedir, parname, ndays, unit_type, condition, cn)
+function metrics_across_depth_rep(spth, savedir, parname, ndays, unit_type, condition, cn)
 
 % Plot individual unit thresholds and means across days
 
@@ -43,8 +43,8 @@ f = figure;
 f.Position = [0, 0, 500, 600];
 
 ax = gca;
-xlim([-13, -0])
-ylim([-0.5,2.5]);
+xlim([-20, 0])
+ylim([0, 50]);
 
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
@@ -56,7 +56,7 @@ didx = DV;
 % neural data
 for i = ndays
     Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
-
+    
     s = [Ci.Name];
     units = unique(s);
     
@@ -100,26 +100,41 @@ for i = ndays
         sidx{i}(contains(sn,"Post")) = 3;
         
         vals = {dd.vals};
-%         weights = {dd.weights};
-%         
-        for j = 1:3 % plot each session seperately
-            session = dprimes{j};
-            session = session';
-            v = vals{j};
-            v = v';
-%             w = weights{j};
-%             w = w';
-%             
-%             [xfit,yfit] = epa.analysis.fit_sigmoid(v,session, w);
+        %         weights = {dd.weights};
+        
+        %       get values
+        for j = 1:3
+            u = U(j);
+            depths = vals{j};
+            
+            clear yvals
+            clear stds
+          
+            for k = 1:length(depths)
+                depth = depths(k);
+                [mAM, mNAM, cAM, cNAM] = calc_mas(u, Parname, depth);
+                yvals(k) = mAM;
+                stds(k) = cAM*mAM;
+            end
             
             hold on
-            plot(dd(j).xfit,dd(j).yfit,...
-                'Color', cm(j,:),...
-                'LineWidth', 8)
-            scatter(v, session, 120,...
+            scatter(depths, yvals, 120,...
                 'MarkerFaceColor', cm(j,:),...
-                'MarkerFaceAlpha', 0.5,...
-                'MarkerEdgeAlpha', 0)
+                'MarkerEdgeAlpha',0)
+            scatter(-18, mNAM, 120,...
+                'MarkerFaceColor', cm(j,:),...
+                'MarkerEdgeAlpha',0)
+            line(depths,yvals,...
+                'Color', cm(j,:),...
+                'LineWidth', 2)
+            errorbar(depths,yvals,stds,...
+                'Color', cm(j,:),...
+                'CapSize', 0,...
+                'LineWidth', 0.75)
+            errorbar(-18, mNAM, cNAM*mNAM,...
+                'Color', cm(j,:),...
+                'CapSize', 0,...
+                'LineWidth', 0.75)
             legend('Pre','','Active','','Post',...
                 'location', 'northwest',...
                 'FontSize', 24)
@@ -144,6 +159,6 @@ ax(1).YAxis.Label.Rotation = 90;
 xlabel(ax,'dB SPL re: 100%',...
     'FontWeight','bold',...
     'FontSize', 36);
-ylabel(ax,'d''',...
+ylabel(ax,parname,...
     'FontWeight','bold',...
     'FontSize', 36);

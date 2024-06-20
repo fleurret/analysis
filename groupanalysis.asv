@@ -5,9 +5,9 @@ parname = 'FiringRate';
 % parname = 'Power';
 % parname = 'VScc';
 
-% region = "IC";
+region = "IC";
 % region = "IC shell";
-region = "MGN";
+% region = "MGN";
 % region = "ACx";
 
 if region == "IC"
@@ -85,26 +85,26 @@ fit_over_sessions(spth, savedir, parname, "all", "SU")
 
 % cn = which number unit
 
-fit_over_sessions_rep(spth, savedir, parname, 1, "all", "all", 24)
+fit_over_sessions_rep(spth, savedir, parname, 2, "SU", "all", 15)
 
 %%
 
-metrics_across_depth_rep(spth, savedir, parname, 1, "all", "all", 24)
+metrics_across_depth_rep(spth, savedir, parname, 1, "SU", "all", 7)
 
 %% Plot histograms for each unit
 % plot_histo(savedir, parname, ndays, unit_type, condition, cn, figpath)
 
-figpath = 'D:\Caras\Manuscripts\Ying JNeuro 2024\Figures\Panels\MGN\fr\representative';
+figpath = 'D:\Caras\Manuscripts\Ying JNeuro 2024\Figures\Panels\IC\fr\representative';
 
 % IC
-% plot_histo(savedir, parname, 1, "all", "all", 10, figpath)
+plot_histo(savedir, parname, 1, "all", "all", 10, figpath)
 
 % plot_histo(savedir, parname, 1, "SU", "all", 12, figpath)
 % plot_histo(savedir, parname, 1, "SU", "all", 19, figpath)
 % plot_histo(savedir, parname, 3, "SU", "all", 7, figapth)
 
 % MGN
-plot_histo(savedir, parname, 1, "all", "all", 24, figpath)
+% plot_histo(savedir, parname, 1, "all", "all", 24, figpath)
 
 % plot_histo(savedir, parname, 1, "SU", "all", 7, figpath)
 % plot_histo(savedir, parname, 1, "SU", "all", 27, figpath)
@@ -138,7 +138,7 @@ thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "all", "SU", "a
 
 % save file?: 1 = yes, 0 = no
 
-% plot_dprime(spth, savedir, parname, "all", "SU", -9, "i", 0)
+plot_dprime(spth, savedir, parname, "all", "SU", -9, "i", 0)
 
 %% Plot neurometric fits over days
 % syntax: fit_over_days(spth, savedir, parname, subj, unit_type)

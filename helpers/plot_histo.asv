@@ -63,7 +63,7 @@ for i = ndays
                 
                 % PSTH
                 nexttile([1 1])
-                psth = epa.plot.PSTH(Ck,'event',"AMDepth",'eventvalue',depth);
+                psth = epa.plot.PSTH(Ck,'event',"AMDepth",'eventvalue',ev);
                 [fr,b,~] = Ck.psth(psth);
                 bar(b,fr,...
                     'EdgeAlpha',0,...
@@ -71,13 +71,13 @@ for i = ndays
                 ylim([0 150]);
                 
                 % raster
-                nexttile([2 1])
-                r = epa.plot.Raster(Ck,'event',"AMDepth",'eventvalue',ev);
+                nexttile([2)
+                r = epa.plot.Raster(Ck,'event',"AMDepth",'eventvalue',depth);
                 r.plot;
                 
                 % save figure
-                ffn = fullfile(currentfolder,append(num2str(depth),'.svg'));
-                saveas(y, ffn)
+%                 ffn = fullfile(currentfolder,append(num2str(depth),'.svg'));
+%                 saveas(y, ffn)
             end
         end
     end

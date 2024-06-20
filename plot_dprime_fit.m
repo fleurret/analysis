@@ -1,10 +1,10 @@
 % parentDir = 'D:\Caras\Analysis\Caspase\Acquisition\Control\512';
-parentDir = 'D:\Caras\Analysis\MGB recordings\Behavior\670';
-behav_file = fullfile(parentDir,'SUBJ-ID-670_allSessions.mat');
+parentDir = 'D:\Caras\Analysis\IC recordings\Behavior\202';
+behav_file = fullfile(parentDir,'SUBJ-ID-202_allSessions.mat');
 load(behav_file)
 %%
 f = figure;
-f.Position = [0, 0, 600 600];
+f.Position = [0, 0, 600 400];
 f.Resize = 'off';
 hold on
 
@@ -23,7 +23,7 @@ ax.TickLength = [0.02,0.02];
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')
 
-cm = [250, 180, 207; 203, 131, 230; 131, 107, 209; 88, 130, 207; 51, 179, 229; 138, 222, 166; 212, 226, 97; 249, 226, 128; 242, 187, 64; 244, 145, 96;]./255; % session colormap
+cm = [131,31,94; 181,37,126; 206,71,148; 240,122,174; 241,157,196; 243,181,210; 250,211,228]./255; % session colormap
 %% one fit
 % day 1
 x = output(1).fitdata.fit_plot.x([413:870]);
@@ -42,7 +42,7 @@ set(gca, 'XLimMode', 'manual', 'XLim', [-27 2])
 set(gca, 'YLimMode', 'manual', 'YLim', [-0.25 3.2])
 
 %% all fits
-for i = 1:10
+for i = 1:7
     x = output(i).fitdata.fit_plot.x([413:870]);
     y = output(i).fitdata.fit_plot.dprime([413:870]);
     p = plot(x,y);
@@ -67,7 +67,7 @@ legend boxoff
 
 %% thresholds over days
 f = figure;
-f.Position = [0, 0, 600 300];
+f.Position = [0, 0, 600 400];
 f.Resize = 'off';
 hold on
 
@@ -94,12 +94,12 @@ for i = x
     s.MarkerEdgeAlpha = 0;
 end
 
-set(gca, 'XLimMode', 'manual', 'XLim', [0.9 11])
-set(gca, 'YLimMode', 'manual', 'YLim', [-20 0])
+set(gca, 'XLimMode', 'manual', 'XLim', [0.9 8])
+set(gca, 'YLimMode', 'manual', 'YLim', [-20 -8])
 set(gca, 'XScale', 'log')
 
-xticks([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-yticks([-20, -15, -10, -5, 0])
+xticks([1, 2, 3, 4, 5, 6, 7])
+yticks([-20, -15, -10, -5])
 xlabel('Psychometric Testing Day',...
     'FontSize', 16,...
     'FontWeight','bold')

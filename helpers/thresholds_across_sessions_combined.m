@@ -128,7 +128,8 @@ if savefile == 1
 end
 
 % replace nans with 5 for visualization
-output.Threshold(isnan(output.Threshold)) = 5;
+vis_output = output;
+vis_output.Threshold(isnan(vis_output.Threshold)) = 5;
 
 % one sex
 % idx = output.Sex == "M";
@@ -169,7 +170,7 @@ for d = day
         'MarkerSize', 18,...
         'LineWidth', 2)
     
-  units = table2struct(output);
+  units = table2struct(vis_output);
     
     currentday = [units.Day] == d;
     means = [units.Threshold];
@@ -185,8 +186,8 @@ for d = day
     [~, cols] = size(meantable);
     
     for j = 1:cols
-%         if d == 1 && j == 27 || d == 1 && j == 7 || d == 4 && j == 4
-        if d == 1 && j == 24
+        if d == 1 && j == 27 || d == 1 && j == 7 || d == 4 && j == 4
+%         if d == 1 && j == 10
             scatter(x,meantable(:,j), 120,...
                 'Marker','o',...
                 'MarkerFaceColor', '#cb83e6',...

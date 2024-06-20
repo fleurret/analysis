@@ -12,7 +12,7 @@ load(ffn)
 
 fitdata = [output.fitdata];
 bthr = [fitdata.threshold];
-xall = bthr(ndays);
+yall = bthr(ndays);
 
 % load neural
 fn = 'Cday_original.mat';
@@ -39,7 +39,7 @@ cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 
 % set figure
 f = figure;
-f.Position = [0, 0, 1500, 600];
+f.Position = [0, 0, 1000, 300];
 hold on
 
 ax(1) = subplot(131,'parent',f);
@@ -50,7 +50,7 @@ ax(3) = subplot(133,'parent',f);
 thr = cell(size(days));
 sidx = thr;
 
-yall = nan(1,7);
+xall = nan(1,7);
 
 for k = 1:3 % plot each session seperately
     for i = ndays
@@ -90,7 +90,7 @@ for k = 1:3 % plot each session seperately
         
         % neural means
         xi = mean(thr{i}(ind),'omitnan');
-        yall(i) = xi;
+        xall(i) = xi;
         
     end
     
@@ -107,7 +107,7 @@ for k = 1:3 % plot each session seperately
         continue
     end
     
-    idx = isnan(yall);
+    idx = isnan(xall);
     xf = xall(~idx);
     yf = yall(~idx);
     
@@ -135,23 +135,23 @@ for k = 1:3 % plot each session seperately
     set(findobj(ax,'-property','FontName'),...
         'FontName','Arial')
 
-    ax(k).XLim = [-20,-5];
-    ax(k).YLim = [-15,0];
+    ax(k).XLim = [-20,0];
+    ax(k).YLim = [-20,-5];
     
     set([ax.XAxis], ...
-        'FontSize',12);
+        'FontSize',16);
     set([ax.YAxis],...
-        'FontSize',12);
+        'FontSize',16);
     
     set(findobj(ax,'-property','FontName'),...
         'FontName','Arial')
     
-    xlabel(ax,'Behavioral threshold (dB re: 100%)',...
+    ylabel(ax,'Behavioral threshold (dB re: 100%)',...
         'FontWeight','bold',...
-        'FontSize', 12);
-    ylabel(ax,'Neural threshold (dB re: 100%)',...
+        'FontSize', 16);
+    xlabel(ax,'Neural threshold (dB re: 100%)',...
         'FontWeight','bold',...
-        'FontSize', 12);
+        'FontSize', 16);
     
     if k == 2
         fprintf('Slope = %s \n', num2str(coefficients(1)))
