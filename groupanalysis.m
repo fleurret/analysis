@@ -7,8 +7,8 @@ parname = 'FiringRate';
 
 % region = "IC";
 % region = "IC shell";
-region = "MGN";
-% region = "ACx";
+% region = "MGN";
+region = "ACx";
 
 if region == "IC"
     spth = 'D:\Caras\Analysis\IC recordings\Data\';
@@ -85,26 +85,26 @@ fit_over_sessions(spth, savedir, parname, "all", "SU")
 
 % cn = which number unit
 
-fit_over_sessions_rep(spth, savedir, parname, 1, "all", "all", 24)
+fit_over_sessions_rep(spth, savedir, parname, 3, "SU", "all", 7)
 
 %%
 
-metrics_across_depth_rep(spth, savedir, parname, 1, "all", "all", 24)
+metrics_across_depth_rep(spth, savedir, parname, 3, "SU", "all", 7)
 
 %% Plot histograms for each unit
 % plot_histo(savedir, parname, ndays, unit_type, condition, cn, figpath)
 
-figpath = 'D:\Caras\Manuscripts\Ying JNeuro 2024\Figures\Panels\MGN\fr\representative';
+figpath = 'D:\Caras\Manuscripts\Ying JNeuro 2024\Figures\Panels\IC\vscc\representative 3';
 
 % IC
 % plot_histo(savedir, parname, 1, "all", "all", 10, figpath)
 
 % plot_histo(savedir, parname, 1, "SU", "all", 12, figpath)
 % plot_histo(savedir, parname, 1, "SU", "all", 19, figpath)
-% plot_histo(savedir, parname, 3, "SU", "all", 7, figapth)
+plot_histo(savedir, parname, 3, "SU", "all", 7, figpath)
 
 % MGN
-plot_histo(savedir, parname, 1, "all", "all", 24, figpath)
+% plot_histo(savedir, parname, 1, "all", "all", 24, figpath)
 
 % plot_histo(savedir, parname, 1, "SU", "all", 7, figpath)
 % plot_histo(savedir, parname, 1, "SU", "all", 27, figpath)
@@ -162,17 +162,19 @@ thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "all", "SU", "a
 
 % save file?: 1 = yes, 0 = no
 
-plot_units(region, spth, behavdir, savedir, parname, 1:7, "all", "all", "all", "yes", 0)
+plot_units(region, spth, behavdir, savedir, parname, 1:7, "all", "all", "all", "yes", 1)
+
+output(region, spth, behavdir, savedir, parname, 1:7, "all", "all", "all", "yes", 1)
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
 
-bvsn(behavdir, savedir, parname, 1:7, "222", "SU", "all")
+bvsn(behavdir, savedir, parname, 1:7, "223", "all", "all")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, ndays, unit_type, condition)
 
-bvsn_pop(behavdir, savedir, parname, 1:7, "SU", "all")
+bvsn_pop(behavdir, savedir, parname, 1:7, "all", "all")
 
 %% Sort units into better/worse/same
 % syntax: split_condition(savedir, parname, ndays, unit_type, condition)

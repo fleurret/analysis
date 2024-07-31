@@ -2,8 +2,8 @@
 % expecting invidual SUBJ folders with Session mat files, one for each day
 % pth = 'C:\Users\rose\Documents\Caras\Analysis\IC recordings\Data';
 % pth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data';
-% pth = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\Reformatted';
-pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
+pth = 'D:\Caras\Analysis\ACx recordings\Reformatted\';
+% pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 
 % icc
 % subj = '202';
@@ -18,12 +18,12 @@ pth = 'C:\Users\rose\Documents\Caras\Analysis\MGB recordings\Data';
 
 % vmgb
 % subj = '322';
-subj = '323';
+% subj = '323';
 % subj = '378';
 % subj = '380';
 
 % acx
-% subj = 'BBBFluffy_221955';
+subj = 'BBBFluffy_221955';
 % subj = 'HHHBack_222724';
 % subj = 'HHHRight_222725';
 % subj = 'XXFluffy_217821';
@@ -91,8 +91,8 @@ par.modfreq = 5;
 
 parname = [];
 
-% par.metric = @epa.metric.trial_firingrate; parname = 'FiringRate';
-par.metric = @epa.metric.cl_calcpower; parname = 'Power';
+par.metric = @epa.metric.trial_firingrate; parname = 'FiringRate';
+% par.metric = @epa.metric.cl_calcpower; parname = 'Power';
 % par.metric = @epa.metric.vector_strength_cycle_by_cycle; parname = 'VScc';
 
 % currently unused metrics
@@ -151,6 +151,9 @@ for i = 1:length(d)
             V(ind)  = -120;
         end
         
+        if isempty(dp)
+            dp = 1;
+        end
         % store the results along with the Cluster object
         Ck.UserData.(parname) = [];
         Ck.UserData.(parname).M      = M;

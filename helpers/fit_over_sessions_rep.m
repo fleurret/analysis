@@ -40,11 +40,11 @@ cm = [77,127,208; 52,228,234; 2,37,81;]./255;% session colormap
 mk = '^^^';
 
 f = figure;
-f.Position = [0, 0, 500, 600];
+f.Position = [0, 0, 450, 450];
 
 ax = gca;
-xlim([-13, -0])
-ylim([-0.5,2.5]);
+xlim([-20, -6])
+ylim([0,2]);
 
 set(findobj(ax,'-property','FontName'),...
     'FontName','Arial')

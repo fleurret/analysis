@@ -139,7 +139,7 @@ vis_output.Threshold(isnan(vis_output.Threshold)) = 5;
 cm = [3, 7, 30; 55, 6, 23; 106, 4, 15; 157, 2, 8; 208, 0, 0; 220, 47, 2; 232, 93, 4;]./255; % session colormap
 
 f = figure;
-f.Position = [0, 0, 500, 625];
+f.Position = [0, 0, 500, 600];
 
 
 x = 1:3;
@@ -186,7 +186,7 @@ for d = day
     [~, cols] = size(meantable);
     
     for j = 1:cols
-        if d == 1 && j == 27 || d == 1 && j == 7 || d == 4 && j == 4
+        if d == 1 && j == 12 || d == 1 && j == 19 || d == 3 && j == 7
 %         if d == 1 && j == 10
             scatter(x,meantable(:,j), 120,...
                 'Marker','o',...
@@ -226,5 +226,5 @@ ylabel(ax,'Threshold (dB re: 100%)',...
     'FontSize', 36,...
     'FontWeight', 'bold');
 xlim([0.8 3])
-ylim([-25 5])
+ylim([-30 5])
 

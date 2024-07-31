@@ -147,7 +147,17 @@ for i = ndays
     
     y = arrayfun(@(a) a.UserData.(Parname),Ci,'uni',0);
     ind = cellfun(@(a) isfield(a,'ERROR'),y);
-    uinfo = arrayfun(@(a) a.Name, Ci);
+    
+    if strcmp(region,"ACx") == 1
+        subjinfo = arrayfun(@(a) a.Subject, Ci);
+        uinfo = arrayfun(@(a) a.Name, Ci);
+        
+        for z = 1:length(uinfo)
+           uinfo(z) = append(subjinfo(z), '_',uinfo(z));
+        end
+    else
+        uinfo = arrayfun(@(a) a.Name, Ci);
+    end
     
     y(ind) = [];
     Ci(ind) = [];
@@ -219,8 +229,10 @@ for i = ndays
         else
             
             for z = 1:length(U)
-                Subj = split(U(z), '_cluster');
-                subjlist(z) = Subj(1);
+                if strcmp(region,"ACx") == 0
+                    Subj = split(U(z), '_cluster');
+                    subjlist(z) = Subj(1);
+                end
                 
                 if contains(U(z), '228') || contains(U(z), '267')
                     sx = [sx, sex(1)];
@@ -234,6 +246,10 @@ for i = ndays
                 else
                     valid = [valid, "1"];
                 end
+            end
+            
+            if region == "ACx"
+                subjlist = subjinfo(ind);
             end
             
             unit = [unit; U'];

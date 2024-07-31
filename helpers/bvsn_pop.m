@@ -52,7 +52,7 @@ set(findobj(ax,'-property','FontName'),...
 
 for i = 1:length(ax)
     ax(i).XLim = [-20, 0];
-    ax(i).YLim = [-20, -5];
+    ax(i).YLim = [-20, 0];
 end
 
 set([ax.XAxis], ...

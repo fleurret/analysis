@@ -1,64 +1,38 @@
-function plot_raster(savedir, parname, ndays, unit_type, condition, cn)
+function plot_raster(Ck)
 
-% convert parname to correct label
-if contains(parname,'FiringRate')
-    Parname = 'trial_firingrate';
-    
-elseif contains(parname,'Power')
-    Parname = 'cl_calcpower';
-    
-else contains(parname,'VScc')
-    Parname = 'vector_strength_cycle_by_cycle';
-end
+spiketimes = Ck.SpikeTimes;
+numspikes = Ck.nSpikes;
+fs = Ck.SamplingRate;
 
-fn = 'Cday_';
-fn = strcat(fn,(parname),'.mat');
+% for each depth
+depths = Ck.UserData.trial_firingrate.vals;
+events = Ck.Session.Events;
 
-if ~exist(fullfile(savedir,fn))
-    fn = 'Cday_original.mat';
-end
+% eventlocked
+[v, oot] = subset(events);
+vidx = 1:length(v);
+oot = oot(vidx);
 
-load(fullfile(savedir,fn));
 
-for i = ndays
-    Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
+trials=ceil(times/triallen);
+reltimes=mod(times,triallen);
+reltimes(~reltimes)=triallen;
 
-    s = [Ci.Name];
-    units = unique(s);
-    
-    if cn > length(units)
-        error('Unit does not exist :(')
-    end
-    
-    % only the representative unit
-    for j = cn
-        uidx = units(j) == s;
-        Cj = Ci(uidx);
+xx=ones(3*numspikes,1)*nan;
+yy=ones(3*numspikes,1)*nan;
 
-        for k = 1:3
-            Ck = Cj(k);
-            ev = Ck.Session.find_Event("AMDepth").DistinctValues;
-            ev(ev==0) = [];
-            
-            y = figure;
-            y.Position = [0, 0, 500, 2000];
-            z = tiledlayout('flow');
-            
-%             if length(ev) > 5
-%                 ev = ev(end-4:end);
-%             end
+yy(1:3:3*numspikes)=(trials-1)*1.5;
+yy(2:3:3*numspikes)=yy(1:3:3*numspikes)+1;
 
-            h = epa.plot.Raster(Ck,'event',"AMDepth",'eventvalue',ev);
-            
-            figure
-            h.plot;
-            
-            sn = Ck.SessionName;
-            cluster = Ck.TitleStr;
-            
-            ztitle = append(cluster, ' ',sn);
-            title(z, ztitle)
-            
-        end
-    end
-end
+%scale the time axis to ms
+xx(1:3:3*numspikes)=reltimes*1000/fs;
+xx(2:3:3*numspikes)=reltimes*1000/fs;
+xlim=[1,triallen*1000/fs];
+
+axes(hresp);
+h = plot(xx, yy, k,...
+    'LineWidth',1);
+axis ([xlim,0,(numtrials)*1.5]);
+
+xlabel('Time(ms)');
+ylabel('Trials');

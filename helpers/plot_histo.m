@@ -51,9 +51,9 @@ for i = ndays
             % plot each depth
             for d = 1:length(ev)
                 
-                y = figure;
+                y = figure('visible','off');
                 y.Position = [0, 0, 500, 600];
-                tiledlayout(4,1)
+                tiledlayout(3,1)
                 
                 depth = ev(d);
 
@@ -71,9 +71,10 @@ for i = ndays
                 ylim([0 150]);
                 
                 % raster
-                nexttile([2 1])
+                nexttile([1 1])
                 r = epa.plot.Raster(Ck,'event',"AMDepth",'eventvalue',ev);
-                r.plot;
+                r.plot();
+%                 plot_raster(Ck);
                 
                 % save figure
                 ffn = fullfile(currentfolder,append(num2str(depth),'.svg'));

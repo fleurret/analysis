@@ -136,7 +136,7 @@ for k = 1:3 % plot each session seperately
         'FontName','Arial')
 
     ax(k).XLim = [-20,0];
-    ax(k).YLim = [-20,-5];
+    ax(k).YLim = [-20,0];
     
     set([ax.XAxis], ...
         'FontSize',16);

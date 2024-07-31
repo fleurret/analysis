@@ -18,33 +18,33 @@ for i = 1:length(days)
     Ci = Cday{i};
     id = [Ci.Name];
     uid = unique(id);
-    uidx = contains(uid, 'SUBJ-ID-670');
-    
-    idx = contains(id, 'SUBJ-ID-670');
-    p = Ci(idx);
-    s = s + length(p);
-    
-    for j = 1:length(p)
-        if p(j).Note == "dorsal"
-            hist = hist+1;
-            flaggedForRemoval(end+1) = p(j).Name;
-        end
-    end
-    
-    flagged = unique(flaggedForRemoval);
-    hidx = false(1,length(uid));
-    
-    for j = 1:length(uid)
-        if ismember(uid(j),flagged)
-            hidx(j) = 0;
-        else
-            hidx(j) = 1;
-        end
-    end
-    
-    uid = uid(~hidx);
-    num = length(uid);
-    c = c+num;
+%     uidx = contains(uid, 'SUBJ-ID-670');
+%     
+%     idx = contains(id, 'SUBJ-ID-670');
+%     p = Ci(idx);
+%     s = s + length(p);
+%     
+%     for j = 1:length(p)
+%         if p(j).Note == "dorsal"
+%             hist = hist+1;
+%             flaggedForRemoval(end+1) = p(j).Name;
+%         end
+%     end
+%     
+%     flagged = unique(flaggedForRemoval);
+%     hidx = false(1,length(uid));
+%     
+%     for j = 1:length(uid)
+%         if ismember(uid(j),flagged)
+%             hidx(j) = 0;
+%         else
+%             hidx(j) = 1;
+%         end
+%     end
+%     
+%     uid = uid(~hidx);
+%     num = length(uid);
+%     c = c+num;
         
     for j = 1:length(uid)
         ind = uid(j) == id;
