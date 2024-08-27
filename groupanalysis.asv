@@ -1,14 +1,14 @@
 %% Set directories - run first!
 
 % which metric to use
-parname = 'FiringRate';
+% parname = 'FiringRate';
 % parname = 'Power';
-% parname = 'VScc';
+parname = 'VScc';
 
 % region = "IC";
 % region = "IC shell";
-% region = "MGN";
-region = "ACx";
+region = "MGN";
+% region = "ACx";
 
 if region == "IC"
     spth = 'D:\Caras\Analysis\IC recordings\Data\';
@@ -33,6 +33,8 @@ if region == "ACx"
     savedir = 'D:\Caras\Analysis\ACx recordings\';
     behavdir = 'D:\Caras\Analysis\ACx recordings\Behavior\';
 end
+%%
+bvsn(behavdir, savedir, parname, 1:7, "267", "all", "all")
 
 %% Load .mat and convert neural data
 % only needs to be run whenever new data is added
@@ -127,28 +129,6 @@ plot_histo(savedir, parname, 3, "SU", "all", 7, figpath)
 
 thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "all", "SU", "all", 0)
 
-%% Plot dprime over days
-% syntax: plot_dprime(spth, savedir, parname, subj, unit_type, depth, condition, sv)
-
-% subj: "all", "202", "222", "223", "224", "267"
-
-% unit_type: "all", "SU"
-
-% depth: in dB; 0 -3 -6 -9 -12 -15 -18
-
-% save file?: 1 = yes, 0 = no
-
-% plot_dprime(spth, savedir, parname, "all", "SU", -9, "i", 0)
-
-%% Plot neurometric fits over days
-% syntax: fit_over_days(spth, savedir, parname, subj, unit_type)
-
-% subj: "all", "202", "222", "223", "224", "267"
-
-% unit_type: "all", "SU"
-
-% fit_over_days(spth, savedir, parname, "all", "SU")
-
 %% Plot thresholds across days
 % syntax: plot_units(region, spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, replace, savefile)
 
@@ -162,19 +142,20 @@ thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "all", "SU", "a
 
 % save file?: 1 = yes, 0 = no
 
-plot_units(region, spth, behavdir, savedir, parname, 1:7, "all", "all", "all", "yes", 1)
+plot_units(region, spth, behavdir, savedir, parname, 1:7, "all", "all", "all", "yes", 0)
 
+%%
 output(region, spth, behavdir, savedir, parname, 1:7, "all", "all", "all", "yes", 1)
 
 %% Plot behavior vs neural for an individual subject
 % syntax: bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
 
-bvsn(behavdir, savedir, parname, 1:7, "223", "all", "all")
+bvsn(behavdir, savedir, parname, 1:7, "322", "SU", "all")
 
 %% Plot behavior vs neural for population
 % syntax: bvsn(behavdir, savedir, parname, ndays, unit_type, condition)
 
-bvsn_pop(behavdir, savedir, parname, 1:7, "all", "all")
+bvsn_pop(behavdir, savedir, parname, 1:7, "SU", "all")
 
 %% Sort units into better/worse/same
 % syntax: split_condition(savedir, parname, ndays, unit_type, condition)
@@ -263,6 +244,10 @@ sd3 = 'C:\Users\rose\Documents\Caras\Analysis\ACx recordings\';
 
 count_units(savedir)
 
+%% Proportion of sensitive units each day
+
+prop(savedir, 0)
+
 %% Average % change
 
 average_change(savedir, parname, 1:7, "all", "all")
@@ -270,4 +255,4 @@ average_change(savedir, parname, 1:7, "all", "all")
 average_change_m(savedir, parname, 1:7, "all", "all", -9)
 
 %% Plot white noise
-white_noise(1)
+white_noise(0.25)

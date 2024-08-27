@@ -1,19 +1,15 @@
+% This pipeline is used in combination with the +epa toolbox to convert the
+% preprocessed cluster data into session data and calculate neurometric
+% values (firing rate, power, vector strength cycle-by-cycle)
 
-% spth = '/mnt/CL_4TB_1/Rose/IC recording/SUBJ-ID-202';
-spth = '/mnt/CL_8TB_3/Rose/IC recording/SUBJ-ID-267';
-% spth = '/mnt/CL_8TB_3/Rose/MGN recording/SUBJ-ID-642';
+% data folder
+spth = '/mnt/CL_4TB_1/Rose/IC recording/SUBJ-ID-202';
 
 %% Assign quality metrics based on Allen Brain Institute parameters
 qm(spth)
 
 %% Create and save a new Session object(s)
-
 load_session(spth)
-
-%% DataBrowser GUI finds valid Session objects in the base workspace
-
-% S.remove_Event("Cam1")
-D = epa.DataBrowser;
 
 %% Convert clusters to sessions
 % only need to run once

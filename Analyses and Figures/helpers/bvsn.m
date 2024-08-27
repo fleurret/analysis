@@ -50,9 +50,9 @@ ax(3) = subplot(133,'parent',f);
 thr = cell(size(days));
 sidx = thr;
 
-xall = nan(1,7);
-
 for k = 1:3 % plot each session seperately
+    xall = nan(1,7);
+        
     for i = ndays
         Ci = filterunits(savedir, Parname, Cday, i, unit_type, condition);
         
@@ -94,6 +94,7 @@ for k = 1:3 % plot each session seperately
         
     end
     
+
     % plot
     scatter(ax(k),xall,yall,...
         'Marker', 'o',...
@@ -103,7 +104,7 @@ for k = 1:3 % plot each session seperately
     
     % fit and corr
     
-    if isnan(xall) | isnan(yall)
+    if isempty(xall) | isempty(yall)
         continue
     end
     
@@ -164,6 +165,14 @@ grid(ax(2),'off');
 
 axis(ax,'square');
 
-fprintf('Pre R = %s, p = %s \n', num2str(PR{1}(2)), num2str(PRP{1}(2)))
-fprintf('Active R = %s, p = %s \n', num2str(PR{2}(2)), num2str(PRP{2}(2)))
-fprintf('Post R = %s, p = %s \n', num2str(PR{3}(2)), num2str(PRP{3}(2)))
+if numel(PR{1})>1
+    fprintf('Pre R = %s, p = %s \n', num2str(PR{1}(2)), num2str(PRP{1}(2)))
+end
+
+if numel(PR{2})>1
+    fprintf('Active R = %s, p = %s \n', num2str(PR{2}(2)), num2str(PRP{2}(2)))
+end
+
+if numel(PR{3})>1
+    fprintf('Post R = %s, p = %s \n', num2str(PR{3}(2)), num2str(PRP{3}(2)))
+end
