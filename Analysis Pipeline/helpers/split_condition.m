@@ -1,4 +1,7 @@
 function split_condition(savedir, parname, ndays, unit_type, condition)
+% this function sorts units into three categories for VScc-based thresholds
+% (task-responsive, passive-responsive, or responsive across all sessions)
+
 % convert parname to correct label
 if contains(parname,'FiringRate')
     Parname = 'trial_firingrate';

@@ -1,0 +1,185 @@
+%% Set directories - run first!
+
+% which metric to use
+% parname = 'FiringRate';
+% parname = 'Power';
+parname = 'VScc';
+
+% region = "IC";
+% region = "IC shell";
+region = "MGN";
+% region = "ACx";
+
+if region == "IC"
+    spth = 'D:\Caras\Analysis\IC recordings\Data\';
+    savedir = 'D:\Caras\Analysis\IC recordings';
+    behavdir = 'D:\Caras\Analysis\IC recordings\Behavior\';
+end
+
+if region == "IC shell"
+    spth = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Data\';
+    savedir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\';
+    behavdir = 'C:\Users\rose\Documents\Caras\Analysis\IC shell recordings\Behavior\';
+end
+
+if region == "MGN"
+    spth = 'D:\Caras\Analysis\MGB recordings\Data\';
+    savedir = 'D:\Caras\Analysis\MGB recordings\';
+    behavdir = 'D:\Caras\Analysis\MGB recordings\Behavior\';
+end
+
+if region == "ACx"
+    spth = 'D:\Caras\Analysis\ACx recordings\Reformatted\';
+    savedir = 'D:\Caras\Analysis\ACx recordings\';
+    behavdir = 'D:\Caras\Analysis\ACx recordings\Behavior\';
+end
+
+%% Load .mat and convert neural data
+% only needs to be run whenever new data is added
+
+load_clusters(spth, savedir);
+
+%% Sort units into better/worse/same - for VScc
+% only needs to be run once
+% syntax: split_condition(savedir, parname, ndays, unit_type, condition)
+
+% unit_type: "all" (single and multi unit), "SU" (single unit only)
+% condition: "all"
+
+split_condition(savedir, 'VScc', 1:7, "SU", "all")
+
+%% Calculate AM/NonAM ratio
+% syntax: am_ratio(parname, spth, savedir, ndays, unit_type, condition, depth, savefile)
+
+% unit_type: "all" (single and multi unit), "SU" (single unit only)
+% condition:  "all"; for VScc analysis only: "w" (passive-responsive), "i" (task-responsive), "s" (responsive both passive and task sessions)
+% depth: in dB re:100%
+% savefile: 0 (no), 1 (yes)
+
+am_ratio_combined(parname, spth, savedir, 1:7, "all", "all", -9 ,0)
+
+%% Calculate coefficient of variation
+% syntax: cov_combined(parname, spth, savedir, ndays, type, unit_type, condition, depth, savefile)
+
+% type: 'NonAM', 'AM'
+% unit_type: "all" (single and multi unit), "SU" (single unit only)
+% condition:  "all"; for VScc analysis only: "w" (passive-responsive), "i" (task-responsive), "s" (responsive both passive and task sessions)
+% depth: in dB re:100%
+% savefile: 0 (no), 1 (yes)
+
+cov_combined(parname, spth, savedir, 1:7, 'NonAM', "all", "all", -9 ,0)
+
+%% Plot metrics, histograms, neurometric fits from one representative unit
+% syntax: fit_over_days(spth, savedir, parname, ndays, unit_type, condition, cn)
+
+% ndays: which day
+% unit_type: "all" (single and multi unit), "SU" (single unit only)
+% condition: "all"
+% cn = which number unit
+
+figpath = 'D:\Caras\Manuscripts\Ying JNeuro 2024\Figures\Panels\IC\vscc\representative 3';
+
+fit_over_sessions_rep(spth, savedir, parname, 3, "SU", "all", 7)
+metrics_across_depth_rep(spth, savedir, parname, 3, "SU", "all", 7)
+plot_histo(savedir, parname, 3, "SU", "all", 7, figpath)
+
+% IC
+% plot_histo(savedir, parname, 1, "all", "all", 10, figpath)
+
+% plot_histo(savedir, parname, 1, "SU", "all", 12, figpath)
+% plot_histo(savedir, parname, 1, "SU", "all", 19, figpath)
+% plot_histo(savedir, parname, 3, "SU", "all", 7, figpath)
+
+% MGN
+% plot_histo(savedir, parname, 1, "all", "all", 24, figpath)
+
+% plot_histo(savedir, parname, 1, "SU", "all", 7, figpath)
+% plot_histo(savedir, parname, 1, "SU", "all", 27, figpath)
+% plot_histo(savedir, parname, 4, "SU", "all", 4, figpath)
+%% Plot thresholds across sessions
+% syntax: thresholds_across_sessions(spth, savedir, parname, day, subj, unit_type, condition,  savefile)
+
+% unit_type: "all" (single and multi unit), "SU" (single unit only)
+% condition:  "all"; for VScc analysis only: "w" (passive-responsive), "i" (task-responsive), "s" (responsive both passive and task sessions)
+% savefile: 0 (no), 1 (yes)
+
+thresholds_across_sessions_combined(spth, savedir, parname, 1:7, "all", "SU", "s", 0)
+
+%% Plot thresholds across days
+% syntax: plot_units(region, spth, behavdir, savedir, parname, ndays, subj, condition, unit_type, replace, savefile)
+
+% subj: "all", "202", "222", "223", "224", "267"... etc
+% condition:  "all"; for VScc analysis only: "w" (passive-responsive), "i" (task-responsive), "s" (responsive both passive and task sessions)
+% unit_type: "all", "SU"
+% replace (NaN thresholds with 0): "yes"
+% save file?: 1 = yes, 0 = no
+
+plot_units(region, spth, behavdir, savedir, parname, 1:7, "all", "all", "all", "yes", 0)
+
+%% Plot behavior vs neural for an individual subject
+% syntax: bvsn(behavdir, savedir, parname, ndays, subj, unit_type, condition)
+
+% unit_type: "all", "SU"
+% condition:  "all"
+
+bvsn(behavdir, savedir, parname, 1:7, "322", "SU", "all")
+
+%% Plot behavior vs neural for population
+% syntax: bvsn(behavdir, savedir, parname, ndays, unit_type, condition)
+
+% unit_type: "all", "SU"
+% condition:  "all"
+
+bvsn_pop(behavdir, savedir, parname, 1:7, "SU", "all")
+
+%% Coding shift for individual neurons between sessions
+% syntax: compare_thresholds(savedir, parx, pary, session 1, session 2, ndays, unit_type, condition, shownans)
+
+% parx: passive measure; 'FiringRate', 'VScc', 'Power'
+% pary: active measure; 'FiringRate', 'VScc', 'Power'
+% unit_type: "all", "SU"
+% condition:  "all"
+% shownans: 0 (no), 1 (yes)
+
+coding_shift(savedir, 'VScc', 'FiringRate', 'Pre', 'Active', 1:7, "SU", "all")
+
+%% Calculate vector change in threshold between passive/active
+% syntax: change_in_threshold_combined(savedir, spth, parx, pary, ndays, unit_type, condition)
+
+% parx: 'FiringRate', 'VScc', 'Power'
+% pary: 'FiringRate', 'VScc', 'Power'
+% unit_type: should be "SU"
+% condition:  "all"
+
+change_in_threshold_combined(savedir, spth, 'VScc', 'FiringRate', 1:7, "SU", "all");
+
+%% Count units
+% syntax: count_units(savedir)
+
+count_units(savedir)
+
+%% Proportion of sensitive units each day
+% syntax: prop(savedir, savefile)
+
+% save file?: 1 = yes, 0 = no
+
+prop(savedir, 0)
+
+%% Average % change
+
+% thresholds
+% syntax: average_change(savedir, parname, ndays, unit_type, condition)
+
+% unit_type: "all", "SU"
+% condition:  "all"; for VScc analysis only: "w" (passive-responsive), "i" (task-responsive), "s" (responsive both passive and task sessions)
+
+average_change(savedir, parname, 1:7, "all", "all")
+
+% metrics
+% syntax: average_change_m(savedir, parname, ndays, unit_type, condition, depth)
+
+% unit_type: "all", "SU"
+% condition:  "all"; for VScc analysis only: "w" (passive-responsive), "i" (task-responsive), "s" (responsive both passive and task sessions)
+% depth: in dB re:100%
+
+average_change_m(savedir, parname, 1:7, "all", "all", -9)
